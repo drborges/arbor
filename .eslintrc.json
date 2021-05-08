@@ -1,0 +1,12 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "jest"],
+  "extends": ["airbnb-typescript", "prettier", "plugin:jest/recommended"],
+  "rules": {
+    "prefer-destructuring": "off",
+    "no-plusplus": "off",
+    "no-param-reassign": "off",
+    "import/prefer-default-export": "off"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "removeComments": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "module": "CommonJS",
+    "target": "ES2015",
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "lib": ["es6", "dom", "dom.iterable"]
+  }
+}
