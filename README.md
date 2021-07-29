@@ -1,43 +1,64 @@
 # Arbor
 
-A minimalistic proxy-based state tree library with very little boilerplate.
+A fully typed, minimalistic proxy-based state tree library with very little boilerplate for React apps.
 
 ## Why Arbor?
 
-## Installation
+Arbor is not just another state management library for React apps, it focuses on developer experience and productivity. It does so by providing a very minimal API, with very little boilerplate, for the most part, you'll be working with plain Javascript objects and arrays (thanks to [ES6 Proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)) without having to worry about structural sharing, immutability, setting up context providers in order to share state across components, while getting optimal re-render management out-of-the-box.
 
-Yarn:
-
-```sh
-$ yarn add arbor-store@latest
-```
-
-NPM:
-
-```sh
-$ npm install arbor-store@latest
-```
-
-## Show don't tell
+Here's a simple Counter example:
 
 ```ts
+import Arbor, { useArbor } from "@arborjs/react"
+
+// Create a store to hold the counter state
 const store = new Arbor({
-  users: [],
+  count: 0,
 })
 
-store.subscribe((nextState, previousState) => {
-  console.log("Next state:", nextState)
-  console.log("Previous state:", previousState)
-})
+function Counter() {
+  // Connect the Counter component to the store
+  const counter = useArbor(store)
 
-store.users.push({ name: "John" })
-// => Next state: { users: [{ name: "John" }] }
-// => Previous state: { users: [] }
-store.users[0].name = "John Doe"
-// => Next state: { users: [{ name: "John Doe" }] }
-// => Previous state: { users: [{ name: "John" }] }
+  // Mutate the state using plain Javascript APIs
+  return (
+    <>
+      <button onClick={() => counter.count++} value="Increment" />
+      <button onClick={() => counter.count--} value="Decrement" />
+    </>
+  )
+}
+
+function Echo() {
+  // Easily share state across components, no need for context providers!
+  const counter = useArbor(store)
+
+  return <h1>Count: {counter.count}</h1>
+}
+
+function MyApp() {
+  return (
+    <div>
+      <Echo />
+      <Counter />
+    </div>
+  )
+}
 ```
 
-## Contributing
+Arbor optimally keeps track of accesses to the state object using a [Persistent Data Structure](https://en.wikipedia.org/wiki/Persistent_data_structure) ensuring that by default all mutations triggered don't affect the current state object but instead, generate a new one via a process called Structural Sharing. This allows React to optimally compute re-renders out-of-the-box while giving developers the feeling of working with plain JavaScript APIs.
+
+Sounds promising? Check out the documentation below for more in-depth insights and since there's really very minimal boilerplate you might as well [check out a few more examples]().
+
+## Documentation
+
+- [Getting Started](): TODO
+- [Examples](): TODO
+- [Plugins](): TODO
+- [How Does It Do It?](): TODO
+
+Help us improve our docs, PRs are very welcome!
 
 ## License
+
+Arbor is [MIT licensed](./LICENSE).
