@@ -19,6 +19,6 @@
     "dev": "jest --watch",
     "prebuild": "yarn install && rm -rf dist",
     "build": "esbuild src/index.ts --bundle --minify --sourcemap --outdir=dist --platform=node --target=node10.4",
-    "postbuild": "tsc"
+    "postbuild": "yarn tsc"
   }
 }
