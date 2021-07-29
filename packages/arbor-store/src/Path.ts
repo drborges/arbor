@@ -1,0 +1,124 @@
+/**
+ * Represent a path within the state tree.
+ *
+ * Paths point to potential nodes within the state tree.
+ */
+export default class Path {
+  props: string[]
+
+  /**
+   * Creates a new instance of Path.
+   *
+   * @param props list of strings representing the path within an Arbor state tree.
+   * @returns a new instance of Path.
+   */
+  constructor(...props: string[]) {
+    this.props = props
+  }
+
+  /**
+   * Parses a given path representation string into an actual Path instance.
+   *
+   * @example
+   *
+   * ```ts
+   * const path = Path.parse("/users/3/name")
+   * path.toString()
+   * => "/users/3/name"
+   * ```
+   *
+   * @param str string representation of a path.
+   * @returns the instance of a Path for the given string.
+   */
+  static parse(str: string): Path {
+    return new Path(...str.split("/").filter((part) => part !== ""))
+  }
+
+  /**
+   * Returns a Path instance representing the root of an Arbor state tree.
+   *
+   * @example
+   *
+   * ```ts
+   * const root = Path.root
+   * root.toString()
+   * => "/"
+   * ```
+   */
+  static get root(): Path {
+    return new Path()
+  }
+
+  /**
+   * Returns a Path instance representing a child path under the current path.
+   *
+   * @example
+   *
+   * ```ts
+   * const path = new Path("users", "3")
+   * const child = path.child("name")
+   * child.toString()
+   * => "/users/3/name"
+   * ```
+   *
+   * @param prop the child's subpath under the current path.
+   * @returns a Path instance for the given child's subpath.
+   */
+  child(prop: string): Path {
+    return new Path(...this.props.concat(prop.toString()))
+  }
+
+  /**
+   * Traverses a given object until reaching the node represented by the path.
+   *
+   * @param obj object to be traversed
+   * @returns the node within obj represented by the path
+   */
+  walk<T extends object, V extends object>(obj: T): V {
+    return this.props.reduce<T>(
+      (parent, part) => parent[part],
+      obj
+    ) as unknown as V
+  }
+
+  /**
+   * Returns this path's parent Path.
+   *
+   * @example
+   *
+   * ```ts
+   * const path = new Path("users", "3", "name")
+   * const parent = path.parent
+   * parent.toString()
+   * => "/users/3"
+   * ```
+   */
+  get parent(): Path {
+    if (this.props.length === 0) {
+      return null
+    }
+
+    return new Path(...this.props.slice(0, this.props.length - 1))
+  }
+
+  /**
+   * Computes the string representation of the path object.
+   *
+   * @example
+   *
+   * ```ts
+   * const path = new Path("users", "3", "name")
+   * path.toString()
+   * => "/users/3/name"
+   * ```
+   *
+   * @returns the string representation of the path.
+   */
+  toString(): string {
+    return `/${this.props.join("/")}`
+  }
+
+  get [Symbol.toStringTag]() {
+    return this.toString()
+  }
+}
