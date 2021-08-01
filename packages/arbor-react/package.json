@@ -7,6 +7,9 @@
   "files": [
     "./dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@arborjs/store": "0.0.1-alpha.0",
     "@testing-library/react-hooks": "^7.0.0",

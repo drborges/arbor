@@ -7,6 +7,9 @@
   "files": [
     "./dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@testing-library/react-hooks": "^7.0.0",
     "@types/jest": "^26.0.23",
