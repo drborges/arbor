@@ -12,12 +12,13 @@
     "esbuild": "^0.12.12",
     "eslint": "^7.32.0",
     "jest": "^26.6.3",
+    "np": "^7.5.0",
     "ts-jest": "^26.5.6",
     "typescript": "^4.2.4"
   },
   "scripts": {
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "dev": "jest --watch",
     "build": "rm -rf dist && yarn lint && yarn test && esbuild src/index.ts --bundle --minify --sourcemap --outdir=dist --platform=node --target=node10.4 && yarn tsc",
     "prepublish": "yarn build",
