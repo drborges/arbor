@@ -4,11 +4,9 @@
     "packages/*"
   ],
   "scripts": {
-    "clean": "rm -rf node_modules && rm -rf packages/*/node_modules",
-    "prebuild": "yarn clean && yarn install && yarn lint",
     "build": "yarn workspaces foreach run build",
     "test": "yarn workspaces foreach run test",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+    "lint": "yarn workspaces foreach run lint"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.1",
