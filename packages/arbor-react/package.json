@@ -1,16 +1,42 @@
 {
   "name": "@arborjs/react",
   "version": "0.0.1-alpha.1",
+  "description": "A fully typed, minimalistic proxy-based state tree library with very little boilerplate for React apps.",
+  "keywords": [
+    "arbor",
+    "react",
+    "state",
+    "store",
+    "typescript",
+    "tree"
+  ],
+  "repository": {
+    "url": "https://github.com/drborges/arbor",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/drborges/arbor/issues",
+    "email": "drborges.cic@gmail.com"
+  },
+  "author": {
+    "email": "drborges.cic@gmail.com",
+    "name": "Diego Borges",
+    "url": "https://github.com/drborges"
+  },
   "main": "./dist/index.js",
+  "module": "./src/index.ts",
   "types": "./dist/index.d.ts",
   "license": "MIT",
   "files": [
-    "./dist"
+    "./dist",
+    "./README",
+    "../../LICENSE"
   ],
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@arborjs/store": "0.0.1-alpha.1",
     "@testing-library/react-hooks": "^7.0.0",
     "@types/jest": "^26.0.23",
     "@types/react": "^17.0.11",
@@ -24,6 +50,7 @@
     "typescript": "^4.2.4"
   },
   "scripts": {
+    "clean": "rm -rf dist",
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest --passWithNoTests",
     "dev": "jest --watch",
@@ -32,10 +59,8 @@
     "publish": "np"
   },
   "peerDependencies": {
+    "@arborjs/store": "0.0.1-alpha.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
-  },
-  "dependencies": {
-    "@arborjs/store": "0.0.1-alpha.1"
   }
 }
