@@ -2,6 +2,12 @@ import Path from "./Path"
 import { Mutation, Node } from "./types"
 
 /**
+ * TODO:
+ *
+ * - [ ] Handle invalid paths by throwing an error
+ */
+
+/**
  * Mutates a given node by traversing the given path and applying the
  * given mutation to the target node.
  *
