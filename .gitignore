@@ -1,6 +1,7 @@
 node_modules/
 todo.todo
 .cache/
+.yarn/cache/
 .pnp.cjs
 dist/
 yarn-error.log
