@@ -1,4 +1,4 @@
-import Arbor from "./arbor"
+import Arbor from "./Arbor"
 import NodeCache from "./NodeCache"
 import Path from "./Path"
 

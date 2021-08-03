@@ -1,4 +1,4 @@
-import Arbor from "./arbor"
+import Arbor from "./Arbor"
 import mutate from "./mutate"
 import Path from "./Path"
 
