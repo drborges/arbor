@@ -3,7 +3,8 @@
   "workspaces": [
     "packages/arbor-store",
     "packages/arbor-react",
-    "packages/arbor-plugins"
+    "packages/arbor-plugins",
+    "examples/**"
   ],
   "scripts": {
     "clean": "yarn workspaces foreach run clean",
