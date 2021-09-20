@@ -1,4 +1,4 @@
-import { stitch } from "@arborjs/store"
+import { stitch } from "@arborjs/react"
 import { LocalStorage } from "@arborjs/plugins"
 
 import { store as todos } from "./useTodos"
