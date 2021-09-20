@@ -13,9 +13,8 @@ export default function denormalizer<D extends object>(
         const denormalizedFields = resolver(arg)
         Object.keys(denormalizedFields).forEach((field) => {
           Object.defineProperty(normalized, field, {
-            value: denormalizedFields[field],
+            get: () => denormalizedFields[field],
             enumerable: false,
-            writable: false,
             configurable: false,
           })
         })
