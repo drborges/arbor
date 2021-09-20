@@ -1,0 +1,24 @@
+{
+  "name": "react-todo",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@arborjs/react": "workspace:packages/arbor-react",
+    "classnames": "^2.3.1",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/react": "17.0.15",
+    "@types/react-dom": "17.0.2",
+    "@types/uuid": "^8.3.1",
+    "@vitejs/plugin-react-refresh": "^1.3.1",
+    "typescript": "^4.3.2",
+    "vite": "^2.5.4"
+  }
+}
