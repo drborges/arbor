@@ -1,7 +1,9 @@
 {
   "private": true,
   "workspaces": [
-    "packages/**",
+    "packages/arbor-store",
+    "packages/arbor-react",
+    "packages/arbor-plugins",
     "examples/**"
   ],
   "scripts": {

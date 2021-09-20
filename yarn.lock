@@ -7302,6 +7302,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "react-todo@workspace:examples/react-todo"
   dependencies:
+    "@arborjs/react": "workspace:packages/arbor-react"
     "@types/react": 17.0.15
     "@types/react-dom": 17.0.2
     "@types/uuid": ^8.3.1
