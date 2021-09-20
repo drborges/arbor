@@ -1,15 +1,12 @@
 import denormalizer from "./denormalizer"
-
 interface User {
   id: number
   name: string
-  postIds: number[]
 }
 
 interface Post {
   id: number
   text: string
-  authorId: number
 }
 
 interface Authorable {

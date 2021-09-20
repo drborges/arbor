@@ -1,5 +1,7 @@
-export interface Descriptor<K extends object> {
-  [key: string]: (ref: number | number[] | string | string[]) => K
+export type Resolver<T extends object> = (ref: any) => T
+
+export interface Descriptor<T extends object> {
+  [key: string]: Resolver<T>
 }
 
 export default function denormalizer<D extends object>(
