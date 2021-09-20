@@ -1,5 +1,5 @@
 import type { IStateTree, Plugin } from "@arborjs/store"
-import debounce from "debounce"
+import debounce from "./debounce"
 
 /**
  * Describes a LocaStorage configuration object.
