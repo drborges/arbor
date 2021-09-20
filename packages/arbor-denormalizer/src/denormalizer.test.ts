@@ -1,4 +1,5 @@
 import denormalizer from "./denormalizer"
+
 interface User {
   id: number
   name: string
