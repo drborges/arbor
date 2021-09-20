@@ -1,0 +1,16 @@
+div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  padding: 5px 10px;
+}
+
+span {
+  display: flex;
+  justify-content: center;
+  margin: 10px;
+  min-width: 50px;
+}
