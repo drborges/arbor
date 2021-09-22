@@ -1,7 +1,7 @@
-export type Resolver<T extends object> = (ref: any) => T
+export type Resolver<D extends object> = (ref: any) => Partial<D>
 
-export interface Descriptor<T extends object> {
-  [key: string]: Resolver<T>
+export interface Descriptor<D extends object> {
+  [key: string]: Resolver<D>
 }
 
 export default function denormalizer<D extends object>(
@@ -14,10 +14,14 @@ export default function denormalizer<D extends object>(
         const arg = normalized[prop]
         const denormalizedFields = resolver(arg)
         Object.keys(denormalizedFields).forEach((field) => {
+          if (normalized.hasOwnProperty(field)) return
+
           Object.defineProperty(normalized, field, {
-            get: () => denormalizedFields[field],
             enumerable: false,
             configurable: false,
+            get() {
+              return denormalizedFields[field]
+            },
           })
         })
       }

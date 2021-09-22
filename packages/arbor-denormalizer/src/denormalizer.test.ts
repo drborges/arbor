@@ -96,4 +96,33 @@ describe("denormalizer", () => {
       authorId: 2,
     })
   })
+
+  it("is idempotent", () => {
+    const users = [
+      { id: 1, name: "Alice" },
+      { id: 2, name: "Bob" },
+    ]
+
+    const posts = [
+      { id: 1, text: "Post 1", authorId: 1 },
+      { id: 2, text: "Post 2", authorId: 2 },
+    ]
+
+    const denormalizePost = denormalizer<Authorable>({
+      authorId: (id: number) => ({
+        get author() {
+          return users.find((u) => u.id === id)
+        },
+      }),
+    })
+
+    const denormalizedPost = denormalizePost(denormalizePost(posts[0]))
+
+    expect(denormalizedPost.author).toBe(users[0])
+    expect(denormalizedPost).toEqual({
+      id: 1,
+      text: "Post 1",
+      authorId: 1,
+    })
+  })
 })
