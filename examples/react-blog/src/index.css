@@ -1,0 +1,21 @@
+.app {
+  margin: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+nav ul {
+  display: flex;
+  justify-content: space-around;
+  list-style: none;
+}
+
+nav a {
+  opacity: 0.3;
+  text-decoration: none;
+}
+
+nav a.nav-active {
+  opacity: 1;
+  text-decoration: underline;
+}
