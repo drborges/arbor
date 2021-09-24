@@ -26,6 +26,33 @@ describe("useArbor", () => {
     expect(result.current.count).toBe(5)
   })
 
+  it("subscribes to changes to a specific tree node", () => {
+    const store = new Arbor<{ name: string }[]>([
+      { name: "Bob" },
+      { name: "Alice" },
+    ])
+
+    const user1 = store.root[0]
+    const user2 = store.root[1]
+
+    const { result } = renderHook(() => useArbor(store, (users) => users[1]))
+
+    expect(result.current).toBe(user2)
+
+    act(() => {
+      user1.name = "Bob Updated"
+    })
+
+    expect(result.current).toBe(user2)
+
+    act(() => {
+      result.current.name = "Alice Updated"
+    })
+
+    expect(result.current).not.toBe(user2)
+    expect(result.current).toEqual({ name: "Alice Updated" })
+  })
+
   it("when running forgiven mutation mode, subsequent mutations can be triggered off the same node reference", () => {
     const state = { count: 0 }
     const store = new Arbor(state, { mode: MutationMode.FORGIVEN })
