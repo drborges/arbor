@@ -88,7 +88,7 @@ export default class Arbor<T extends object> implements IStateTree {
 
     this.#root = newRoot
 
-    this.notify(newRoot, oldRootValue)
+    this.notify(path, newRoot, oldRootValue)
   }
 
   /**
@@ -152,12 +152,13 @@ export default class Arbor<T extends object> implements IStateTree {
   /**
    * Notifies subscribers about state updates.
    *
+   * @param path the mutation path
    * @param newState the new state tree root node.
    * @param oldState the value of the previous state tree root node.
    */
-  notify(newState: Node<T>, oldState: T) {
+  notify(path: Path, newState: Node<T>, oldState: T) {
     this.#subscriptions.forEach((subscription) => {
-      subscription(newState, oldState)
+      subscription({ path, newState, oldState })
     })
   }
 

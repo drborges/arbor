@@ -56,7 +56,7 @@ describe("Arbor", () => {
       const store = new Arbor<{ users: User[] }>(initialState)
 
       return new Promise((resolve) => {
-        store.subscribe((newState, oldState) => {
+        store.subscribe(({ newState, oldState }) => {
           expect(initialState).toBe(oldState)
           expect(oldState).toEqual({
             users: [{ name: "User 1" }],

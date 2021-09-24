@@ -1,4 +1,4 @@
-import type { IStateTree, Plugin } from "@arborjs/store"
+import { IStateTree, Path, Plugin } from "@arborjs/store"
 import debounce from "./debounce"
 
 /**
@@ -13,7 +13,7 @@ export interface Config {
    * This can be used to reduce the frequency in which data is written
    * back to local storage.
    */
-  debounceBy: number
+  debounceBy?: number
 }
 
 /**
@@ -42,10 +42,10 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
     if (data && typeof data === "object") {
       const oldState = store.root.$unwrap()
       const root = store.setRoot(data)
-      store.notify(root, oldState)
+      store.notify(Path.root, root, oldState)
     }
 
-    store.subscribe((newState) => {
+    store.subscribe(({ newState }) => {
       this.update(newState.$unwrap())
     })
   }

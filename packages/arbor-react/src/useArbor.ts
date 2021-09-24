@@ -36,7 +36,7 @@ export default function useArbor<T extends object>(store: Arbor<T>) {
 
   const unsubscribe = useMemo(
     () =>
-      store.subscribe((newState) => {
+      store.subscribe(({ newState }) => {
         setState(newState)
       }),
     [store]
