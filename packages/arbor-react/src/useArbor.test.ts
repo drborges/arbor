@@ -53,6 +53,21 @@ describe("useArbor", () => {
     expect(result.current).toEqual({ name: "Alice Updated" })
   })
 
+  it("skips subscription if no node is selected", () => {
+    const store = new Arbor<{ name: string }[]>([
+      { name: "Bob" },
+      { name: "Alice" },
+    ])
+
+    const { result } = renderHook(() => useArbor(store, (users) => users[2]))
+
+    expect(result.current).toBe(undefined)
+
+    act(() => {
+      store.root[0].name = "Bob Updated"
+    })
+  })
+
   it("when running forgiven mutation mode, subsequent mutations can be triggered off the same node reference", () => {
     const state = { count: 0 }
     const store = new Arbor(state, { mode: MutationMode.FORGIVEN })

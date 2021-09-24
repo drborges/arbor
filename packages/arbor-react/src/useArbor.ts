@@ -42,18 +42,20 @@ export default function useArbor<T extends object, S extends object = T>(
 
   const node = state as INode<typeof state>
 
-  const unsubscribe = useMemo(
-    () =>
-      store.subscribe((newState) => {
-        const newNode = node.$path.walk(newState)
-        if (newNode !== node) {
-          setState(newNode as unknown as S)
-        }
-      }),
-    [store]
-  )
+  useEffect(() => {
+    // No state tree node was selected for subscription.
+    // TODO: Should this throw an error instead?
+    if (!node) return () => {}
 
-  useEffect(() => unsubscribe, [unsubscribe])
+    const unsubscribe = store.subscribe((newState) => {
+      const newNode = node.$path.walk(newState)
+      if (newNode !== node) {
+        setState(newNode as unknown as S)
+      }
+    })
+
+    return unsubscribe
+  }, [store])
 
   return state
 }
