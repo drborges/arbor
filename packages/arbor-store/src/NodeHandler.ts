@@ -19,10 +19,6 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     return this.$tree.createNode(this.$path, { ...this.$value }, this.$children)
   }
 
-  $flush(): void {
-    this.$children.reset()
-  }
-
   get(target: T, prop: string, proxy: Node<T>) {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
