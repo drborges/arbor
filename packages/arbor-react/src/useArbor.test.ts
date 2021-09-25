@@ -75,7 +75,7 @@ describe("useArbor", () => {
     }
 
     const { result, rerender } = renderHook(
-      ({ store, selector }) => useArbor(store, selector),
+      (props) => useArbor(props.store, props.selector),
       { initialProps }
     )
 
