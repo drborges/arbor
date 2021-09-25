@@ -3,6 +3,10 @@ import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
 
+interface User {
+  name: string
+}
+
 describe("useArbor", () => {
   it("updates the state whenever a store mutation is triggered", () => {
     const store = new Arbor({
@@ -27,10 +31,7 @@ describe("useArbor", () => {
   })
 
   it("subscribes to changes to a specific tree node", () => {
-    const store = new Arbor<{ name: string }[]>([
-      { name: "Bob" },
-      { name: "Alice" },
-    ])
+    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
 
     const user1 = store.root[0]
     const user2 = store.root[1]
@@ -46,18 +47,15 @@ describe("useArbor", () => {
     expect(result.current).toBe(user2)
 
     act(() => {
-      result.current.name = "Alice Updated"
+      user2.name = "Alice Updated"
     })
 
     expect(result.current).not.toBe(user2)
     expect(result.current).toEqual({ name: "Alice Updated" })
   })
 
-  it("skips subscription if no node is selected", () => {
-    const store = new Arbor<{ name: string }[]>([
-      { name: "Bob" },
-      { name: "Alice" },
-    ])
+  it("skips state update if no node is selected", () => {
+    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
 
     const { result } = renderHook(() => useArbor(store, (users) => users[2]))
 
@@ -66,6 +64,29 @@ describe("useArbor", () => {
     act(() => {
       store.root[0].name = "Bob Updated"
     })
+  })
+
+  it("reselects observed node across re-renderings", () => {
+    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
+
+    const initialProps = {
+      store,
+      selector: (users: User[]) => users[2],
+    }
+
+    const { result, rerender } = renderHook(
+      ({ store, selector }) => useArbor(store, selector),
+      { initialProps }
+    )
+
+    expect(result.current).toBe(undefined)
+
+    rerender({
+      store,
+      selector: (users: User[]) => users[1],
+    })
+
+    expect(result.current).toBe(store.root[1])
   })
 
   it("when running forgiven mutation mode, subsequent mutations can be triggered off the same node reference", () => {
