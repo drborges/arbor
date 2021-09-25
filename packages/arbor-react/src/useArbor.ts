@@ -1,5 +1,5 @@
 import type Arbor from "@arborjs/store"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -31,18 +31,20 @@ import { useEffect, useMemo, useState } from "react"
  * @param store an instance of the Arbor state tree.
  * @returns the current state of the Arbor state tree.
  */
-export default function useArbor<T extends object>(store: Arbor<T>) {
-  const [state, setState] = useState<T>(store.root)
+export default function useArbor<T extends object, S = T>(
+  store: Arbor<T>,
+  selector = (root: T): S => root as unknown as S
+) {
+  const [state, setState] = useState(selector(store.root))
 
-  const unsubscribe = useMemo(
-    () =>
-      store.subscribe((newState) => {
-        setState(newState)
-      }),
-    [store]
+  useEffect(() => {
+    setState(selector(store.root))
+  }, [selector])
+
+  useEffect(
+    () => store.subscribe(() => setState(selector(store.root))),
+    [selector, store]
   )
-
-  useEffect(() => unsubscribe, [unsubscribe])
 
   return state
 }

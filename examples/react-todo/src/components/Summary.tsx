@@ -1,12 +1,20 @@
 import React from "react"
+import { useArbor } from "@arborjs/react"
 
-import useTodos from "../store/useTodos"
+import { isTodoCompleted, store } from "../store/useTodos"
 
 export default function Summary() {
-  const { todos } = useTodos()
+  const total = useArbor(store, (todos) => todos.length)
+  const completed = useArbor(
+    store,
+    (todos) => todos.filter(isTodoCompleted).length
+  )
+
   return (
     <div className="summary">
-      <small>{todos.length} todos</small>
+      <small>
+        {completed} of {total} completed
+      </small>
     </div>
   )
 }
