@@ -54,19 +54,7 @@ describe("useArbor", () => {
     expect(result.current).toEqual({ name: "Alice Updated" })
   })
 
-  it("skips state update if no node is selected", () => {
-    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
-
-    const { result } = renderHook(() => useArbor(store, (users) => users[2]))
-
-    expect(result.current).toBe(undefined)
-
-    act(() => {
-      store.root[0].name = "Bob Updated"
-    })
-  })
-
-  it("reselects observed node across re-renderings", () => {
+  it("handles selector changes across re-renderings", () => {
     const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
 
     const initialProps = {
@@ -87,6 +75,16 @@ describe("useArbor", () => {
     })
 
     expect(result.current).toBe(store.root[1])
+  })
+
+  it("supports derived data", () => {
+    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
+
+    const { result } = renderHook(() =>
+      useArbor(store, (users) => users.length)
+    )
+
+    expect(result.current).toBe(2)
   })
 
   it("when running forgiven mutation mode, subsequent mutations can be triggered off the same node reference", () => {

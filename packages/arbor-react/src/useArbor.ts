@@ -1,4 +1,4 @@
-import Arbor, { INode } from "@arborjs/store"
+import type Arbor from "@arborjs/store"
 import { useEffect, useState } from "react"
 
 /**
@@ -31,27 +31,19 @@ import { useEffect, useState } from "react"
  * @param store an instance of the Arbor state tree.
  * @returns the current state of the Arbor state tree.
  */
-export default function useArbor<T extends object, S extends object = T>(
+export default function useArbor<T extends object, S = T>(
   store: Arbor<T>,
   selector = (root: T): S => root as unknown as S
 ) {
-  const value = selector(store.root)
-  const [state, setState] = useState(value)
+  const [state, setState] = useState(selector(store.root))
 
   useEffect(() => {
-    setState(value)
-  }, [value])
+    setState(selector(store.root))
+  }, [selector])
 
   useEffect(
-    () =>
-      store.subscribe((newState) => {
-        const node = value as INode<S>
-        const newNode = node?.$path.walk(newState)
-        if (newNode !== node) {
-          setState(newNode as S)
-        }
-      }),
-    [store, value]
+    () => store.subscribe(() => setState(selector(store.root))),
+    [selector, store]
   )
 
   return state
