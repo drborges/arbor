@@ -1,10 +1,9 @@
 import React, { SyntheticEvent } from "react"
 
+import { add } from "../store/useTodos"
 import useNewTodo from "../store/useNewTodo"
-import useTodos from "../store/useTodos"
 
 export default function NewTodoForm() {
-  const { add } = useTodos()
   const { input } = useNewTodo()
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()

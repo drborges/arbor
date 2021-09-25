@@ -1,5 +1,5 @@
 import classnames from "classnames"
-import React, { ChangeEvent } from "react"
+import React, { ChangeEvent, memo } from "react"
 
 import { isTodoCompleted, Todo } from "../store/useTodos"
 
@@ -8,7 +8,7 @@ export interface TodoProps {
   onRemove: () => void
 }
 
-export default function TodoView({ todo, onRemove }: TodoProps) {
+export default memo(function TodoView({ todo, onRemove }: TodoProps) {
   const completed = isTodoCompleted(todo)
   const handleToggleTodo = (e: ChangeEvent<HTMLInputElement>) => {
     todo.status = e.target.checked ? "completed" : "incompleted"
@@ -28,4 +28,4 @@ export default function TodoView({ todo, onRemove }: TodoProps) {
       </button>
     </div>
   )
-}
+})
