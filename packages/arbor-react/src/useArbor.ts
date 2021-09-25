@@ -1,6 +1,5 @@
-import type Arbor from "@arborjs/store"
-import { INode } from "@arborjs/store"
-import { useEffect, useMemo, useState } from "react"
+import Arbor, { INode } from "@arborjs/store"
+import { useEffect, useState } from "react"
 
 /**
  * This hook binds a React component to a given Arbor store.
