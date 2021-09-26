@@ -12,9 +12,7 @@ export default function Summary() {
 
   return (
     <div className="summary">
-      <small>
-        {completed} of {total} completed
-      </small>
+      {completed} of {total} completed
     </div>
   )
 }

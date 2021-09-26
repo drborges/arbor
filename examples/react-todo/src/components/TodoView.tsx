@@ -1,5 +1,5 @@
 import classnames from "classnames"
-import React, { ChangeEvent, memo } from "react"
+import React, { ChangeEvent, memo, useRef, useState } from "react"
 
 import { isTodoCompleted, Todo } from "../store/useTodos"
 
@@ -9,6 +9,8 @@ export interface TodoProps {
 }
 
 export default memo(function TodoView({ todo, onRemove }: TodoProps) {
+  const editInputRef = useRef<HTMLInputElement>()
+  const [editing, setEditing] = useState(false)
   const completed = isTodoCompleted(todo)
   const handleToggleTodo = (e: ChangeEvent<HTMLInputElement>) => {
     todo.status = e.target.checked ? "completed" : "incompleted"
@@ -22,9 +24,25 @@ export default memo(function TodoView({ todo, onRemove }: TodoProps) {
         checked={completed}
         onChange={handleToggleTodo}
       />
-      <label htmlFor={todo.id}>{todo.text}</label>
+      {editing && (
+        <input
+          autoFocus
+          type="text"
+          value={todo.text}
+          onBlur={() => setEditing(false)}
+          onChange={(e) => (todo.text = e.target.value)}
+        />
+      )}
+      {!editing && <label htmlFor={todo.id}>{todo.text}</label>}
+      <button
+        className="edit-btn"
+        type="button"
+        onClick={() => setEditing(!editing)}
+      >
+        ✏️
+      </button>
       <button type="button" onClick={onRemove}>
-        Remove
+        ❌
       </button>
     </div>
   )
