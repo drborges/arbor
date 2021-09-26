@@ -1,5 +1,6 @@
 import { Node, IStateTree } from "./types"
 import Path from "./Path"
+import Model from "./Model"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
 
@@ -16,7 +17,11 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   }
 
   $clone(): Node<T> {
-    return this.$tree.createNode(this.$path, { ...this.$value }, this.$children)
+    const clone =
+      this.$value instanceof Model
+        ? (this.$value as Model<T>).$clone()
+        : { ...this.$value }
+    return this.$tree.createNode(this.$path, clone, this.$children)
   }
 
   $flush(): void {

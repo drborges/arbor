@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
 import Arbor from "./Arbor"
+import Model from "./Model"
 import { warmup } from "./test.helpers"
-
-type User = {
-  name: string
-}
 
 describe("Arbor", () => {
   describe("#root", () => {
@@ -13,7 +10,7 @@ describe("Arbor", () => {
       const initialState = {
         users: [{ name: "User 1" }, { name: "User 2" }],
       }
-      const store = new Arbor<{ users: User[] }>(initialState)
+      const store = new Arbor(initialState)
 
       const node = store.root
 
@@ -22,11 +19,16 @@ describe("Arbor", () => {
   })
 
   describe("#setRoot", () => {
+    interface IUser {
+      name: string
+    }
+
     it("sets a value as the root of the store", () => {
       const initialState = {
         users: [{ name: "User 1" }, { name: "User 2" }],
       }
-      const store = new Arbor<{ users: User[] }>()
+
+      const store = new Arbor<{ users: IUser[] }>()
       const node = store.setRoot(initialState)
 
       const nodeFromCache = store.root
@@ -38,12 +40,12 @@ describe("Arbor", () => {
 
   describe("Path walking", () => {
     it("walks a proxied path", () => {
-      const path = Path.parse("/users/1")
-      const store = new Arbor<{ users: User[] }>({
+      const store = new Arbor({
         users: [{ name: "User 1" }, { name: "User 2" }],
       })
 
-      expect(path.walk(store.root)).toBe(store.root.users[1])
+      expect(Path.root.walk(store.root)).toBe(store.root)
+      expect(Path.parse("/users/1").walk(store.root)).toBe(store.root.users[1])
     })
   })
 
@@ -53,7 +55,7 @@ describe("Arbor", () => {
         users: [{ name: "User 1" }],
       }
 
-      const store = new Arbor<{ users: User[] }>(initialState)
+      const store = new Arbor(initialState)
 
       return new Promise((resolve) => {
         store.subscribe((newState, oldState) => {
@@ -134,6 +136,80 @@ describe("Arbor", () => {
       expect(user1.name).toEqual("User 2")
       expect(user2.name).toEqual("User 3")
       expect(store.root).toEqual([{ name: "User 2" }, { name: "User 3" }])
+    })
+  })
+
+  describe("custom data model", () => {
+    class User extends Model<User> {
+      firstName: string
+
+      lastName: string
+
+      active = true
+
+      activate() {
+        this.active = true
+      }
+
+      inactivate() {
+        this.active = false
+      }
+
+      get fullName() {
+        return `${this.firstName} ${this.lastName}`
+      }
+    }
+
+    it("supports user defined data models", () => {
+      const store = new Arbor<User[]>([
+        new User({
+          firstName: "User 1 First Name",
+          lastName: "User 1 Last Name",
+        }),
+        new User({
+          firstName: "User 2 First Name",
+          lastName: "User 2 Last Name",
+        }),
+      ])
+
+      const user1 = store.root[0]
+      const user2 = store.root[1]
+
+      store.root[0].firstName = "User 1 Updated First Name"
+
+      expect(user1).not.toBe(store.root[0])
+      expect(user2).toBe(store.root[1])
+      expect(store.root).toEqual([
+        new User({
+          firstName: "User 1 Updated First Name",
+          lastName: "User 1 Last Name",
+        }),
+        new User({
+          firstName: "User 2 First Name",
+          lastName: "User 2 Last Name",
+        }),
+      ])
+    })
+
+    it.only("can encasupate mutation logic", () => {
+      const store = new Arbor<User[]>([
+        new User({
+          firstName: "User 1 First Name",
+          lastName: "User 1 Last Name",
+        }),
+      ])
+
+      let user = store.root[0]
+      store.root[0].inactivate()
+
+      expect(store.root[0]).not.toBe(user)
+      expect(store.root[0].active).toBe(false)
+
+      user = store.root[0]
+      store.root[0].activate()
+
+      expect(store.root[0]).not.toBe(user)
+      expect(store.root[0].active).toBe(true)
     })
   })
 })
