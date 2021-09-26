@@ -140,76 +140,60 @@ describe("Arbor", () => {
   })
 
   describe("custom data model", () => {
-    class User extends Model<User> {
-      firstName: string
+    class Todo extends Model<Todo> {
+      id: string
+      text: string
+      completed = false
 
-      lastName: string
-
-      active = true
+      complete() {
+        this.completed = true
+      }
 
       activate() {
-        this.active = true
+        this.completed = false
       }
 
-      inactivate() {
-        this.active = false
-      }
-
-      get fullName() {
-        return `${this.firstName} ${this.lastName}`
+      get status() {
+        return this.completed ? "Completed" : "Active"
       }
     }
 
     it("supports user defined data models", () => {
-      const store = new Arbor<User[]>([
-        new User({
-          firstName: "User 1 First Name",
-          lastName: "User 1 Last Name",
-        }),
-        new User({
-          firstName: "User 2 First Name",
-          lastName: "User 2 Last Name",
-        }),
+      const store = new Arbor([
+        new Todo({ text: "Do the dishes", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
       ])
 
-      const user1 = store.root[0]
-      const user2 = store.root[1]
+      const todo1 = store.root[0]
+      const todo2 = store.root[1]
 
-      store.root[0].firstName = "User 1 Updated First Name"
+      todo1.text = "Walk the dog"
 
-      expect(user1).not.toBe(store.root[0])
-      expect(user2).toBe(store.root[1])
+      expect(todo1).not.toBe(store.root[0])
+      expect(todo2).toBe(store.root[1])
       expect(store.root).toEqual([
-        new User({
-          firstName: "User 1 Updated First Name",
-          lastName: "User 1 Last Name",
-        }),
-        new User({
-          firstName: "User 2 First Name",
-          lastName: "User 2 Last Name",
-        }),
+        new Todo({ text: "Walk the dog", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
       ])
     })
 
-    it.only("can encasupate mutation logic", () => {
-      const store = new Arbor<User[]>([
-        new User({
-          firstName: "User 1 First Name",
-          lastName: "User 1 Last Name",
-        }),
+    it("can encasupate mutation logic", () => {
+      const store = new Arbor([
+        new Todo({ text: "Do the dishes", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
       ])
 
-      let user = store.root[0]
-      store.root[0].inactivate()
+      let todo = store.root[0]
+      store.root[0].complete()
 
-      expect(store.root[0]).not.toBe(user)
-      expect(store.root[0].active).toBe(false)
+      expect(store.root[0]).not.toBe(todo)
+      expect(store.root[0].completed).toBe(true)
 
-      user = store.root[0]
+      todo = store.root[0]
       store.root[0].activate()
 
-      expect(store.root[0]).not.toBe(user)
-      expect(store.root[0].active).toBe(true)
+      expect(store.root[0]).not.toBe(todo)
+      expect(store.root[0].completed).toBe(false)
     })
   })
 })
