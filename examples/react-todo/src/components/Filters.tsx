@@ -21,6 +21,18 @@ export default function Filters() {
 
       <div className="filter">
         <input
+          id="filter-incompleted"
+          type="radio"
+          name="filter"
+          checked={current === "incompleted"}
+          onChange={(e) => select(e.target.value as Filter)}
+          value="incompleted"
+        />
+        <label htmlFor="filter-incompleted">Active</label>
+      </div>
+
+      <div className="filter">
+        <input
           id="filter-completed"
           type="radio"
           name="filter"
@@ -29,18 +41,6 @@ export default function Filters() {
           value="completed"
         />
         <label htmlFor="filter-completed">Completed</label>
-      </div>
-
-      <div className="filter">
-        <input
-          id="filter-incompleted"
-          type="radio"
-          name="filter"
-          checked={current === "incompleted"}
-          onChange={(e) => select(e.target.value as Filter)}
-          value="incompleted"
-        />
-        <label htmlFor="filter-incompleted">Incompleted</label>
       </div>
     </div>
   )

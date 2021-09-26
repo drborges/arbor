@@ -22,10 +22,6 @@ h1 {
   align-items: center;
 }
 
-.app * {
-  margin: 2px;
-}
-
 .body {
   margin: 20px;
   padding: 10px;
@@ -95,8 +91,13 @@ form > input[type="text"] {
 
 input,
 button {
+  margin: 2px;
   border: thin solid #ddd;
   border-radius: 3px;
+}
+
+button:hover {
+  background-color: white;
 }
 
 input[type="radio"],
@@ -112,13 +113,12 @@ input[type="radio"] {
 }
 
 input[type="radio"] ~ label {
-  opacity: 0.2;
-  padding: 0;
+  padding: 5px 10px;
 }
 
 input[type="radio"]:checked ~ label {
-  opacity: 1;
-  text-decoration: underline;
+  border: thin solid #aaa;
+  border-radius: 3px;
 }
 
 .todo-form,
@@ -131,11 +131,18 @@ input[type="radio"]:checked ~ label {
 }
 
 .footer {
+  opacity: 0.5;
+  margin: 10px 2px;
   margin-top: 20px;
+  font-size: 12px;
 }
 
 .footer > .filters {
   flex-grow: 1;
   display: flex;
   justify-content: flex-end;
+}
+
+.edit-btn {
+  transform: rotateY(180deg);
 }

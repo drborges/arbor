@@ -34,11 +34,15 @@ export default memo(function TodoView({ todo, onRemove }: TodoProps) {
         />
       )}
       {!editing && <label htmlFor={todo.id}>{todo.text}</label>}
-      <button type="button" onClick={() => setEditing(!editing)}>
+      <button
+        className="edit-btn"
+        type="button"
+        onClick={() => setEditing(!editing)}
+      >
         ✏️
       </button>
       <button type="button" onClick={onRemove}>
-        ⤫
+        ❌
       </button>
     </div>
   )
