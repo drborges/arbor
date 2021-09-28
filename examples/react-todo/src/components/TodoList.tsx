@@ -10,8 +10,15 @@ export default function TodoList() {
 
   return (
     <div className="todo-list">
-      {filter(todos).map((todo, i) => (
-        <TodoView key={todo.id} todo={todo} onRemove={() => delete todos[i]} />
+      {filter(todos).map((todo) => (
+        <TodoView
+          key={todo.id}
+          todo={todo}
+          onRemove={() => {
+            const index = todos.findIndex((t) => t.id === todo.id)
+            delete todos[index]
+          }}
+        />
       ))}
     </div>
   )

@@ -10,7 +10,6 @@ h1 {
   font-weight: 100;
   font-size: 7em;
   opacity: 0.2;
-  line-height: 1.4em;
 }
 
 .app {
@@ -18,12 +17,10 @@ h1 {
   flex-direction: column;
   width: 100vw;
   height: 100vh;
-  padding-top: 50px;
   align-items: center;
 }
 
 .body {
-  margin: 20px;
   padding: 10px;
   position: relative;
   border-radius: 3px;
@@ -47,6 +44,10 @@ h1 {
 
 .todo-form > form {
   flex-grow: 1;
+}
+
+.todo-form button {
+  width: 74px;
 }
 
 form {
@@ -83,6 +84,7 @@ form > input[type="text"] {
   width: 35px;
   height: 35px;
 }
+
 .todo-view input[type="text"] {
   flex-grow: 1;
   padding: 8px 10px;
@@ -92,8 +94,8 @@ form > input[type="text"] {
 input,
 button {
   margin: 2px;
-  border: thin solid #ddd;
   border-radius: 3px;
+  border: thin solid #ddd;
 }
 
 button:hover {
@@ -113,6 +115,7 @@ input[type="radio"] {
 }
 
 input[type="radio"] ~ label {
+  border: thin solid #fff;
   padding: 5px 10px;
 }
 
