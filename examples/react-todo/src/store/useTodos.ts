@@ -1,26 +1,40 @@
 import { v4 as uuid } from "uuid"
 import Arbor, { useArbor } from "@arborjs/react"
 
-export interface Todo {
-  id: string
-  text: string
-  status: "completed" | "incompleted"
-}
+export type Status = "completed" | "incompleted"
 
-export interface TodoData {
-  text: string
+export class Todo {
+  id!: string
+  text!: string
+  status: Status = "incompleted"
+
+  static from(props: Partial<Todo>) {
+    return Object.assign(new Todo(), props)
+  }
+
+  toggle() {
+    this.status = this.completed ? "incompleted" : "completed"
+  }
+
+  get completed() {
+    return this.status === "completed"
+  }
+
+  $clone() {
+    return Todo.from(this)
+  }
 }
 
 export const store = new Arbor<Todo[]>([])
 
-export const isTodoCompleted = (todo: Todo) => todo.status === "completed"
-
-export const add = ({ text }: TodoData) => {
-  store.root.push({
-    id: uuid(),
-    text,
-    status: "incompleted",
-  })
+export const add = (text: string) => {
+  store.root.push(
+    Todo.from({
+      id: uuid(),
+      text,
+      status: "incompleted",
+    })
+  )
 }
 
 export default function useTodos() {

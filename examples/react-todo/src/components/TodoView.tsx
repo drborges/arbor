@@ -1,7 +1,7 @@
 import classnames from "classnames"
-import React, { ChangeEvent, memo, useRef, useState } from "react"
+import React, { memo, useState } from "react"
 
-import { isTodoCompleted, Todo } from "../store/useTodos"
+import { Todo } from "../store/useTodos"
 
 export interface TodoProps {
   todo: Todo
@@ -9,20 +9,15 @@ export interface TodoProps {
 }
 
 export default memo(function TodoView({ todo, onRemove }: TodoProps) {
-  const editInputRef = useRef<HTMLInputElement>()
   const [editing, setEditing] = useState(false)
-  const completed = isTodoCompleted(todo)
-  const handleToggleTodo = (e: ChangeEvent<HTMLInputElement>) => {
-    todo.status = e.target.checked ? "completed" : "incompleted"
-  }
 
   return (
-    <div className={classnames("todo-view", { completed })}>
+    <div className={classnames("todo-view", { completed: todo.completed })}>
       <input
         id={todo.id}
         type="checkbox"
-        checked={completed}
-        onChange={handleToggleTodo}
+        checked={todo.completed}
+        onChange={todo.toggle}
       />
       {editing && (
         <input

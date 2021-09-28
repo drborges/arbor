@@ -1,3 +1,5 @@
+import clonable from "./clonable"
+
 /**
  * Checks whether or not a given value can be proxied by Arbor.
  *
@@ -7,5 +9,10 @@
  * @returns true if the given value can be proxied, false otherwise.
  */
 export default function proxiable<T>(value: T): boolean {
-  return value != null && (Array.isArray(value) || value.constructor === Object)
+  return (
+    value != null &&
+    (Array.isArray(value) ||
+      clonable(value as unknown as object) ||
+      value.constructor === Object)
+  )
 }

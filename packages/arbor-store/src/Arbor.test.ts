@@ -3,17 +3,13 @@ import Path from "./Path"
 import Arbor from "./Arbor"
 import { warmup } from "./test.helpers"
 
-type User = {
-  name: string
-}
-
 describe("Arbor", () => {
   describe("#root", () => {
     it("retrieves the root node", () => {
       const initialState = {
         users: [{ name: "User 1" }, { name: "User 2" }],
       }
-      const store = new Arbor<{ users: User[] }>(initialState)
+      const store = new Arbor(initialState)
 
       const node = store.root
 
@@ -22,11 +18,16 @@ describe("Arbor", () => {
   })
 
   describe("#setRoot", () => {
+    interface IUser {
+      name: string
+    }
+
     it("sets a value as the root of the store", () => {
       const initialState = {
         users: [{ name: "User 1" }, { name: "User 2" }],
       }
-      const store = new Arbor<{ users: User[] }>()
+
+      const store = new Arbor<{ users: IUser[] }>()
       const node = store.setRoot(initialState)
 
       const nodeFromCache = store.root
@@ -38,12 +39,12 @@ describe("Arbor", () => {
 
   describe("Path walking", () => {
     it("walks a proxied path", () => {
-      const path = Path.parse("/users/1")
-      const store = new Arbor<{ users: User[] }>({
+      const store = new Arbor({
         users: [{ name: "User 1" }, { name: "User 2" }],
       })
 
-      expect(path.walk(store.root)).toBe(store.root.users[1])
+      expect(Path.root.walk(store.root)).toBe(store.root)
+      expect(Path.parse("/users/1").walk(store.root)).toBe(store.root.users[1])
     })
   })
 
@@ -53,7 +54,7 @@ describe("Arbor", () => {
         users: [{ name: "User 1" }],
       }
 
-      const store = new Arbor<{ users: User[] }>(initialState)
+      const store = new Arbor(initialState)
 
       return new Promise((resolve) => {
         store.subscribe((newState, oldState) => {
@@ -134,6 +135,75 @@ describe("Arbor", () => {
       expect(user1.name).toEqual("User 2")
       expect(user2.name).toEqual("User 3")
       expect(store.root).toEqual([{ name: "User 2" }, { name: "User 3" }])
+    })
+  })
+
+  describe("custom data model", () => {
+    class Todo {
+      id!: string
+      text!: string
+      completed = false
+
+      static from(props: Partial<Todo>) {
+        return Object.assign(new Todo(), props)
+      }
+
+      complete() {
+        this.completed = true
+      }
+
+      activate() {
+        this.completed = false
+      }
+
+      get status() {
+        return this.completed ? "Completed" : "Active"
+      }
+
+      $clone() {
+        return Todo.from(this)
+      }
+    }
+
+    it("supports user defined data models", () => {
+      const store = new Arbor([
+        Todo.from({ text: "Do the dishes", completed: false }),
+        Todo.from({ text: "Clean the house", completed: true }),
+      ])
+
+      const todo1 = store.root[0]
+      const todo2 = store.root[1]
+
+      expect(todo1.status).toEqual("Active")
+      expect(todo2.status).toEqual("Completed")
+
+      todo1.text = "Walk the dog"
+
+      expect(todo1).not.toBe(store.root[0])
+      expect(todo2).toBe(store.root[1])
+      expect(store.root).toEqual([
+        Todo.from({ text: "Walk the dog", completed: false }),
+        Todo.from({ text: "Clean the house", completed: true }),
+      ])
+    })
+
+    it("can encasupate mutation logic", () => {
+      const store = new Arbor([
+        Todo.from({ text: "Do the dishes", completed: false }),
+        Todo.from({ text: "Clean the house", completed: true }),
+      ])
+
+      let todo = store.root[0]
+      store.root[0].complete()
+
+      expect(store.root[0]).not.toBe(todo)
+      expect(store.root[0].completed).toBe(true)
+
+      todo = store.root[0]
+      store.root[0].activate()
+
+      expect(store.root[0]).not.toBe(todo)
+      expect(store.root[0].completed).toBe(false)
     })
   })
 })

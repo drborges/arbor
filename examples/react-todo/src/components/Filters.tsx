@@ -1,47 +1,35 @@
-import React from "react"
+import React, { ChangeEvent } from "react"
 
-import useTodosFilter, { Filter } from "../store/useTodosFilter"
+import useTodosFilter, { FilterValue } from "../store/useTodosFilter"
+import Filter from "./Filter"
 
 export default function Filters() {
   const { current, select } = useTodosFilter()
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
+    select(e.target.value as FilterValue)
 
   return (
     <div className="filters">
-      <div className="filter">
-        <input
-          id="filter-all"
-          type="radio"
-          name="filter"
-          checked={current === "all"}
-          onChange={(e) => select(e.target.value as Filter)}
-          value="all"
-        />
-        <label htmlFor="filter-all">All</label>
-      </div>
+      <Filter
+        label="All"
+        onChange={handleChange}
+        selected={current === "all"}
+        value="all"
+      />
 
-      <div className="filter">
-        <input
-          id="filter-incompleted"
-          type="radio"
-          name="filter"
-          checked={current === "incompleted"}
-          onChange={(e) => select(e.target.value as Filter)}
-          value="incompleted"
-        />
-        <label htmlFor="filter-incompleted">Active</label>
-      </div>
+      <Filter
+        label="Active"
+        onChange={handleChange}
+        selected={current === "incompleted"}
+        value="incompleted"
+      />
 
-      <div className="filter">
-        <input
-          id="filter-completed"
-          type="radio"
-          name="filter"
-          checked={current === "completed"}
-          onChange={(e) => select(e.target.value as Filter)}
-          value="completed"
-        />
-        <label htmlFor="filter-completed">Completed</label>
-      </div>
+      <Filter
+        label="Completed"
+        onChange={handleChange}
+        selected={current === "completed"}
+        value="completed"
+      />
     </div>
   )
 }

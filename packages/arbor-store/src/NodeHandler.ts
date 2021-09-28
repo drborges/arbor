@@ -2,6 +2,7 @@ import { Node, IStateTree } from "./types"
 import Path from "./Path"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
+import clonable, { Clonable } from "./clonable"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
@@ -16,7 +17,12 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   }
 
   $clone(): Node<T> {
-    return this.$tree.createNode(this.$path, { ...this.$value }, this.$children)
+    const clonableValue = this.$value as Clonable<T>
+    const clone = clonable(this.$value)
+      ? clonableValue.$clone()
+      : { ...this.$value }
+
+    return this.$tree.createNode(this.$path, clone, this.$children)
   }
 
   $flush(): void {
@@ -33,6 +39,10 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
 
     const childValue = Reflect.get(target, prop, proxy)
 
+    if (typeof childValue === "function") {
+      return childValue.bind(proxy)
+    }
+
     if (!proxiable(childValue)) {
       return childValue
     }
@@ -42,7 +52,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
       : this.$createChildNode(prop, childValue)
   }
 
-  set(target: T, prop: string, newValue: any): boolean {
+  set(_target: T, prop: string, newValue: any): boolean {
     this.$tree.mutate(this.$path, (t: T) => {
       t[prop] = newValue
     })
