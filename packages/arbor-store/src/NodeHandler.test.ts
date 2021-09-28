@@ -28,7 +28,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       const node = new Proxy(
         state,
@@ -51,7 +51,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       const node = new Proxy(
         state,
@@ -67,6 +67,23 @@ describe("NodeHandler", () => {
       expect(node.users[0]).toBe(node.users[0])
       expect(node.users[1]).toBe(node.users[1])
     })
+
+    it("binds function properties to the proxy itseld", () => {
+      const tree = new Arbor({
+        id: 1,
+        text: "Clean the house",
+        completed: false,
+        complete() {
+          this.completed = true
+        },
+      })
+
+      const complete = tree.root.complete
+      // function props are automatically bound to the proxy instance
+      complete()
+
+      expect(tree.root.completed).toBe(true)
+    })
   })
 
   describe("set trap", () => {
@@ -78,7 +95,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       tree.root.users[0].name = "User 1 Updated"
 
@@ -93,7 +110,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
       const root = tree.root
 
       tree.root.users[0].name = "User 1 Updated"
@@ -128,7 +145,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
       const root = tree.root
       const users = root.users
       const user1 = users[0]
@@ -154,7 +171,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       tree.root.users[0].name = "User 1 Updated"
 
@@ -175,7 +192,7 @@ describe("NodeHandler", () => {
           ],
         }
 
-        const tree = new Arbor<State>(state, { mode: MutationMode.FORGIVEN })
+        const tree = new Arbor(state, { mode: MutationMode.FORGIVEN })
         const root = tree.root
 
         tree.root.users[0].name = "User 1 Updated"
@@ -213,7 +230,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
       const root = tree.root
 
       delete tree.root.users[0].address
@@ -248,7 +265,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
       const root = tree.root
       const users = root.users
       const user1 = users[0]
@@ -271,7 +288,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       delete tree.root.users[0].address
 
@@ -309,7 +326,7 @@ describe("NodeHandler", () => {
           ],
         }
 
-        const tree = new Arbor<State>(state, { mode: MutationMode.FORGIVEN })
+        const tree = new Arbor(state, { mode: MutationMode.FORGIVEN })
         const root = tree.root
 
         delete tree.root.users[0].address
@@ -347,7 +364,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       const node = new Proxy(
         state,
@@ -370,7 +387,7 @@ describe("NodeHandler", () => {
         ],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       const node = new Proxy(
         state,
@@ -390,7 +407,7 @@ describe("NodeHandler", () => {
         users: [{ name: "User 1", address: { street: "Street 1" } }],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
 
       const node = new Proxy(
         state,
@@ -415,7 +432,7 @@ describe("NodeHandler", () => {
         users: [{ name: "User 1", address: { street: "Street 1" } }],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
       const node = new Proxy(
         state,
         new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
@@ -436,7 +453,7 @@ describe("NodeHandler", () => {
         users: [{ name: "User 1", address: { street: "Street 1" } }],
       }
 
-      const tree = new Arbor<State>(state)
+      const tree = new Arbor(state)
       const node = new Proxy(
         state,
         new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
