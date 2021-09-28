@@ -21,6 +21,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     const clone = clonable(this.$value)
       ? clonableValue.$clone()
       : { ...this.$value }
+
     return this.$tree.createNode(this.$path, clone, this.$children)
   }
 

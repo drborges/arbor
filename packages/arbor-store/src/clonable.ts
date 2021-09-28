@@ -3,6 +3,6 @@ export interface Clonable<T extends object> {
 }
 
 export default function clonable<T extends object>(value: T): boolean {
-  const clonable = value as Clonable<T>
-  return typeof clonable?.$clone === "function"
+  const clonableValue = value as Clonable<T>
+  return typeof clonableValue?.$clone === "function"
 }
