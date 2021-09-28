@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
 import Arbor from "./Arbor"
-import Model from "./Model"
 import { warmup } from "./test.helpers"
 
 describe("Arbor", () => {
@@ -140,10 +139,14 @@ describe("Arbor", () => {
   })
 
   describe("custom data model", () => {
-    class Todo extends Model<Todo> {
-      id: string
-      text: string
+    class Todo {
+      id!: string
+      text!: string
       completed = false
+
+      static from(props: Partial<Todo>) {
+        return Object.assign(new Todo(), props)
+      }
 
       complete() {
         this.completed = true
@@ -156,31 +159,38 @@ describe("Arbor", () => {
       get status() {
         return this.completed ? "Completed" : "Active"
       }
+
+      $clone() {
+        return Todo.from(this)
+      }
     }
 
     it("supports user defined data models", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from({ text: "Do the dishes", completed: false }),
+        Todo.from({ text: "Clean the house", completed: true }),
       ])
 
       const todo1 = store.root[0]
       const todo2 = store.root[1]
+
+      expect(todo1.status).toEqual("Active")
+      expect(todo2.status).toEqual("Completed")
 
       todo1.text = "Walk the dog"
 
       expect(todo1).not.toBe(store.root[0])
       expect(todo2).toBe(store.root[1])
       expect(store.root).toEqual([
-        new Todo({ text: "Walk the dog", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from({ text: "Walk the dog", completed: false }),
+        Todo.from({ text: "Clean the house", completed: true }),
       ])
     })
 
     it("can encasupate mutation logic", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from({ text: "Do the dishes", completed: false }),
+        Todo.from({ text: "Clean the house", completed: true }),
       ])
 
       let todo = store.root[0]

@@ -1,4 +1,4 @@
-import Model from "./Model"
+import { isClonable } from "./Clonable"
 
 /**
  * Checks whether or not a given value can be proxied by Arbor.
@@ -12,7 +12,7 @@ export default function proxiable<T>(value: T): boolean {
   return (
     value != null &&
     (Array.isArray(value) ||
-      value instanceof Model ||
+      isClonable(value as unknown as object) ||
       value.constructor === Object)
   )
 }

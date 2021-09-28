@@ -3,6 +3,7 @@ import Path from "./Path"
 import Model from "./Model"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
+import { Clonable, isClonable } from "./Clonable"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
@@ -17,10 +18,10 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   }
 
   $clone(): Node<T> {
-    const clone =
-      this.$value instanceof Model
-        ? (this.$value as Model<T>).$clone()
-        : { ...this.$value }
+    const clonable = this.$value as Clonable<T>
+    const clone = isClonable(this.$value)
+      ? clonable.$clone()
+      : { ...this.$value }
     return this.$tree.createNode(this.$path, clone, this.$children)
   }
 
