@@ -2,7 +2,7 @@ import { Node, IStateTree } from "./types"
 import Path from "./Path"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
-import { Clonable, isClonable } from "./Clonable"
+import clonable, { Clonable } from "./clonable"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
@@ -17,9 +17,9 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   }
 
   $clone(): Node<T> {
-    const clonable = this.$value as Clonable<T>
-    const clone = isClonable(this.$value)
-      ? clonable.$clone()
+    const clonableValue = this.$value as Clonable<T>
+    const clone = clonable(this.$value)
+      ? clonableValue.$clone()
       : { ...this.$value }
     return this.$tree.createNode(this.$path, clone, this.$children)
   }
