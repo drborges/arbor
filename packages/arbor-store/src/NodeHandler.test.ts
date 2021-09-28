@@ -401,31 +401,6 @@ describe("NodeHandler", () => {
     })
   })
 
-  describe("#$flush", () => {
-    it("resets the node's children cache", () => {
-      const state = {
-        users: [{ name: "User 1", address: { street: "Street 1" } }],
-      }
-
-      const tree = new Arbor(state)
-
-      const node = new Proxy(
-        state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
-      ) as Node<State>
-
-      // Warms up the cache: this will cache the 'users' child node
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      node.users
-
-      expect(node.$children.has(state.users)).toBe(true)
-
-      node.$flush()
-
-      expect(node.$children.has(state.users)).toBe(false)
-    })
-  })
-
   describe("#$clone", () => {
     it("returns a shallow copy of the node", () => {
       const state = {
