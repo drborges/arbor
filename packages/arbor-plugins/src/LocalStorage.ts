@@ -1,10 +1,11 @@
 import type { IStateTree, Plugin } from "@arborjs/store"
+
 import debounce from "./debounce"
 
 /**
  * Describes a LocaStorage configuration object.
  */
-export interface Config {
+export interface Config<T extends object> {
   key: string
 
   /**
@@ -13,7 +14,14 @@ export interface Config {
    * This can be used to reduce the frequency in which data is written
    * back to local storage.
    */
-  debounceBy: number
+  debounceBy?: number
+
+  /**
+   * Used to deserialize the data retrieved from local storage.
+   *
+   * This can be used to convert plain objects into user defined data models.
+   */
+  deserialize?: (data: T) => T
 }
 
 /**
@@ -30,7 +38,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
    *
    * @param key the key to be used in LocalStorage to reference the serialized state.
    */
-  constructor(readonly config: Config) {
+  constructor(readonly config: Config<T>) {
     this.deboucedUpdate = debounce((data: T) => {
       window.localStorage.setItem(this.config.key, JSON.stringify(data))
     }, config.debounceBy)
@@ -38,10 +46,12 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
 
   async configure(store: IStateTree<T>) {
     const data = await this.load()
+    const deserialize = this.config.deserialize || (() => data)
+    const deserialized = deserialize(data)
 
-    if (data && typeof data === "object") {
+    if (deserialized && typeof deserialized === "object") {
       const oldState = store.root.$unwrap()
-      const root = store.setRoot(data)
+      const root = store.setRoot(deserialized)
       store.notify(root, oldState)
     }
 
