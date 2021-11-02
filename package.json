@@ -3,6 +3,7 @@
   "workspaces": [
     "packages/arbor-store",
     "packages/arbor-react",
+    "packages/arbor-repository",
     "packages/arbor-plugins",
     "examples/**"
   ],

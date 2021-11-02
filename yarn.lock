@@ -22,7 +22,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@arborjs/react@workspace:packages/arbor-react":
+"@arborjs/react@0.0.1-alpha.3, @arborjs/react@workspace:packages/arbor-react":
   version: 0.0.0-use.local
   resolution: "@arborjs/react@workspace:packages/arbor-react"
   dependencies:
@@ -40,6 +40,34 @@ __metadata:
     ts-jest: ^26.5.6
     typescript: ^4.2.4
   peerDependencies:
+    "@arborjs/store": 0.0.1-alpha.3
+    react: ^17.0.2
+    react-dom: ^17.0.2
+  languageName: unknown
+  linkType: soft
+
+"@arborjs/repository@workspace:packages/arbor-repository":
+  version: 0.0.0-use.local
+  resolution: "@arborjs/repository@workspace:packages/arbor-repository"
+  dependencies:
+    "@arborjs/react": 0.0.1-alpha.3
+    "@arborjs/store": 0.0.1-alpha.3
+    "@testing-library/react-hooks": ^7.0.0
+    "@types/jest": ^26.0.23
+    "@types/react": 17.0.15
+    "@types/react-dom": 17.0.2
+    "@types/uuid": ^8.3.1
+    esbuild: ^0.12.12
+    eslint: ^7.32.0
+    jest: ^26.6.3
+    np: ^7.5.0
+    react: ^17.0.2
+    react-test-renderer: ^17.0.2
+    ts-jest: ^26.5.6
+    typescript: ^4.2.4
+    uuid: ^8.3.2
+  peerDependencies:
+    "@arborjs/react": 0.0.1-alpha.3
     "@arborjs/store": 0.0.1-alpha.3
     react: ^17.0.2
     react-dom: ^17.0.2
