@@ -130,8 +130,10 @@ export default class Arbor<T extends object> implements IStateTree {
    * @returns the root node.
    */
   setRoot(value: T): Node<T> {
+    const oldRoot = this.root?.$unwrap()
     const node = this.createNode(Path.root, value)
     this.#root = node as Node<T>
+    this.notify(node, oldRoot)
     return node
   }
 
