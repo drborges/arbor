@@ -7,7 +7,12 @@
     "prefer-destructuring": "off",
     "no-plusplus": "off",
     "no-param-reassign": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
     "import/prefer-default-export": "off",
+    "class-methods-use-this": "off",
     "@typescript-eslint/lines-between-class-members": "off"
   }
 }

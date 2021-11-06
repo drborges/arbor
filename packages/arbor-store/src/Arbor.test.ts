@@ -35,6 +35,22 @@ describe("Arbor", () => {
       expect(nodeFromCache).toBe(node)
       expect(nodeFromCache.users[1].name).toEqual("User 2")
     })
+
+    it("notifies subscribers about the new state", () => {
+      const initialState = {
+        users: [{ name: "User 1" }],
+      }
+
+      const newState = {
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      }
+
+      const store = new Arbor<{ users: IUser[] }>(initialState)
+      store.notify = jest.fn(store.notify)
+      const newRoot = store.setRoot(newState)
+
+      expect(store.notify).toHaveBeenCalledWith(newRoot, initialState)
+    })
   })
 
   describe("Path walking", () => {
