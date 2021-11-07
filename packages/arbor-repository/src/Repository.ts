@@ -23,7 +23,7 @@ export default class Repository<T extends object> {
 
   constructor(
     storeOrInitialValue: Arbor<IRepository<T>> | IRepository<T>,
-    readonly uuid: () => string = v4
+    private readonly uuid: () => string = v4
   ) {
     this.store =
       storeOrInitialValue instanceof Arbor
