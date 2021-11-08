@@ -11,8 +11,8 @@ import {
   Unsubscribe,
 } from "./types"
 import NodeCache from "./NodeCache"
-import NodeArrayHandler from "./NodeArrayHandler"
 import NodeHandler from "./NodeHandler"
+import NodeArrayHandler from "./NodeArrayHandler"
 
 /**
  * Implements the Arbor state tree abstraction
@@ -29,7 +29,7 @@ import NodeHandler from "./NodeHandler"
  * ```
  *
  */
-export default class Arbor<T extends object> implements IStateTree {
+export default class Arbor<T extends object = {}> implements IStateTree {
   /**
    * Controls whether or not Arbor should propagate mutation side-effects
    * to the original node underlying value.

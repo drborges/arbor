@@ -1,3 +1,4 @@
+import Repository from "@arborjs/repository"
 import Arbor, { MutationMode } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
@@ -125,5 +126,48 @@ describe("useArbor", () => {
     })
 
     expect(nextState).toBe(result.current)
+  })
+
+  describe("supports 'Repository' wrapped stores", () => {
+    it("returns the current state tree", () => {
+      const respository = new Repository<User>({
+        "1": { id: "1", name: "Alice" },
+        "2": { id: "2", name: "Bob" },
+      })
+
+      const { result } = renderHook(() => useArbor(respository))
+
+      expect(result.current).toBe(respository.store.root)
+    })
+
+    it("still allows selecting a specific path within the state tree to bind the component to", () => {
+      const respository = new Repository<User>({
+        "1": { id: "1", name: "Alice" },
+        "2": { id: "2", name: "Bob" },
+      })
+
+      const { result } = renderHook(() =>
+        useArbor(respository, (root) => root["2"])
+      )
+
+      expect(result.current).toBe(respository.store.root["2"])
+    })
+
+    it("recomputes the state whenever the repository triggers a mutation", () => {
+      const repository = new Repository<User>({
+        "1": { id: "1", name: "Alice" },
+        "2": { id: "2", name: "Bob" },
+      })
+
+      const { result } = renderHook(() => useArbor(repository))
+
+      act(() => {
+        repository.delete("1")
+      })
+
+      expect(result.current).toEqual({
+        "2": { id: "2", name: "Bob" },
+      })
+    })
   })
 })
