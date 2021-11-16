@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/plugins",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "Community driven plugins for @arborjs/store.",
   "keywords": [
     "arbor",
@@ -37,7 +37,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@arborjs/store": "0.0.1-alpha.4",
+    "@arborjs/store": "0.0.1-alpha.5",
     "@types/jest": "^26.0.23",
     "esbuild": "^0.12.12",
     "eslint": "^7.32.0",
