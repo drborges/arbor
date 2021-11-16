@@ -18,12 +18,12 @@ export interface IRepository<T extends object> {
 const isFunction = (value: unknown): value is Function =>
   typeof value === "function"
 
-export default class Repository<T extends object> {
+export default class Repository<T extends object = {}> {
   store: Arbor<IRepository<T>>
 
   constructor(
     storeOrInitialValue: Arbor<IRepository<T>> | IRepository<T>,
-    readonly uuid: () => string = v4
+    private readonly uuid: () => string = v4
   ) {
     this.store =
       storeOrInitialValue instanceof Arbor

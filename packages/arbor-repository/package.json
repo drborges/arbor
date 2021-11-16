@@ -1,7 +1,7 @@
 {
   "name": "@arborjs/repository",
-  "version": "0.0.1-alpha.4",
-  "description": "A repository abstraction for objects",
+  "version": "0.0.1-alpha.5",
+  "description": "A repository abstraction for application state",
   "keywords": [
     "arbor",
     "react",
@@ -37,7 +37,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@arborjs/react": "workspace:packages/arbor-react",
     "@arborjs/store": "workspace:packages/arbor-store",
     "@testing-library/react-hooks": "^7.0.0",
     "@types/jest": "^26.0.23",
@@ -63,8 +62,7 @@
     "publish": "np"
   },
   "peerDependencies": {
-    "@arborjs/react": "0.0.1-alpha.4",
-    "@arborjs/store": "0.0.1-alpha.4",
+    "@arborjs/store": "0.0.1-alpha.5",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
