@@ -2,6 +2,7 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "jest"],
+  "ignorePatterns": ["dist"],
   "extends": ["airbnb-typescript", "prettier", "plugin:jest/recommended"],
   "rules": {
     "prefer-destructuring": "off",
