@@ -3,5 +3,6 @@ todo.todo
 .cache/
 .yarn/cache/
 .pnp.cjs
+.turbo
 dist/
 yarn-error.log
