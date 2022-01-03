@@ -29,6 +29,7 @@
   "types": "./dist/index.d.ts",
   "license": "MIT",
   "files": [
+    "./src",
     "./dist",
     "./README",
     "../../LICENSE"
