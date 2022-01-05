@@ -24,7 +24,7 @@
     "url": "https://github.com/drborges"
   },
   "main": "./dist/index.js",
-  "module": "./src/index.ts",
+  "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
   "license": "MIT",
   "files": [
@@ -56,7 +56,7 @@
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest --passWithNoTests",
     "dev": "jest --watch",
-    "build": "rm -rf dist && esbuild src/index.ts --bundle --minify --sourcemap --outdir=dist --platform=node --target=node10.4 --external:react && yarn tsc",
+    "build": "yarn clean && node ../../tools/build.js && yarn tsc",
     "prepublish": "yarn build",
     "publish": "np"
   },
