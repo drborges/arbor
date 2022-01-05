@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/plugins",
-  "version": "0.0.1-alpha.5",
+  "version": "0.0.1-alpha.9",
   "description": "Community driven plugins for @arborjs/store.",
   "keywords": [
     "arbor",
@@ -24,8 +24,9 @@
     "name": "Diego Borges",
     "url": "https://github.com/drborges"
   },
-  "main": "./dist/index.js",
-  "module": "./src/index.ts",
+  "main": "./dist/index.cjs.js",
+  "browser": "./dist/index.iife.js",
+  "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
   "license": "MIT",
   "files": [
@@ -37,7 +38,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@arborjs/store": "0.0.1-alpha.5",
+    "@arborjs/store": "0.0.1-alpha.9",
     "@types/jest": "^26.0.23",
     "esbuild": "^0.12.12",
     "eslint": "^7.32.0",
@@ -54,7 +55,7 @@
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest --passWithNoTests",
     "dev": "jest --watch",
-    "build": "rm -rf dist && esbuild src/index.ts --bundle --minify --sourcemap --outdir=dist --platform=node --target=node10.4 && yarn tsc",
+    "build": "yarn clean && node ../../tools/build.js && yarn tsc",
     "prepublish": "yarn build",
     "publish": "np"
   }

@@ -3,5 +3,4 @@ import Arbor from "./Arbor"
 import stitch from "./stitch"
 
 export * from "./types"
-export { stitch, Path }
-export default Arbor
+export { stitch, Path, Arbor as default }
