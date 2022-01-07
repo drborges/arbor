@@ -78,6 +78,28 @@ describe("useArbor", () => {
     expect(result.current).toBe(store.root[1])
   })
 
+  it("does not trigger a state update when selected state is not changed", () => {
+    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
+
+    const initialProps = {
+      store,
+      selector: (users: User[]) => users[1],
+    }
+
+    const { result, rerender } = renderHook(
+      (props) => useArbor(props.store, props.selector),
+      { initialProps }
+    )
+
+    rerender({
+      store,
+      selector: (users: User[]) => users[1],
+    })
+
+    expect(result.all.length).toBe(2)
+    expect(result.all[0]).toBe(result.all[1])
+  })
+
   it("supports derived data", () => {
     const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
 
