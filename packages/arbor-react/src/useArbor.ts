@@ -1,5 +1,5 @@
 import Arbor from "@arborjs/store"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Repository, { IRepository } from "@arborjs/repository"
 
 /**
@@ -55,14 +55,19 @@ export default function useArbor<
 
   const [state, setState] = useState(selector(store.root))
 
-  useEffect(() => {
-    setState(selector(store.root))
-  }, [selector])
+  const update = useCallback(() => {
+    const nextState = selector(store.root)
 
-  useEffect(
-    () => store.subscribe(() => setState(selector(store.root))),
-    [selector, store]
-  )
+    if (nextState !== state) {
+      setState(nextState)
+    }
+  }, [selector, store])
+
+  useEffect(() => {
+    update()
+
+    return store.subscribe(update)
+  }, [selector, store])
 
   return state
 }
