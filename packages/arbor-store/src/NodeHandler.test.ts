@@ -210,6 +210,18 @@ describe("NodeHandler", () => {
       expect(store.notify).not.toHaveBeenCalled()
     })
 
+    it("does not cause a mutation when the new value is the actual state tree node", () => {
+      const store = new Arbor({
+        users: [{ name: "User 1" }],
+      })
+
+      store.notify = jest.fn(store.notify)
+
+      store.root.users[0] = store.root.users[0]
+
+      expect(store.notify).not.toHaveBeenCalled()
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = {

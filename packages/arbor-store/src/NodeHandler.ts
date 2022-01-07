@@ -48,14 +48,16 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
       : this.$createChildNode(prop, childValue)
   }
 
-  set(target: T, prop: string, newValue: any): boolean {
+  set(target: T, prop: string, newValue: any, proxy: Node<T>): boolean {
+    // Ignores the mutation if new value is the current value
+    if (proxy[prop] === newValue || target[prop] === newValue) return true
+
+    // Resolve the value to be set in case newValue is actually an Arbor node
     const value = clonable(newValue) ? newValue.$clone() : newValue
 
-    if (target[prop] !== value) {
-      this.$tree.mutate(this.$path, (t: T) => {
-        t[prop] = value
-      })
-    }
+    this.$tree.mutate(this.$path, (t: T) => {
+      t[prop] = value
+    })
 
     return true
   }
