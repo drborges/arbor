@@ -2,6 +2,7 @@ import { Node, IStateTree } from "./types"
 import Path from "./Path"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
+import unwrappable from "./unwrappable"
 import clonable, { Clonable } from "./clonable"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
@@ -33,7 +34,11 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
       return handlerApiAccess
     }
 
-    const childValue = Reflect.get(target, prop, proxy)
+    let childValue = Reflect.get(target, prop, proxy)
+
+    if (unwrappable(childValue)) {
+      childValue = childValue.$unwrap()
+    }
 
     if (typeof childValue === "function") {
       return childValue.bind(proxy)

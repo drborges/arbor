@@ -2,6 +2,7 @@ import NodeHandler from "./NodeHandler"
 import Path from "./Path"
 import NodeCache from "./NodeCache"
 import { Node, IStateTree } from "./types"
+import clonable, { Clonable } from "./clonable"
 
 export default class NodeArrayHandler<T extends object> extends NodeHandler<
   T[]
@@ -16,7 +17,12 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   }
 
   $clone(): Node<T[]> {
-    return this.$tree.createNode(this.$path, [...this.$value], this.$children)
+    const clonableValue = this.$value as unknown as Clonable<T[]>
+    const clone = clonable(this.$value)
+      ? clonableValue.$clone()
+      : [...this.$value]
+
+    return this.$tree.createNode(this.$path, clone, this.$children)
   }
 
   deleteProperty(_target: T[], prop: string): boolean {

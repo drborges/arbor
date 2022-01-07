@@ -61,6 +61,48 @@ describe("NodeArrayHandler", () => {
       expect(node[0]).toBe(copy[0])
       expect(node[0].address).toBe(copy[0].address)
     })
+
+    it("allows users to extend the Array class", () => {
+      class Users extends Array<User> {
+        get first(): User {
+          return this[0]
+        }
+
+        get last(): User {
+          return this[this.length - 1]
+        }
+
+        $clone(): Users {
+          return new Users(...this)
+        }
+      }
+
+      const state = Users.from<Partial<User>>([
+        { name: "Bob" },
+        { name: "Alice" },
+      ]) as Users
+
+      const tree = new Arbor<Users>(state)
+      const originalRoot = tree.root
+      const originalBob = tree.root[0]
+      const originalAlice = tree.root[1]
+      const first = tree.root.first as Node<User>
+      const last = tree.root.last as Node<User>
+
+      expect(originalRoot).toBeInstanceOf(Users)
+      expect(first.$unwrap()).toBe(state[0])
+      expect(last.$unwrap()).toBe(state[1])
+
+      tree.root[0].name = "Bob Updated"
+
+      expect(originalBob).toBe(first)
+      expect(originalAlice).toBe(last)
+      expect(tree.root).toBeInstanceOf(Users)
+      expect(tree.root).not.toBe(originalRoot)
+      expect(tree.root[0]).not.toBe(originalBob)
+      expect(tree.root[1]).toBe(originalAlice)
+      expect(tree.root[0]).toEqual({ name: "Bob Updated" })
+    })
   })
 
   describe("delete trap", () => {
