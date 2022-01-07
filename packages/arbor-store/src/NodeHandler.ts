@@ -48,10 +48,12 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
       : this.$createChildNode(prop, childValue)
   }
 
-  set(_target: T, prop: string, newValue: any): boolean {
-    this.$tree.mutate(this.$path, (t: T) => {
-      t[prop] = newValue
-    })
+  set(target: T, prop: string, newValue: any): boolean {
+    if (target[prop] !== newValue) {
+      this.$tree.mutate(this.$path, (t: T) => {
+        t[prop] = newValue
+      })
+    }
 
     return true
   }

@@ -183,6 +183,18 @@ describe("NodeHandler", () => {
       expect(unwrap(tree.root.users[1].address)).toBe(state.users[1].address)
     })
 
+    it("skips mutations that do not change the target's value", () => {
+      const store = new Arbor({
+        users: [{ name: "User 1" }],
+      })
+
+      store.notify = jest.fn(store.notify)
+
+      store.root.users[0].name = "User 1"
+
+      expect(store.notify).not.toHaveBeenCalled()
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = {

@@ -91,8 +91,8 @@ describe("Arbor", () => {
     })
   })
 
-  describe("Focus array use cases", () => {
-    it("accurately mutates an array node after reversing the array", () => {
+  describe("Array use cases", () => {
+    it("Keeps state tree paths in sync when reversing an array", () => {
       const store = new Arbor([
         { name: "User 1" },
         { name: "User 2" },
@@ -203,7 +203,7 @@ describe("Arbor", () => {
       ])
     })
 
-    it("can encasupate mutation logic", () => {
+    it("can encasulate mutation logic", () => {
       const store = new Arbor([
         Todo.from({ text: "Do the dishes", completed: false }),
         Todo.from({ text: "Clean the house", completed: true }),
