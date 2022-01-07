@@ -217,7 +217,8 @@ describe("NodeHandler", () => {
 
       store.notify = jest.fn(store.notify)
 
-      store.root.users[0] = store.root.users[0]
+      const user = store.root.users[0]
+      store.root.users[0] = user
 
       expect(store.notify).not.toHaveBeenCalled()
     })
