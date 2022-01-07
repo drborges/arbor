@@ -49,9 +49,11 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   }
 
   set(target: T, prop: string, newValue: any): boolean {
-    if (target[prop] !== newValue) {
+    const value = clonable(newValue) ? newValue.$clone() : newValue
+
+    if (target[prop] !== value) {
       this.$tree.mutate(this.$path, (t: T) => {
-        t[prop] = newValue
+        t[prop] = value
       })
     }
 

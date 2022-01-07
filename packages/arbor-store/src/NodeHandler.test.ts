@@ -183,6 +183,21 @@ describe("NodeHandler", () => {
       expect(unwrap(tree.root.users[1].address)).toBe(state.users[1].address)
     })
 
+    it("handles assignment of state tree nodes", () => {
+      const store = new Arbor({
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      })
+
+      store.root.users[0] = store.root.users[1]
+
+      const node1 = store.root.users[0] as Node<User>
+      const node2 = store.root.users[1] as Node<User>
+
+      expect(store.root.users).toEqual([{ name: "User 2" }, { name: "User 2" }])
+      expect(node1.$path.toString()).toEqual("/users/0")
+      expect(node2.$path.toString()).toEqual("/users/1")
+    })
+
     it("skips mutations that do not change the target's value", () => {
       const store = new Arbor({
         users: [{ name: "User 1" }],
