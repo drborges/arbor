@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
 import Arbor from "./Arbor"
+import Collection from "./Collection"
 import { warmup } from "./test.helpers"
 
 describe("Arbor", () => {
@@ -220,6 +221,28 @@ describe("Arbor", () => {
 
       expect(store.root[0]).not.toBe(todo)
       expect(store.root[0].completed).toBe(false)
+    })
+
+    describe("Collection", () => {
+      it("allows managing collections of items in a way that node paths are not impacted", async () => {
+        const store = new Arbor(
+          new Collection<Todo>([
+            Todo.from({ id: "abc", text: "Do the dishes", completed: false }),
+            Todo.from({ id: "bcd", text: "Clean the house", completed: true }),
+          ])
+        )
+
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            store.root.first.completed = true
+            expect(store.root.first.completed).toBe(true)
+            expect(store.root.last.completed).toBe(false)
+            resolve(null)
+          }, 500)
+
+          store.root.last.completed = false
+        })
+      })
     })
   })
 })
