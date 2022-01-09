@@ -224,7 +224,7 @@ describe("Arbor", () => {
     })
 
     describe("Collection", () => {
-      it("allows managing collections of items in a way that node paths are not impacted", async () => {
+      it("allows managing collections of items in a way that node paths are not impacted", () => {
         const store = new Arbor(
           new Collection<Todo>([
             Todo.from({ id: "abc", text: "Do the dishes", completed: false }),
@@ -232,16 +232,14 @@ describe("Arbor", () => {
           ])
         )
 
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            store.root.first.completed = true
-            expect(store.root.first.completed).toBe(true)
-            expect(store.root.last.completed).toBe(false)
-            resolve(null)
-          }, 500)
+        const firstItem = store.root.first
+        const lastItem = store.root.last
+        store.root.delete(firstItem)
+        // should error out since this node no longer exists in the state tree
+        firstItem.completed = true
 
-          store.root.last.completed = false
-        })
+        expect(store.root[firstItem.id]).toBeUndefined()
+        expect(store.root.first).toBe(lastItem)
       })
     })
   })
