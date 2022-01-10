@@ -226,10 +226,10 @@ describe("Arbor", () => {
     describe("Collection", () => {
       it("allows managing collections of items in a way that node paths are not impacted", () => {
         const store = new Arbor(
-          new Collection<Todo>([
+          new Collection(
             Todo.from({ id: "abc", text: "Do the dishes", completed: false }),
-            Todo.from({ id: "bcd", text: "Clean the house", completed: true }),
-          ])
+            Todo.from({ id: "bcd", text: "Clean the house", completed: true })
+          )
         )
 
         const firstItem = store.root.first

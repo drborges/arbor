@@ -77,6 +77,7 @@ export interface IStateTree<T extends object = object> {
 export interface INode<T extends object> {
   $unwrap(): T
   $clone(): Node<T>
+  $store(): IStateTree
   get $path(): Path
   get $children(): ICacheable
 }

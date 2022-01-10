@@ -13,6 +13,10 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     readonly $children = new NodeCache()
   ) {}
 
+  $store(): IStateTree {
+    return this.$tree
+  }
+
   $unwrap(): T {
     return this.$value
   }
