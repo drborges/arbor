@@ -1,6 +1,7 @@
 import Path from "./Path"
 import Arbor from "./Arbor"
 import stitch from "./stitch"
+import Collection from "./Collection"
 
 export * from "./types"
-export { stitch, Path, Arbor as default }
+export { Collection, stitch, Path, Arbor as default }
