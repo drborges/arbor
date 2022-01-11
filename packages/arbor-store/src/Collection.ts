@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-syntax */
-import { ArborError } from "./errors"
 import { Node } from "./types"
 
 export type Predicate<T> = (item: T) => boolean
@@ -16,7 +15,7 @@ export default class Collection<T extends Record> {
 
   add(item: T): T {
     if (item.id == null) {
-      throw new ArborError("Collection items must have a string id")
+      throw new Error("Collection items must have a string id")
     }
 
     this[item.id] = item
@@ -29,7 +28,7 @@ export default class Collection<T extends Record> {
   addMany(...items: T[]): T[] {
     items.forEach((item) => {
       if (item.id == null) {
-        throw new ArborError("Collection items must have a string id")
+        throw new Error("Collection items must have a string id")
       }
     })
 

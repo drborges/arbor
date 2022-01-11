@@ -1,6 +1,8 @@
 import Arbor from "@arborjs/store"
-import { useCallback, useEffect, useState } from "react"
-import Repository, { IRepository } from "@arborjs/repository"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+const invalidInitialData = (value: any): boolean =>
+  !(value instanceof Arbor) && value?.constructor?.name !== "Object"
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -40,18 +42,21 @@ import Repository, { IRepository } from "@arborjs/repository"
  * @returns the current state of the Arbor state tree.
  */
 export default function useArbor<
-  K extends Arbor | Repository,
-  T = K extends Arbor<infer D>
-    ? D
-    : K extends Repository<infer D>
-    ? IRepository<D>
-    : never,
+  K extends Arbor | object,
+  T = K extends Arbor<infer D> ? D : K,
   S = T
->(storeOrRepository: K, selector = (root: T) => root as unknown as S) {
-  const store =
-    storeOrRepository instanceof Arbor
-      ? storeOrRepository
-      : storeOrRepository.store
+>(storeOrState: K, selector = (root: T) => root as unknown as S) {
+  if (invalidInitialData(storeOrState)) {
+    throw new Error(
+      "useArbor must be initialized with either an instance of Arbor or a plain object literal"
+    )
+  }
+
+  const store = useMemo(
+    () =>
+      storeOrState instanceof Arbor ? storeOrState : new Arbor(storeOrState),
+    []
+  )
 
   const [state, setState] = useState(selector(store.root))
 

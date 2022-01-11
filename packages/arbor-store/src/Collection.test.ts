@@ -1,6 +1,5 @@
 import Arbor from "./Arbor"
 import Collection from "./Collection"
-import { ArborError } from "./errors"
 
 import type { Node } from "./types"
 
@@ -46,8 +45,8 @@ describe("Collection", () => {
     it("throws an error when adding a new item without an id", () => {
       const store = new Arbor(new Collection<User>())
 
-      expect(() => store.root.add({ id: undefined, name: "Bob" })).toThrow(
-        new ArborError("Collection items must have a string id")
+      expect(() => store.root.add({ id: undefined, name: "Bob" })).toThrowError(
+        "Collection items must have a string id"
       )
     })
   })
@@ -75,8 +74,8 @@ describe("Collection", () => {
       const user2 = { id: undefined, name: "Alice" }
       const store = new Arbor(new Collection<User>())
 
-      expect(() => store.root.addMany(user1, user2)).toThrow(
-        new ArborError("Collection items must have a string id")
+      expect(() => store.root.addMany(user1, user2)).toThrowError(
+        "Collection items must have a string id"
       )
 
       expect(store.root.length).toBe(0)
