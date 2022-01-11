@@ -526,6 +526,19 @@ describe("Collection", () => {
     })
   })
 
+  describe("#clear", () => {
+    it("deletes all items from the collection", () => {
+      const user1 = { id: "abc", name: "Bob" }
+      const user2 = { id: "abd", name: "Alice" }
+      const user3 = { id: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+
+      store.root.clear()
+
+      expect(store.root.length).toBe(0)
+    })
+  })
+
   describe("$clone", () => {
     it("shallowly clones the collection into a new one", () => {
       const user1 = { id: "abc", name: "Bob" }

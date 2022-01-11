@@ -193,7 +193,19 @@ export default class Collection<T extends Record> {
   }
 
   deleteBy(predicate: Predicate<T>): T[] {
-    return this.filter(predicate).map(this.delete)
+    const deleted: T[] = []
+
+    for (const item of this) {
+      if (predicate(item)) {
+        deleted.push(this.delete(item))
+      }
+    }
+
+    return deleted
+  }
+
+  clear() {
+    this.deleteBy(() => true)
   }
 
   *[Symbol.iterator](): Generator<T, any, undefined> {
