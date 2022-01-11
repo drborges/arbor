@@ -217,6 +217,19 @@ describe("Collection", () => {
     })
   })
 
+  describe("#find", () => {
+    it("finds the first item matching the given predicate", () => {
+      const user1 = { id: "abc", name: "Bob" }
+      const user2 = { id: "abd", name: "Alice" }
+      const user3 = { id: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+
+      const user = store.root.find((u) => u.name.startsWith("B")) as Node<User>
+
+      expect(user.$unwrap()).toBe(user1)
+    })
+  })
+
   describe("#fetch", () => {
     it("fetch an item by its id from within the collection", () => {
       const user1 = { id: "abc", name: "Bob" }

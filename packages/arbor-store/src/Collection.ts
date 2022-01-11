@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { ArborError } from "./errors"
 import { Node } from "./types"
 
@@ -36,11 +37,33 @@ export default class Collection<T extends Record> {
   }
 
   map<K>(transform: (item: T) => K): K[] {
-    return Object.values(this).map(transform)
+    const mapped = []
+
+    for (const item of this) {
+      mapped.push(transform(item))
+    }
+
+    return mapped
   }
 
   filter(predicate: Predicate<T>): T[] {
-    return Object.values(this).filter(predicate)
+    const collected = []
+
+    for (const item of this) {
+      if (predicate(item)) {
+        collected.push(item)
+      }
+    }
+
+    return collected
+  }
+
+  find(predicate: Predicate<T>): T {
+    for (const item of this) {
+      if (predicate(item)) return item
+    }
+
+    return undefined
   }
 
   merge(item: T, data: Partial<T>): T {
@@ -91,12 +114,23 @@ export default class Collection<T extends Record> {
   }
 
   get first(): T {
-    return Object.values(this)[0]
+    let first: T
+
+    for (first of this) {
+      break
+    }
+
+    return first
   }
 
   get last(): T {
-    const items = Object.values(this)
-    return items[items.length - 1]
+    let last: T
+
+    for (const item of this) {
+      last = item
+    }
+
+    return last
   }
 
   get length(): number {
@@ -104,15 +138,27 @@ export default class Collection<T extends Record> {
   }
 
   includes(item: T): boolean {
-    return Object.values(this).some((i) => i.id === item.id)
+    for (const i of this) {
+      if (i.id === item.id) return true
+    }
+
+    return false
   }
 
-  some(predicate: (item: T) => boolean): boolean {
-    return Object.values(this).some(predicate)
+  some(predicate: Predicate<T>): boolean {
+    for (const item of this) {
+      if (predicate(item)) return true
+    }
+
+    return false
   }
 
   every(predicate: (item: T) => boolean): boolean {
-    return Object.values(this).every(predicate)
+    for (const item of this) {
+      if (!predicate(item)) return false
+    }
+
+    return true
   }
 
   sort(compare: (a: T, b: T) => number): T[] {
@@ -120,7 +166,22 @@ export default class Collection<T extends Record> {
   }
 
   slice(start: number, end: number) {
-    return Object.values(this).slice(start, end)
+    let i = 0
+    const slice = []
+
+    for (const item of this) {
+      if (i === end) {
+        break
+      }
+
+      if (i >= start && i < end) {
+        slice.push(item)
+      }
+
+      i++
+    }
+
+    return slice
   }
 
   delete(item: T) {
@@ -135,8 +196,7 @@ export default class Collection<T extends Record> {
     return this.filter(predicate).map(this.delete)
   }
 
-  *[Symbol.iterator]() {
-    // eslint-disable-next-line no-restricted-syntax
+  *[Symbol.iterator](): Generator<T, any, undefined> {
     for (const key of Object.keys(this)) {
       yield this[key]
     }
