@@ -79,10 +79,10 @@ export default class Arbor<T extends object = {}> implements IStateTree {
    * @param mutation a function responsible for mutating the target node at the given path.
    */
   mutate<V extends object>(path: Path, mutation: Mutation<V>) {
-    try {
-      const oldRootValue = this.root.$unwrap()
-      const newRoot = mutate(this.root, path, mutation)
+    const oldRootValue = this.root.$unwrap()
+    const newRoot = mutate(this.root, path, mutation)
 
+    if (newRoot) {
       if (this.mode === MutationMode.FORGIVEN) {
         mutation(path.walk(oldRootValue) as V)
       }
@@ -90,14 +90,10 @@ export default class Arbor<T extends object = {}> implements IStateTree {
       this.#root = newRoot
 
       this.notify(newRoot, oldRootValue)
-    } catch (e) {
-      if (e.message.includes("Cannot read property '$clone' of undefined")) {
-        console.warn(
-          `Cannot mutate path ${path}. It no longer exists within the state tree`
-        )
-      } else {
-        throw e
-      }
+    } else {
+      console.warn(
+        `Could not mutate path ${path}. The path no longer exists within the state tree.`
+      )
     }
   }
 

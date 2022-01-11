@@ -90,6 +90,21 @@ describe("Arbor", () => {
         store.root.users.push({ name: "User 2" })
       })
     })
+
+    it("handles mutations to nodes no longer attached to the state tree", () => {
+      const store = new Arbor({
+        "1": { name: "Alice" },
+        "2": { name: "Bob" },
+      })
+
+      const bob = store.root["2"]
+      delete store.root["2"]
+      bob.name = "This should not break the app"
+
+      expect(store.root).toEqual({
+        "1": { name: "Alice" },
+      })
+    })
   })
 
   describe("Array use cases", () => {
