@@ -98,6 +98,19 @@ describe("Collection", () => {
       })
     })
 
+    it("merges new data into a given collection item by its id", () => {
+      const user1 = { id: "abc", name: "Bob" }
+      const store = new Arbor(new Collection<User>(user1))
+
+      store.root.merge("abc", { name: "Bob Updated" })
+
+      expect(user1).toEqual({ id: "abc", name: "Bob" })
+      expect(store.root.fetch("abc")).toEqual({
+        id: "abc",
+        name: "Bob Updated",
+      })
+    })
+
     it("does not override the id property", () => {
       const user1 = { id: "abc", name: "Bob" }
       const store = new Arbor(new Collection<User>(user1))
@@ -242,54 +255,24 @@ describe("Collection", () => {
       expect(alice.$unwrap()).toBe(user2)
     })
 
+    it("fetch an item by an object that implements the Record interface", () => {
+      const user1 = { id: "abc", name: "Bob" }
+      const user2 = { id: "abd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      const bob = store.root.fetch(user1) as Node<User>
+      const alice = store.root.fetch(user2) as Node<User>
+
+      expect(bob.$unwrap()).toBe(user1)
+      expect(alice.$unwrap()).toBe(user2)
+    })
+
     it("returns undefined if no item is found", () => {
       const store = new Arbor(new Collection<User>())
 
       const user = store.root.fetch("abc") as Node<User>
 
       expect(user).toBeUndefined()
-    })
-  })
-
-  describe("#reload", () => {
-    it("reloads a stale state tree node reference", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const bob = store.root.fetch("abc") as Node<User>
-
-      bob.name = "Bob Updated"
-
-      expect(bob.name).toEqual("Bob")
-
-      const reloadedBob = store.root.reload(bob)
-
-      expect(reloadedBob.name).toEqual("Bob Updated")
-    })
-
-    it("reloads the Arbor node using a non Arbor node reference", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-      const node = store.root.fetch("abc")
-
-      const reloaded = store.root.reload(user1)
-
-      expect(reloaded).toBe(node)
-    })
-
-    it("returns undefined if the item is no longer part of the state tree", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const bob = store.root.fetch("abc")
-      store.root.delete(bob)
-
-      const reloaded = store.root.reload(bob)
-
-      expect(reloaded).toBeUndefined()
     })
   })
 
@@ -398,7 +381,7 @@ describe("Collection", () => {
   })
 
   describe("#includes", () => {
-    it("checks if a given item is included in the collection by matching ids", () => {
+    it("checks if a given item is included in the collection", () => {
       const user1 = { id: "abc", name: "Bob" }
       const user2 = { id: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
@@ -409,6 +392,19 @@ describe("Collection", () => {
       store.root.delete(store.root.fetch("abd"))
 
       expect(store.root.includes(user2)).toBe(false)
+    })
+
+    it("checks if a given id is included in the collection", () => {
+      const user1 = { id: "abc", name: "Bob" }
+      const user2 = { id: "abd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      expect(store.root.includes("abc")).toBe(true)
+      expect(store.root.includes("abd")).toBe(true)
+
+      store.root.delete(store.root.fetch("abd"))
+
+      expect(store.root.includes("abd")).toBe(false)
     })
   })
 
@@ -482,6 +478,17 @@ describe("Collection", () => {
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const deleted = store.root.delete(store.root.fetch("abd")) as Node<User>
+
+      expect(deleted).toBe(user2)
+      expect(store.root.fetch("abd")).toBeUndefined()
+    })
+
+    it("deletes an item from the collection by its id", () => {
+      const user1 = { id: "abc", name: "Bob" }
+      const user2 = { id: "abd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      const deleted = store.root.delete("abd") as Node<User>
 
       expect(deleted).toBe(user2)
       expect(store.root.fetch("abd")).toBeUndefined()

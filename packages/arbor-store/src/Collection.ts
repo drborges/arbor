@@ -6,6 +6,11 @@ export interface Record {
   id: string
 }
 
+function extractIdFrom(value: string | Record): string {
+  if (typeof value === "string") return value
+  return value?.id
+}
+
 export default class Collection<T extends Record> {
   constructor(...items: T[]) {
     items.forEach((item) => {
@@ -65,12 +70,16 @@ export default class Collection<T extends Record> {
     return undefined
   }
 
-  merge(item: T, data: Partial<T>): T {
+  merge(idOrItem: T | string, data: Partial<T>): T {
+    const item = this.fetch(idOrItem)
     const node = this as unknown as Node<T>
-    if (node.$tree.getNodeAt(node.$path.child(item.id)) === undefined)
+
+    if (item === undefined) {
       return undefined
+    }
 
     delete data.id
+
     node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
       collection[item.id] = {
         ...item,
@@ -103,23 +112,10 @@ export default class Collection<T extends Record> {
   }
 
   fetch(idOrItem: string | T): T | undefined {
-    if (typeof idOrItem === "string") {
-      const item = this[idOrItem]
-
-      return item != null ? this.reload(item) : undefined
-    }
-
-    if (typeof idOrItem === "object" && idOrItem.id) {
-      return this.reload(idOrItem)
-    }
-
-    return undefined
-  }
-
-  reload(item: T): T {
+    const id = extractIdFrom(idOrItem)
     const node = this as unknown as Node<T>
-    const itemPath = node.$path.child(item.id)
-    return node.$tree.getNodeAt(itemPath)
+
+    return id ? node.$tree.getNodeAt(node.$path.child(id)) : undefined
   }
 
   get values(): T[] {
@@ -154,9 +150,13 @@ export default class Collection<T extends Record> {
     return Object.keys(this).length
   }
 
-  includes(item: T): boolean {
+  includes(idOrItem: string | T): boolean {
+    const id = extractIdFrom(idOrItem)
+
+    if (id === undefined) return false
+
     for (const i of this) {
-      if (i.id === item.id) return true
+      if (i.id === id) return true
     }
 
     return false
@@ -201,14 +201,17 @@ export default class Collection<T extends Record> {
     return slice
   }
 
-  delete(item: T) {
+  delete(idOrItem: string | T) {
     let deleted: T
     const node = this as unknown as Node<T>
+    const id = extractIdFrom(idOrItem)
 
-    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
-      deleted = collection[item.id]
-      delete collection[item.id]
-    })
+    if (id) {
+      node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+        deleted = collection[id]
+        delete collection[id]
+      })
+    }
 
     return deleted
   }
