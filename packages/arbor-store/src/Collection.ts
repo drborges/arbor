@@ -13,26 +13,26 @@ export default class Collection<T extends Record> {
     })
   }
 
-  add(item: T): T {
-    if (item.id == null) {
-      throw new Error("Collection items must have a string id")
-    }
-
-    this[item.id] = item
-
-    const node = this as unknown as Node<T>
-    const newItemPath = node.$path.child(item.id)
-    return node.$store().getNodeAt(newItemPath)
-  }
-
   addMany(...items: T[]): T[] {
+    const node = this as unknown as Node<T>
+
     items.forEach((item) => {
       if (item.id == null) {
         throw new Error("Collection items must have a string id")
       }
     })
 
-    return items.map(this.add)
+    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+      items.forEach((item) => {
+        collection[item.id] = item
+      })
+    })
+
+    return items.map((item) => node.$tree.getNodeAt(node.$path.child(item.id)))
+  }
+
+  add(item: T): T {
+    return this.addMany(item)[0]
   }
 
   map<K>(transform: (item: T) => K): K[] {
@@ -66,22 +66,40 @@ export default class Collection<T extends Record> {
   }
 
   merge(item: T, data: Partial<T>): T {
-    if (this[item.id] == null) return undefined
+    const node = this as unknown as Node<T>
+    if (node.$tree.getNodeAt(node.$path.child(item.id)) === undefined)
+      return undefined
 
     delete data.id
+    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+      collection[item.id] = {
+        ...item,
+        ...data,
+      }
+    })
 
-    this[item.id] = {
-      ...item,
-      ...data,
-    }
-
-    return this.reload(item)
+    return node.$tree.getNodeAt(node.$path.child(item.id))
   }
 
   mergeBy(predicate: Predicate<T>, updateFn: (item: T) => Partial<T>): T[] {
-    return this.filter(predicate).map((item) =>
-      this.merge(item, updateFn(item))
-    )
+    const updatedIds: string[] = []
+    const node = this as unknown as Node<T>
+
+    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+      Object.values(collection).forEach((value: T) => {
+        if (predicate(value)) {
+          const newValue = {
+            ...value,
+            ...updateFn(value),
+          }
+
+          collection[value.id] = newValue
+          updatedIds.push(value.id)
+        }
+      })
+    })
+
+    return updatedIds.map((id) => node.$tree.getNodeAt(node.$path.child(id)))
   }
 
   fetch(idOrItem: string | T): T | undefined {
@@ -101,7 +119,7 @@ export default class Collection<T extends Record> {
   reload(item: T): T {
     const node = this as unknown as Node<T>
     const itemPath = node.$path.child(item.id)
-    return node.$store().getNodeAt(itemPath)
+    return node.$tree.getNodeAt(itemPath)
   }
 
   get values(): T[] {
@@ -184,27 +202,40 @@ export default class Collection<T extends Record> {
   }
 
   delete(item: T) {
-    const reloadedItem = this.reload(item) as Node<T>
-    if (!reloadedItem) return undefined
+    let deleted: T
+    const node = this as unknown as Node<T>
 
-    delete this[reloadedItem.id]
-    return reloadedItem.$unwrap()
+    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+      deleted = collection[item.id]
+      delete collection[item.id]
+    })
+
+    return deleted
   }
 
   deleteBy(predicate: Predicate<T>): T[] {
     const deleted: T[] = []
+    const node = this as unknown as Node<T>
 
-    for (const item of this) {
-      if (predicate(item)) {
-        deleted.push(this.delete(item))
-      }
-    }
+    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+      Object.values(collection).forEach((value: T) => {
+        if (predicate(value)) {
+          delete collection[value.id]
+          deleted.push(value)
+        }
+      })
+    })
 
     return deleted
   }
 
   clear() {
-    this.deleteBy(() => true)
+    const node = this as unknown as Node<T>
+    node.$tree.mutate(node.$path, (collection) => {
+      Object.keys(collection).forEach((key) => {
+        delete collection[key]
+      })
+    })
   }
 
   *[Symbol.iterator](): Generator<T, any, undefined> {

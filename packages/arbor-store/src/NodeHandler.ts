@@ -7,15 +7,11 @@ import clonable, { Clonable } from "./clonable"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
-    protected readonly $tree: IStateTree,
+    public readonly $tree: IStateTree,
     protected readonly $path: Path,
     protected readonly $value: T,
     readonly $children = new NodeCache()
   ) {}
-
-  $store(): IStateTree {
-    return this.$tree
-  }
 
   $unwrap(): T {
     return this.$value
