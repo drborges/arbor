@@ -82,13 +82,19 @@ export default class Arbor<T extends object = {}> implements IStateTree {
     const oldRootValue = this.root.$unwrap()
     const newRoot = mutate(this.root, path, mutation)
 
-    if (this.mode === MutationMode.FORGIVEN) {
-      mutation(path.walk(oldRootValue) as V)
+    if (newRoot) {
+      if (this.mode === MutationMode.FORGIVEN) {
+        mutation(path.walk(oldRootValue) as V)
+      }
+
+      this.#root = newRoot
+
+      this.notify(newRoot, oldRootValue)
+    } else {
+      console.warn(
+        `Could not mutate path ${path}. The path no longer exists within the state tree.`
+      )
     }
-
-    this.#root = newRoot
-
-    this.notify(newRoot, oldRootValue)
   }
 
   /**

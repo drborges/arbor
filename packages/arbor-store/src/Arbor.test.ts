@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
 import Arbor from "./Arbor"
+import Collection from "./Collection"
 import { warmup } from "./test.helpers"
 
 describe("Arbor", () => {
@@ -87,6 +88,21 @@ describe("Arbor", () => {
         })
 
         store.root.users.push({ name: "User 2" })
+      })
+    })
+
+    it("handles mutations to nodes no longer attached to the state tree", () => {
+      const store = new Arbor({
+        "1": { name: "Alice" },
+        "2": { name: "Bob" },
+      })
+
+      const bob = store.root["2"]
+      delete store.root["2"]
+      bob.name = "This should not break the app"
+
+      expect(store.root).toEqual({
+        "1": { name: "Alice" },
       })
     })
   })
@@ -220,6 +236,26 @@ describe("Arbor", () => {
 
       expect(store.root[0]).not.toBe(todo)
       expect(store.root[0].completed).toBe(false)
+    })
+
+    describe("Collection", () => {
+      it("allows managing collections of items in a way that node paths are not impacted", () => {
+        const store = new Arbor(
+          new Collection(
+            Todo.from({ id: "abc", text: "Do the dishes", completed: false }),
+            Todo.from({ id: "bcd", text: "Clean the house", completed: true })
+          )
+        )
+
+        const firstItem = store.root.first
+        const lastItem = store.root.last
+        store.root.delete(firstItem)
+        // should error out since this node no longer exists in the state tree
+        firstItem.completed = true
+
+        expect(store.root[firstItem.id]).toBeUndefined()
+        expect(store.root.first).toBe(lastItem)
+      })
     })
   })
 })

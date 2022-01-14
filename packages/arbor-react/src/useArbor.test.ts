@@ -1,4 +1,3 @@
-import Repository from "@arborjs/repository"
 import Arbor, { MutationMode } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
@@ -153,46 +152,31 @@ describe("useArbor", () => {
     expect(nextState).toBe(result.current)
   })
 
-  describe("supports 'Repository' wrapped stores", () => {
-    it("returns the current state tree", () => {
-      const respository = new Repository<User>({
-        "1": { id: "1", name: "Alice" },
-        "2": { id: "2", name: "Bob" },
+  it("automatically creates an arbor store when initialized with plain objects", () => {
+    const { result } = renderHook(() =>
+      useArbor({
+        count: 0,
       })
+    )
 
-      const { result } = renderHook(() => useArbor(respository))
+    expect(result.current.count).toBe(0)
 
-      expect(result.current).toBe(respository.store.root)
+    act(() => {
+      result.current.count++
     })
 
-    it("still allows selecting a specific path within the state tree to bind the component to", () => {
-      const respository = new Repository<User>({
-        "1": { id: "1", name: "Alice" },
-        "2": { id: "2", name: "Bob" },
-      })
+    expect(result.current.count).toBe(1)
 
-      const { result } = renderHook(() =>
-        useArbor(respository, (root) => root["2"])
-      )
-
-      expect(result.current).toBe(respository.store.root["2"])
+    act(() => {
+      result.current.count = 5
     })
 
-    it("recomputes the state whenever the repository triggers a mutation", () => {
-      const repository = new Repository<User>({
-        "1": { id: "1", name: "Alice" },
-        "2": { id: "2", name: "Bob" },
-      })
+    expect(result.current.count).toBe(5)
+  })
 
-      const { result } = renderHook(() => useArbor(repository))
-
-      act(() => {
-        repository.delete("1")
-      })
-
-      expect(result.current).toEqual({
-        "2": { id: "2", name: "Bob" },
-      })
-    })
+  it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {
+    expect(() => useArbor(new Date())).toThrowError(
+      "useArbor must be initialized with either an instance of Arbor or a plain object literal"
+    )
   })
 })

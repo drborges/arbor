@@ -21,25 +21,30 @@ export default function mutate<T extends object, K extends object>(
   path: Path,
   mutation: Mutation<K>
 ): Node<T> {
-  const root = node.$clone()
+  try {
+    const root = node.$clone()
 
-  const targetNode = path.props.reduce<Node<T>>((parent, prop) => {
-    const childNode = parent[prop] as Node<T>
-    const childNodeCopy = childNode.$clone()
+    const targetNode = path.props.reduce<Node<T>>((parent, prop) => {
+      const childNode = parent[prop] as Node<T>
+      const childNodeCopy = childNode.$clone()
 
-    parent.$unwrap()[prop] = childNodeCopy.$unwrap()
+      parent.$unwrap()[prop] = childNodeCopy.$unwrap()
 
-    // Preemptively remove previous value from parent's children cache
-    // to free up memory.
-    parent.$children.delete(childNode.$unwrap())
+      // Preemptively remove previous value from parent's children cache
+      // to free up memory.
+      parent.$children.delete(childNode.$unwrap())
 
-    // Preemptively warms up the parent's children cache
-    parent.$children.set(childNodeCopy.$unwrap(), childNodeCopy)
+      // Preemptively warms up the parent's children cache
+      parent.$children.set(childNodeCopy.$unwrap(), childNodeCopy)
 
-    return childNodeCopy
-  }, root)
+      return childNodeCopy
+    }, root)
 
-  mutation(targetNode.$unwrap() as unknown as K)
+    mutation(targetNode.$unwrap() as unknown as K)
 
-  return root
+    return root
+  } catch (e) {
+    console.debug(e)
+    return undefined
+  }
 }
