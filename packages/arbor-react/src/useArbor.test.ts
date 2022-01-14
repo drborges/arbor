@@ -174,6 +174,35 @@ describe("useArbor", () => {
     expect(result.current.count).toBe(5)
   })
 
+  it("supports custom object types to represent the state", () => {
+    class InputHandler {
+      value = ""
+      settings = {}
+      onChange(e: { target: { value: string } }) {
+        this.value = e.target.value
+      }
+    }
+
+    const { result } = renderHook(() => useArbor(new InputHandler()))
+    const originalState = result.current
+
+    expect(result.current.value).toBe("")
+
+    act(() => {
+      result.current.value = "New value"
+    })
+
+    expect(result.current.value).toBe("New value")
+    expect(result.current.settings).toBe(originalState.settings)
+
+    act(() => {
+      result.current.onChange({ target: { value: "Another value" } })
+    })
+
+    expect(result.current.value).toBe("Another value")
+    expect(result.current.settings).toBe(originalState.settings)
+  })
+
   it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {
     expect(() => useArbor(new Date())).toThrowError(
       "useArbor must be initialized with either an instance of Arbor or a clonable object"
