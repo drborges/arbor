@@ -1,8 +1,5 @@
-import Arbor from "@arborjs/store"
+import Arbor, { clonable } from "@arborjs/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
-
-const invalidInitialData = (value: any): boolean =>
-  !(value instanceof Arbor) && value?.constructor?.name !== "Object"
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -46,9 +43,9 @@ export default function useArbor<
   T = K extends Arbor<infer D> ? D : K,
   S = T
 >(storeOrState: K, selector = (root: T) => root as unknown as S) {
-  if (invalidInitialData(storeOrState)) {
+  if (!clonable(storeOrState)) {
     throw new Error(
-      "useArbor must be initialized with either an instance of Arbor or a plain object literal"
+      "useArbor must be initialized with either an instance of Arbor or a clonable object"
     )
   }
 

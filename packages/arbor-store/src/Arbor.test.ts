@@ -191,10 +191,6 @@ describe("Arbor", () => {
       get status() {
         return this.completed ? "Completed" : "Active"
       }
-
-      $clone() {
-        return Todo.from(this)
-      }
     }
 
     it("supports user defined data models", () => {

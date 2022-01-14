@@ -553,6 +553,7 @@ describe("Collection", () => {
 
       const cloned = store.root.$clone()
 
+      expect(cloned).toBeInstanceOf(Collection)
       expect(cloned).not.toBe(store.root.$unwrap())
       expect(cloned.length).toBe(2)
       expect((cloned.first as Node<User>).$unwrap()).toBe(user1)
