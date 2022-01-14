@@ -13,14 +13,18 @@ class Users extends Array<User> {}
 
 describe("clone", () => {
   it("clones a literal object applying structural sharing", () => {
-    const user = { name: "Bob", address: { street: "Wallnut St." } }
-    const clonedUser = clone(user)
-
-    expect(clonedUser.address).toBe(user.address)
-    expect(clonedUser).toEqual({
+    const user = {
       name: "Bob",
       address: { street: "Wallnut St." },
-    })
+      doSomething() {},
+    }
+
+    const clonedUser = clone(user)
+
+    expect(clonedUser).not.toBe(user)
+    expect(clonedUser.name).toBe("Bob")
+    expect(clonedUser.address).toBe(user.address)
+    expect(clonedUser.doSomething).toBe(user.doSomething)
   })
 
   it("clones a literal array applying structural sharing", () => {

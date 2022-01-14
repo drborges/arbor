@@ -1,7 +1,7 @@
 import { Node, IStateTree } from "./types"
 import Path from "./Path"
 import NodeCache from "./NodeCache"
-import unwrappable from "./unwrappable"
+import isNode from "./isNode"
 import { clone, clonable } from "./cloning"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
@@ -30,7 +30,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
 
     let childValue = Reflect.get(target, prop, proxy)
 
-    if (unwrappable(childValue)) {
+    if (isNode(childValue)) {
       childValue = childValue.$unwrap()
     }
 
@@ -51,7 +51,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     // Ignores the mutation if new value is the current value
     if (proxy[prop] === newValue || target[prop] === newValue) return true
 
-    const unwrapped = unwrappable(newValue) ? newValue.$unwrap() : newValue
+    const unwrapped = isNode(newValue) ? newValue.$unwrap() : newValue
     const value = clonable(unwrapped) ? clone(unwrapped) : unwrapped
 
     this.$tree.mutate(this.$path, (t: T) => {

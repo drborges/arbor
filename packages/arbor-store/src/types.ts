@@ -130,3 +130,5 @@ export interface Plugin<T extends object> {
    */
   configure(store: IStateTree<T>): Promise<void>
 }
+
+export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }

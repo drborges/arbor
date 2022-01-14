@@ -1,6 +1,8 @@
+/* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
 import Arbor from "./Arbor"
+import Model from "./Model"
 import Collection from "./Collection"
 import { warmup } from "./test.helpers"
 
@@ -171,14 +173,10 @@ describe("Arbor", () => {
   })
 
   describe("custom data model", () => {
-    class Todo {
+    class Todo extends Model<Todo> {
       id!: string
       text!: string
-      completed = false
-
-      static from(props: Partial<Todo>) {
-        return Object.assign(new Todo(), props)
-      }
+      completed: boolean
 
       complete() {
         this.completed = true
@@ -195,8 +193,8 @@ describe("Arbor", () => {
 
     it("supports user defined data models", () => {
       const store = new Arbor([
-        Todo.from({ text: "Do the dishes", completed: false }),
-        Todo.from({ text: "Clean the house", completed: true }),
+        new Todo({ text: "Do the dishes", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
       ])
 
       const todo1 = store.root[0]
@@ -210,15 +208,15 @@ describe("Arbor", () => {
       expect(todo1).not.toBe(store.root[0])
       expect(todo2).toBe(store.root[1])
       expect(store.root).toEqual([
-        Todo.from({ text: "Walk the dog", completed: false }),
-        Todo.from({ text: "Clean the house", completed: true }),
+        new Todo({ text: "Walk the dog", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
       ])
     })
 
     it("can encasulate mutation logic", () => {
       const store = new Arbor([
-        Todo.from({ text: "Do the dishes", completed: false }),
-        Todo.from({ text: "Clean the house", completed: true }),
+        new Todo({ text: "Do the dishes", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
       ])
 
       let todo = store.root[0]
@@ -238,8 +236,8 @@ describe("Arbor", () => {
       it("allows managing collections of items in a way that node paths are not impacted", () => {
         const store = new Arbor(
           new Collection(
-            Todo.from({ id: "abc", text: "Do the dishes", completed: false }),
-            Todo.from({ id: "bcd", text: "Clean the house", completed: true })
+            new Todo({ id: "abc", text: "Do the dishes", completed: false }),
+            new Todo({ id: "bcd", text: "Clean the house", completed: true })
           )
         )
 
