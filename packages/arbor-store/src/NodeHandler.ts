@@ -1,9 +1,8 @@
 import { Node, IStateTree } from "./types"
 import Path from "./Path"
-import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
 import unwrappable from "./unwrappable"
-import clonable, { Clonable } from "./clonable"
+import { clone, clonable } from "./cloning"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
@@ -18,12 +17,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   }
 
   $clone(): Node<T> {
-    const clonableValue = this.$value as Clonable<T>
-    const clone = clonable(this.$value)
-      ? clonableValue.$clone()
-      : { ...this.$value }
-
-    return this.$tree.createNode(this.$path, clone, this.$children)
+    return this.$tree.createNode(this.$path, clone(this.$value), this.$children)
   }
 
   get(target: T, prop: string, proxy: Node<T>) {
@@ -44,7 +38,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
       return childValue.bind(proxy)
     }
 
-    if (!proxiable(childValue)) {
+    if (!clonable(childValue)) {
       return childValue
     }
 
@@ -57,8 +51,8 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     // Ignores the mutation if new value is the current value
     if (proxy[prop] === newValue || target[prop] === newValue) return true
 
-    // Resolve the value to be set in case newValue is actually an Arbor node
-    const value = clonable(newValue) ? newValue.$clone() : newValue
+    const unwrapped = unwrappable(newValue) ? newValue.$unwrap() : newValue
+    const value = clonable(unwrapped) ? clone(unwrapped) : unwrapped
 
     this.$tree.mutate(this.$path, (t: T) => {
       t[prop] = value

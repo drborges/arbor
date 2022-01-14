@@ -19,10 +19,6 @@ export class Todo {
   get completed() {
     return this.status === "completed"
   }
-
-  $clone() {
-    return Todo.from(this)
-  }
 }
 
 export const store = new Arbor<Todo[]>([])

@@ -176,7 +176,11 @@ describe("useArbor", () => {
 
   it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {
     expect(() => useArbor(new Date())).toThrowError(
-      "useArbor must be initialized with either an instance of Arbor or a plain object literal"
+      "useArbor must be initialized with either an instance of Arbor or a clonable object"
+    )
+
+    expect(() => useArbor("No strings allowed" as any)).toThrowError(
+      "useArbor must be initialized with either an instance of Arbor or a clonable object"
     )
   })
 })

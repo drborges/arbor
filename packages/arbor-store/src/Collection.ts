@@ -246,8 +246,4 @@ export default class Collection<T extends Record> {
       yield this[key]
     }
   }
-
-  $clone(): Collection<T> {
-    return new Collection(...this)
-  }
 }
