@@ -40,7 +40,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
    */
   constructor(readonly config: Config<T>) {
     this.deboucedUpdate = debounce((data: T) => {
-      global.localStorage.setItem(this.config.key, JSON.stringify(data))
+      window.localStorage.setItem(this.config.key, JSON.stringify(data))
     }, config.debounceBy)
   }
 
@@ -69,7 +69,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
     return new Promise<T>((resolve, reject) => {
       try {
         resolve(
-          JSON.parse(global.localStorage.getItem(this.config.key) || null)
+          JSON.parse(window.localStorage.getItem(this.config.key) || null)
         )
       } catch (e) {
         reject(e)
