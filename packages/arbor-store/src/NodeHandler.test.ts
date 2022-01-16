@@ -84,6 +84,32 @@ describe("NodeHandler", () => {
 
       expect(tree.root.completed).toBe(true)
     })
+
+    it("allow proxied values to define properties whose names match properties in the ProxyHandler API", () => {
+      class Message {
+        msg = "Hello World"
+
+        get(): string {
+          return this.msg
+        }
+
+        set(msg: string) {
+          this.msg = msg
+        }
+
+        deleteProperty() {
+          this.msg = ""
+        }
+      }
+
+      const tree = new Arbor(new Message())
+
+      expect(tree.root.get()).toBe("Hello World")
+      tree.root.set("Hello Arbor")
+      expect(tree.root.get()).toBe("Hello Arbor")
+      tree.root.deleteProperty()
+      expect(tree.root.get()).toBe("")
+    })
   })
 
   describe("set trap", () => {

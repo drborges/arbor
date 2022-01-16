@@ -1,8 +1,8 @@
-import { Node, IStateTree } from "./types"
 import Path from "./Path"
-import NodeCache from "./NodeCache"
 import isNode from "./isNode"
+import NodeCache from "./NodeCache"
 import { clone, clonable } from "./cloning"
+import type { Node, IStateTree } from "./types"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
@@ -24,7 +24,9 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
 
-    if (handlerApiAccess) {
+    // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
+    // without conflicting with the ProxyHandler API.
+    if (handlerApiAccess && !["get", "set", "deleteProperty"].includes(prop)) {
       return handlerApiAccess
     }
 
