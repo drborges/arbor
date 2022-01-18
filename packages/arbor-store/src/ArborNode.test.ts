@@ -4,7 +4,7 @@ import Collection from "./Collection"
 
 describe("ArborNode", () => {
   class Todo extends ArborNode<Todo> {
-    id!: string
+    uuid!: string
     text!: string
     completed: boolean
   }
@@ -13,8 +13,8 @@ describe("ArborNode", () => {
     it("allows detaching a node from the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -31,8 +31,8 @@ describe("ArborNode", () => {
     it("allows attaching nodes back into the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -54,8 +54,8 @@ describe("ArborNode", () => {
     it("allows merging attributes to the node", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -69,7 +69,7 @@ describe("ArborNode", () => {
       expect(store.root.fetch("bcd")).toBe(todo2)
       expect(store.root.fetch("abc")).not.toBe(todo1)
       expect(store.root.fetch("abc")).toEqual(
-        new Todo({ id: "abc", text: "Walk the dogs", completed: false })
+        new Todo({ uuid: "abc", text: "Walk the dogs", completed: false })
       )
     })
   })
@@ -78,8 +78,8 @@ describe("ArborNode", () => {
     it("allows reloading stale nodes", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -102,8 +102,8 @@ describe("ArborNode", () => {
     it("checks whether or not a node belongs to the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -119,8 +119,8 @@ describe("ArborNode", () => {
     it("checks whether or not a node is out dated", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -136,8 +136,8 @@ describe("ArborNode", () => {
     it("retrieves the node path within the state tree", () => {
       const store = new Arbor({
         todos: new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         ),
       })
 

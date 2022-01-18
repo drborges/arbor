@@ -174,7 +174,7 @@ describe("Arbor", () => {
 
   describe("custom data model", () => {
     class Todo extends ArborNode<Todo> {
-      id!: string
+      uuid!: string
       text!: string
       completed: boolean
 
@@ -233,21 +233,21 @@ describe("Arbor", () => {
     })
 
     describe("Collection", () => {
-      it("allows managing collections of items in a way that node paths are not impacted", () => {
+      it("allows managing collections of items", () => {
         const store = new Arbor(
           new Collection(
-            new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-            new Todo({ id: "bcd", text: "Clean the house", completed: true })
+            new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+            new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
           )
         )
 
         const firstItem = store.root.first
         const lastItem = store.root.last
         store.root.delete(firstItem)
-        // should error out since this node no longer exists in the state tree
+        // does not trigger any mutations since the node is no longer in the state tree
         firstItem.completed = true
 
-        expect(store.root[firstItem.id]).toBeUndefined()
+        expect(store.root[firstItem.uuid]).toBeUndefined()
         expect(store.root.first).toBe(lastItem)
       })
     })

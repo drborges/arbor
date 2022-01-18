@@ -2,19 +2,19 @@
 import type { Node } from "./types"
 
 export type Predicate<T> = (item: T) => boolean
-export interface Record {
-  id: string
+export interface Item {
+  uuid: string
 }
 
-function extractIdFrom(value: string | Record): string {
+function extractUUIDFrom(value: string | Item): string {
   if (typeof value === "string") return value
-  return value?.id
+  return value?.uuid
 }
 
-export default class Collection<T extends Record> {
+export default class Collection<T extends Item> {
   constructor(...items: T[]) {
     items.forEach((item) => {
-      this[item.id] = item
+      this[item.uuid] = item
     })
   }
 
@@ -22,18 +22,20 @@ export default class Collection<T extends Record> {
     const node = this as unknown as Node<T>
 
     items.forEach((item) => {
-      if (item.id == null) {
-        throw new Error("Collection items must have a string id")
+      if (item.uuid == null) {
+        throw new Error("Collection items must have a string 'uuid'")
       }
     })
 
     node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
       items.forEach((item) => {
-        collection[item.id] = item
+        collection[item.uuid] = item
       })
     })
 
-    return items.map((item) => node.$tree.getNodeAt(node.$path.child(item.id)))
+    return items.map((item) =>
+      node.$tree.getNodeAt(node.$path.child(item.uuid))
+    )
   }
 
   add(item: T): T {
@@ -70,24 +72,24 @@ export default class Collection<T extends Record> {
     return undefined
   }
 
-  merge(idOrItem: T | string, data: Partial<T>): T {
-    const item = this.fetch(idOrItem)
+  merge(uuidOrItem: T | string, data: Partial<T>): T {
+    const item = this.fetch(uuidOrItem)
     const node = this as unknown as Node<T>
 
     if (item === undefined) {
       return undefined
     }
 
-    delete data.id
+    delete data.uuid
 
     node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
-      collection[item.id] = {
+      collection[item.uuid] = {
         ...item,
         ...data,
       }
     })
 
-    return node.$tree.getNodeAt(node.$path.child(item.id))
+    return node.$tree.getNodeAt(node.$path.child(item.uuid))
   }
 
   mergeBy(predicate: Predicate<T>, updateFn: (item: T) => Partial<T>): T[] {
@@ -102,27 +104,29 @@ export default class Collection<T extends Record> {
             ...updateFn(value),
           }
 
-          collection[value.id] = newValue
-          updatedIds.push(value.id)
+          collection[value.uuid] = newValue
+          updatedIds.push(value.uuid)
         }
       })
     })
 
-    return updatedIds.map((id) => node.$tree.getNodeAt(node.$path.child(id)))
+    return updatedIds.map((uuid) =>
+      node.$tree.getNodeAt(node.$path.child(uuid))
+    )
   }
 
-  fetch(idOrItem: string | T): T | undefined {
-    const id = extractIdFrom(idOrItem)
+  fetch(uuidOrItem: string | T): T | undefined {
+    const uuid = extractUUIDFrom(uuidOrItem)
     const node = this as unknown as Node<T>
 
-    return id ? node.$tree.getNodeAt(node.$path.child(id)) : undefined
+    return uuid ? node.$tree.getNodeAt(node.$path.child(uuid)) : undefined
   }
 
   get values(): T[] {
     return Object.values(this)
   }
 
-  get ids(): string[] {
+  get uuids(): string[] {
     return Object.keys(this)
   }
 
@@ -150,13 +154,13 @@ export default class Collection<T extends Record> {
     return Object.keys(this).length
   }
 
-  includes(idOrItem: string | T): boolean {
-    const id = extractIdFrom(idOrItem)
+  includes(uuidOrItem: string | T): boolean {
+    const id = extractUUIDFrom(uuidOrItem)
 
     if (id === undefined) return false
 
     for (const i of this) {
-      if (i.id === id) return true
+      if (i.uuid === id) return true
     }
 
     return false
@@ -201,15 +205,15 @@ export default class Collection<T extends Record> {
     return slice
   }
 
-  delete(idOrItem: string | T) {
+  delete(uuidOrItem: string | T) {
     let deleted: T
     const node = this as unknown as Node<T>
-    const id = extractIdFrom(idOrItem)
+    const uuid = extractUUIDFrom(uuidOrItem)
 
-    if (id) {
+    if (uuid) {
       node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
-        deleted = collection[id]
-        delete collection[id]
+        deleted = collection[uuid]
+        delete collection[uuid]
       })
     }
 
@@ -223,7 +227,7 @@ export default class Collection<T extends Record> {
     node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
       Object.values(collection).forEach((value: T) => {
         if (predicate(value)) {
-          delete collection[value.id]
+          delete collection[value.uuid]
           deleted.push(value)
         }
       })

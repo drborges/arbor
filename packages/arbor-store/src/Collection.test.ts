@@ -4,15 +4,15 @@ import Collection from "./Collection"
 import type { Node } from "./types"
 
 interface User {
-  id: string
+  uuid: string
   name: string
 }
 
 describe("Collection", () => {
   describe("#get", () => {
     it("retrieves an item", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "bcd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const node = store.root.fetch("bcd") as Node<User>
@@ -31,8 +31,8 @@ describe("Collection", () => {
 
   describe("#add", () => {
     it("add a new item into the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "bcd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1))
 
       const newUser = store.root.add(user2) as Node<User>
@@ -45,16 +45,16 @@ describe("Collection", () => {
     it("throws an error when adding a new item without an id", () => {
       const store = new Arbor(new Collection<User>())
 
-      expect(() => store.root.add({ id: undefined, name: "Bob" })).toThrowError(
-        "Collection items must have a string id"
-      )
+      expect(() =>
+        store.root.add({ uuid: undefined, name: "Bob" })
+      ).toThrowError("Collection items must have a string 'uuid'")
     })
   })
 
   describe("#addMany", () => {
     it("add many items into the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "bcd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>())
 
       const newUsers = store.root.addMany(user1, user2)
@@ -70,12 +70,12 @@ describe("Collection", () => {
     })
 
     it("throws an error when adding a new item without an id", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: undefined, name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: undefined, name: "Alice" }
       const store = new Arbor(new Collection<User>())
 
       expect(() => store.root.addMany(user1, user2)).toThrowError(
-        "Collection items must have a string id"
+        "Collection items must have a string 'uuid'"
       )
 
       expect(store.root.length).toBe(0)
@@ -84,50 +84,50 @@ describe("Collection", () => {
 
   describe("#merge", () => {
     it("merges new data into a given collection item", () => {
-      const user1 = { id: "abc", name: "Bob" }
+      const user1 = { uuid: "abc", name: "Bob" }
       const store = new Arbor(new Collection<User>(user1))
 
       const item1 = store.root.fetch("abc")
 
       store.root.merge(item1, { name: "Bob Updated" })
 
-      expect(user1).toEqual({ id: "abc", name: "Bob" })
+      expect(user1).toEqual({ uuid: "abc", name: "Bob" })
       expect(store.root.fetch("abc")).toEqual({
-        id: "abc",
+        uuid: "abc",
         name: "Bob Updated",
       })
     })
 
     it("merges new data into a given collection item by its id", () => {
-      const user1 = { id: "abc", name: "Bob" }
+      const user1 = { uuid: "abc", name: "Bob" }
       const store = new Arbor(new Collection<User>(user1))
 
       store.root.merge("abc", { name: "Bob Updated" })
 
-      expect(user1).toEqual({ id: "abc", name: "Bob" })
+      expect(user1).toEqual({ uuid: "abc", name: "Bob" })
       expect(store.root.fetch("abc")).toEqual({
-        id: "abc",
+        uuid: "abc",
         name: "Bob Updated",
       })
     })
 
     it("does not override the id property", () => {
-      const user1 = { id: "abc", name: "Bob" }
+      const user1 = { uuid: "abc", name: "Bob" }
       const store = new Arbor(new Collection<User>(user1))
 
       const item1 = store.root.fetch("abc")
 
-      store.root.merge(item1, { name: "Bob Updated", id: "to be ignored" })
+      store.root.merge(item1, { name: "Bob Updated", uuid: "to be ignored" })
 
-      expect(user1).toEqual({ id: "abc", name: "Bob" })
+      expect(user1).toEqual({ uuid: "abc", name: "Bob" })
       expect(store.root.fetch("abc")).toEqual({
-        id: "abc",
+        uuid: "abc",
         name: "Bob Updated",
       })
     })
 
     it("returns undefined when item is not found", () => {
-      const user = { id: "abc", name: "Bob" }
+      const user = { uuid: "abc", name: "Bob" }
       const store = new Arbor(new Collection<User>())
 
       const updatedItem = store.root.merge(user, { name: "Bob Updated" })
@@ -138,9 +138,9 @@ describe("Collection", () => {
 
   describe("#mergeBy", () => {
     it("merges new data into items within a collection matching a given predicate", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       const originalBob = store.root.fetch("abc")
@@ -156,31 +156,31 @@ describe("Collection", () => {
       const barbara = updatedItems[1] as Node<User>
 
       expect(updatedItems.length).toBe(2)
-      expect(bob).toEqual({ id: "abc", name: "Bob Updated" })
-      expect(barbara).toEqual({ id: "abe", name: "Barbara Updated" })
+      expect(bob).toEqual({ uuid: "abc", name: "Bob Updated" })
+      expect(barbara).toEqual({ uuid: "abe", name: "Barbara Updated" })
       expect(bob).not.toBe(originalBob)
       expect(barbara).not.toBe(originalBarbara)
       expect(alice).toBe(originalAlice)
       expect(store.root).toEqual({
         abc: {
-          id: "abc",
+          uuid: "abc",
           name: "Bob Updated",
         },
         abd: {
-          id: "abd",
+          uuid: "abd",
           name: "Alice",
         },
         abe: {
-          id: "abe",
+          uuid: "abe",
           name: "Barbara Updated",
         },
       })
     })
 
     it("does not update any item when no items match the predicate", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       const originalBob = store.root.fetch("abc")
@@ -201,12 +201,12 @@ describe("Collection", () => {
 
   describe("#map", () => {
     it("maps over all items in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
-      const ids = store.root.map((user) => user.id)
+      const ids = store.root.map((user) => user.uuid)
 
       expect(ids).toEqual(["abc", "abd", "abe"])
     })
@@ -214,9 +214,9 @@ describe("Collection", () => {
 
   describe("#filter", () => {
     it("filter items from a collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
       const bob = store.root.fetch("abc")
       const barbara = store.root.fetch("abe")
@@ -231,9 +231,9 @@ describe("Collection", () => {
 
   describe("#find", () => {
     it("finds the first item matching the given predicate", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       const user = store.root.find((u) => u.name.startsWith("B")) as Node<User>
@@ -244,8 +244,8 @@ describe("Collection", () => {
 
   describe("#fetch", () => {
     it("fetch an item by its id from within the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const bob = store.root.fetch("abc") as Node<User>
@@ -256,8 +256,8 @@ describe("Collection", () => {
     })
 
     it("fetch an item by an object that implements the Record interface", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const bob = store.root.fetch(user1) as Node<User>
@@ -278,8 +278,8 @@ describe("Collection", () => {
 
   describe("#values", () => {
     it("returns an array containing all items in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const users = store.root.values
@@ -300,23 +300,23 @@ describe("Collection", () => {
     })
   })
 
-  describe("#ids", () => {
-    it("returns an array containing all ids of all items in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+  describe("#uuids", () => {
+    it("returns an array containing all uuids of all items in the collection", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
-      const ids = store.root.ids
+      const uuids = store.root.uuids
 
-      expect(ids.length).toBe(2)
-      expect(ids[0]).toBe("abc")
-      expect(ids[1]).toBe("abd")
+      expect(uuids.length).toBe(2)
+      expect(uuids[0]).toBe("abc")
+      expect(uuids[1]).toBe("abd")
     })
 
     it("returns an empty array when there are no items in the collection", () => {
       const store = new Arbor(new Collection<User>())
 
-      const ids = store.root.ids
+      const ids = store.root.uuids
 
       expect(ids).toEqual([])
     })
@@ -325,8 +325,8 @@ describe("Collection", () => {
   describe("#first", () => {
     // The order of items is based on the insertion order. This is only valid if the item ids are non numeric-like
     it("fetches the first item in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const user = store.root.first as Node<User>
@@ -346,8 +346,8 @@ describe("Collection", () => {
   describe("#last", () => {
     // The order of items is based on the insertion order. This is only valid if the item ids are non numeric-like
     it("fetches the last item in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const user = store.root.last as Node<User>
@@ -366,8 +366,8 @@ describe("Collection", () => {
 
   describe("#length", () => {
     it("returns the number of items in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       expect(store.root.length).toBe(2)
@@ -382,8 +382,8 @@ describe("Collection", () => {
 
   describe("#includes", () => {
     it("checks if a given item is included in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       expect(store.root.includes(user1)).toBe(true)
@@ -395,8 +395,8 @@ describe("Collection", () => {
     })
 
     it("checks if a given id is included in the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       expect(store.root.includes("abc")).toBe(true)
@@ -410,8 +410,8 @@ describe("Collection", () => {
 
   describe("#some", () => {
     it("checks if there's at least one item in the collection matching the given predicate", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       expect(store.root.some((user) => user.name.startsWith("B"))).toBe(true)
@@ -421,8 +421,8 @@ describe("Collection", () => {
 
   describe("#every", () => {
     it("checks if all items in the collection match the given predicate", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       expect(store.root.every((user) => user.name.length > 2)).toBe(true)
@@ -432,8 +432,8 @@ describe("Collection", () => {
 
   describe("#sort", () => {
     it("retrieves and sorts all collection items by a given compare function", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
       const byName = (u1: User, u2: User) => u1.name.localeCompare(u2.name)
 
@@ -447,9 +447,9 @@ describe("Collection", () => {
 
   describe("#slice", () => {
     it("returns a slice of the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       const slice = store.root.slice(1, 4)
@@ -460,9 +460,9 @@ describe("Collection", () => {
     })
 
     it("returns an empty array when no items intersect the given index range", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       const slice = store.root.slice(3, 4)
@@ -473,8 +473,8 @@ describe("Collection", () => {
 
   describe("#delete", () => {
     it("deletes an item from the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const deleted = store.root.delete(store.root.fetch("abd")) as Node<User>
@@ -484,8 +484,8 @@ describe("Collection", () => {
     })
 
     it("deletes an item from the collection by its id", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const deleted = store.root.delete("abd") as Node<User>
@@ -495,7 +495,9 @@ describe("Collection", () => {
     })
 
     it("returns undefined if item no longer exists in the state tree", () => {
-      const store = new Arbor(new Collection<User>({ id: "abc", name: "Bob" }))
+      const store = new Arbor(
+        new Collection<User>({ uuid: "abc", name: "Bob" })
+      )
       const user = store.root.fetch("abc")
 
       store.root.delete(user)
@@ -505,7 +507,7 @@ describe("Collection", () => {
     })
 
     it("allows deleting items that are not Arbor nodes", () => {
-      const user = { id: "abc", name: "Bob" }
+      const user = { uuid: "abc", name: "Bob" }
       const store = new Arbor(new Collection<User>(user))
 
       const deleted = store.root.delete(user) as Node<User>
@@ -517,9 +519,9 @@ describe("Collection", () => {
 
   describe("#deleteBy", () => {
     it("deletes all items matching a given predicate", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       const deleted = store.root.deleteBy((user) => user.name.startsWith("B"))
@@ -534,9 +536,9 @@ describe("Collection", () => {
 
   describe("#clear", () => {
     it("deletes all items from the collection", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       store.root.clear()
@@ -547,8 +549,8 @@ describe("Collection", () => {
 
   describe("$clone", () => {
     it("shallowly clones the collection into a new one", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
       const cloned = store.root.$clone()
@@ -565,9 +567,9 @@ describe("Collection", () => {
 
   describe("iterator support", () => {
     it("can be destructed", () => {
-      const user1 = { id: "abc", name: "Bob" }
-      const user2 = { id: "abd", name: "Alice" }
-      const user3 = { id: "abe", name: "Barbara" }
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
       const [first, ...tail] = store.root
