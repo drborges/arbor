@@ -18,7 +18,7 @@ export default class ArborNode<T extends object> {
     })
   }
 
-  attach(): this {
+  attach(): ArborNode<T> {
     const node = this as unknown as Node<T>
     if (!isNode(node)) return this
 
@@ -31,7 +31,7 @@ export default class ArborNode<T extends object> {
     return node.$tree.getNodeAt(node.$path)
   }
 
-  merge(attributes: Partial<AttributesOf<T>>): this {
+  merge(attributes: Partial<AttributesOf<T>>): ArborNode<T> {
     const node = this as unknown as Node<T>
     if (!isNode(node)) return this
 
@@ -42,7 +42,7 @@ export default class ArborNode<T extends object> {
     return node.$tree.getNodeAt(node.$path)
   }
 
-  reload(): this {
+  reload(): ArborNode<T> {
     const node = this as unknown as Node<T>
     return isNode(node) ? node.$tree.getNodeAt(node.$path) : this
   }
@@ -53,5 +53,10 @@ export default class ArborNode<T extends object> {
 
   isStale(): boolean {
     return this !== this.reload()
+  }
+
+  get path(): string {
+    const node = this as unknown as Node<T>
+    return node.$path.toString()
   }
 }

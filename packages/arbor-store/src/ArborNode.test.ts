@@ -131,4 +131,19 @@ describe("ArborNode", () => {
       expect(todo.isStale()).toBe(true)
     })
   })
+
+  describe("#path", () => {
+    it("retrieves the node path within the state tree", () => {
+      const store = new Arbor({
+        todos: new Collection(
+          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+        ),
+      })
+
+      const todo = store.root.todos.fetch("abc")
+
+      expect(todo.path).toBe("/todos/abc")
+    })
+  })
 })
