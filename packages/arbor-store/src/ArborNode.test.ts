@@ -1,9 +1,9 @@
 import Arbor from "./Arbor"
-import Model from "./Model"
+import ArborNode from "./ArborNode"
 import Collection from "./Collection"
 
-describe("Model", () => {
-  class Todo extends Model<Todo> {
+describe("ArborNode", () => {
+  class Todo extends ArborNode<Todo> {
     id!: string
     text!: string
     completed: boolean

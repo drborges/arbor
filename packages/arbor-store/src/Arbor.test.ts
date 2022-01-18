@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
 import Arbor from "./Arbor"
-import Model from "./Model"
+import ArborNode from "./ArborNode"
 import Collection from "./Collection"
 import { warmup } from "./test.helpers"
 
@@ -173,7 +173,7 @@ describe("Arbor", () => {
   })
 
   describe("custom data model", () => {
-    class Todo extends Model<Todo> {
+    class Todo extends ArborNode<Todo> {
       id!: string
       text!: string
       completed: boolean

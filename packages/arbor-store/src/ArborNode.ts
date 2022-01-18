@@ -2,12 +2,9 @@ import isNode from "./isNode"
 
 import type { AttributesOf, Node } from "./types"
 
-export default class Model<T extends object> {
+export default class ArborNode<T extends object> {
   constructor(attributes: Partial<AttributesOf<T>> = {}) {
-    Object.assign(this, {
-      ...this,
-      ...attributes,
-    })
+    Object.assign(this, attributes)
   }
 
   detach() {
