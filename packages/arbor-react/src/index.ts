@@ -1,5 +1,23 @@
-import Arbor, { Node, Path, stitch } from "@arborjs/store"
+import Arbor, {
+  clone,
+  clonable,
+  Node,
+  Path,
+  Collection,
+  ArborNode,
+  stitch,
+} from "@arborjs/store"
+
 import useArbor from "./useArbor"
 
 export type { Node }
-export { useArbor, Path, stitch, Arbor as default }
+export {
+  clone,
+  clonable,
+  Collection,
+  useArbor,
+  Path,
+  stitch,
+  ArborNode,
+  Arbor as default,
+}
