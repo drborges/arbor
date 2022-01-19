@@ -1,13 +1,13 @@
-import NodeHandler from "./NodeHandler"
 import Path from "./Path"
 import NodeCache from "./NodeCache"
-import { IStateTree } from "./types"
+import Arbor from "./Arbor"
+import NodeHandler from "./NodeHandler"
 
 export default class NodeArrayHandler<T extends object> extends NodeHandler<
   T[]
 > {
   constructor(
-    $tree: IStateTree,
+    $tree: Arbor,
     $path: Path,
     $value: T[],
     $children = new NodeCache()

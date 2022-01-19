@@ -18,12 +18,6 @@ const config = {
 
 build({
   ...config,
-  format: "iife",
-  outfile: `${dist}/index.iife.js`,
-})
-
-build({
-  ...config,
   format: "cjs",
   outfile: `${dist}/index.cjs.js`,
 })

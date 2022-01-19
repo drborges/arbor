@@ -2,11 +2,11 @@ import Path from "./Path"
 import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import { clone, clonable } from "./cloning"
-import type { Node, IStateTree } from "./types"
+import Arbor, { Node } from "./Arbor"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
-    public readonly $tree: IStateTree,
+    public readonly $tree: Arbor,
     protected readonly $path: Path,
     protected readonly $value: T,
     readonly $children = new NodeCache()

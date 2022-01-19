@@ -1,9 +1,8 @@
-import { Path } from "."
-import Arbor from "./Arbor"
+import Path from "./Path"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
+import Arbor, { MutationMode, Node } from "./Arbor"
 import { children, unwrap, warmup } from "./test.helpers"
-import { MutationMode, Node } from "./types"
 
 interface Address {
   street: string

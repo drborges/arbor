@@ -1,6 +1,6 @@
-import { ICacheable, Node } from "./types"
+import { Node } from "./types"
 
-export default class NodeCache implements ICacheable {
+export default class NodeCache {
   #nodes = new WeakMap<object, Node>()
 
   delete(value: object): boolean {

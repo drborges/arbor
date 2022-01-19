@@ -1,8 +1,7 @@
-import Arbor from "./Arbor"
-import NodeArrayHandler from "./NodeArrayHandler"
 import Path from "./Path"
 import { unwrap, warmup } from "./test.helpers"
-import { MutationMode, Node } from "./types"
+import NodeArrayHandler from "./NodeArrayHandler"
+import Arbor, { MutationMode, Node } from "./Arbor"
 
 interface Address {
   street: string
