@@ -1,8 +1,19 @@
 import Path from "./Path"
-import mutate from "./mutate"
+import mutate, { Mutation } from "./mutate"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import NodeArrayHandler from "./NodeArrayHandler"
+
+/**
+ * Represents an Arbor tree node.
+ */
+export type Node<T extends object = object> = T & {
+  $unwrap(): T
+  $clone(): Node<T>
+  get $tree(): Arbor<T>
+  get $path(): Path
+  get $children(): NodeCache
+}
 
 /**
  * Controls Arbor's mutation behavior.
@@ -49,22 +60,6 @@ export enum MutationMode {
 export type ArborConfig = {
   mode?: MutationMode
 }
-
-/**
- * Represents an Arbor tree node.
- */
-export type Node<T extends object = object> = T & {
-  $unwrap(): T
-  $clone(): Node<T>
-  get $tree(): Arbor<T>
-  get $path(): Path
-  get $children(): NodeCache
-}
-
-/**
- * A mutation function used to update an Arbor tree node.
- */
-export type Mutation<T extends object> = (arg0: T) => void
 
 /**
  * Describes a function used by users to cancel their state updates subscription.

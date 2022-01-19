@@ -6,6 +6,7 @@
   "extends": ["airbnb-typescript", "prettier", "plugin:jest/recommended"],
   "rules": {
     "prefer-destructuring": "off",
+    "import/no-cycle": "off",
     "no-plusplus": "off",
     "no-param-reassign": "off",
     "@typescript-eslint/no-unused-vars": [

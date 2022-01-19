@@ -1,5 +1,5 @@
 import NodeCache from "./NodeCache"
-import { Node } from "./types"
+import { Node } from "./Arbor"
 
 export function unwrap<T extends object>(value: T): T {
   const node = value as Node<T>

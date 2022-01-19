@@ -1,7 +1,7 @@
 import Arbor from "./Arbor"
 import Collection from "./Collection"
 
-import type { Node } from "./types"
+import type { Node } from "./Arbor"
 
 interface User {
   uuid: string

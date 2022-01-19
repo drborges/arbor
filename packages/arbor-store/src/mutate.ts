@@ -1,11 +1,10 @@
 import Path from "./Path"
-import { Mutation, Node } from "./types"
+import type { Node } from "./Arbor"
 
 /**
- * TODO:
- *
- * - [ ] Handle invalid paths by throwing an error
+ * A mutation function used to update an Arbor tree node.
  */
+export type Mutation<T extends object> = (arg0: T) => void
 
 /**
  * Mutates a given node by traversing the given path and applying the

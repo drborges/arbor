@@ -1,6 +1,6 @@
 import isNode from "./isNode"
 
-import type { AttributesOf } from "./types"
+import type { AttributesOf } from "./Arbor"
 
 export type Constructor<T extends object> = new (...args: any[]) => T
 

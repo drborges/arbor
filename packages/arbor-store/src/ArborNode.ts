@@ -1,6 +1,6 @@
 import isNode from "./isNode"
 
-import type { AttributesOf, Node } from "./types"
+import type { AttributesOf, Node } from "./Arbor"
 
 export default class ArborNode<T extends object> {
   constructor(attributes: Partial<AttributesOf<T>> = {}) {

@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import type { Node } from "./types"
+import type { Node } from "./Arbor"
 
 export type Predicate<T> = (item: T) => boolean
 export interface Item {

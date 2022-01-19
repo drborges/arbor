@@ -1,22 +1,18 @@
 import Arbor, {
-  clone,
-  clonable,
-  Node,
   Path,
   Collection,
   ArborNode,
   stitch,
+  MutationMode,
 } from "@arborjs/store"
 
 import useArbor from "./useArbor"
 
-export type { Node }
 export {
-  clone,
-  clonable,
   Collection,
   useArbor,
   Path,
+  MutationMode,
   stitch,
   ArborNode,
   Arbor as default,

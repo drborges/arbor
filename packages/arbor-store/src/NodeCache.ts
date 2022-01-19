@@ -1,4 +1,4 @@
-import { Node } from "./types"
+import { Node } from "./Arbor"
 
 export default class NodeCache {
   #nodes = new WeakMap<object, Node>()
