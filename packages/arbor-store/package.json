@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/store",
-  "version": "0.0.1-alpha.17",
+  "version": "0.0.1-alpha.19",
   "description": "A fully typed, minimalistic proxy-based state tree library with very little boilerplate.",
   "keywords": [
     "arbor",
@@ -24,7 +24,6 @@
     "url": "https://github.com/drborges"
   },
   "main": "./dist/index.cjs.js",
-  "browser": "./dist/index.iife.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
   "license": "MIT",

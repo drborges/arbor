@@ -1,10 +1,10 @@
 import Arbor from "./Arbor"
-import Model from "./Model"
+import ArborNode from "./ArborNode"
 import Collection from "./Collection"
 
-describe("Model", () => {
-  class Todo extends Model<Todo> {
-    id!: string
+describe("ArborNode", () => {
+  class Todo extends ArborNode<Todo> {
+    uuid!: string
     text!: string
     completed: boolean
   }
@@ -13,8 +13,8 @@ describe("Model", () => {
     it("allows detaching a node from the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -31,8 +31,8 @@ describe("Model", () => {
     it("allows attaching nodes back into the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -54,8 +54,8 @@ describe("Model", () => {
     it("allows merging attributes to the node", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -69,7 +69,7 @@ describe("Model", () => {
       expect(store.root.fetch("bcd")).toBe(todo2)
       expect(store.root.fetch("abc")).not.toBe(todo1)
       expect(store.root.fetch("abc")).toEqual(
-        new Todo({ id: "abc", text: "Walk the dogs", completed: false })
+        new Todo({ uuid: "abc", text: "Walk the dogs", completed: false })
       )
     })
   })
@@ -78,8 +78,8 @@ describe("Model", () => {
     it("allows reloading stale nodes", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -102,8 +102,8 @@ describe("Model", () => {
     it("checks whether or not a node belongs to the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -119,8 +119,8 @@ describe("Model", () => {
     it("checks whether or not a node is out dated", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ id: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ id: "bcd", text: "Clean the house", completed: true })
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
         )
       )
 
@@ -129,6 +129,21 @@ describe("Model", () => {
       expect(todo.isStale()).toBe(false)
       todo.text = "Walk the dogs"
       expect(todo.isStale()).toBe(true)
+    })
+  })
+
+  describe("#path", () => {
+    it("retrieves the node path within the state tree", () => {
+      const store = new Arbor({
+        todos: new Collection(
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+        ),
+      })
+
+      const todo = store.root.todos.fetch("abc")
+
+      expect(todo.path).toBe("/todos/abc")
     })
   })
 })

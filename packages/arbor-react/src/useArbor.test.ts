@@ -8,6 +8,16 @@ interface User {
 }
 
 describe("useArbor", () => {
+  it("subscribed data is simply a reference to the store's root object", () => {
+    const store = new Arbor({
+      count: 0,
+    })
+
+    const { result } = renderHook(() => useArbor(store))
+
+    expect(result.current).toBe(store.root)
+  })
+
   it("updates the state whenever a store mutation is triggered", () => {
     const store = new Arbor({
       count: 0,

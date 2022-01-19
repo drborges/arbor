@@ -1,18 +1,93 @@
 import Path from "./Path"
-import mutate from "./mutate"
-import {
-  ArborConfig,
-  IStateTree,
-  Mutation,
-  MutationMode,
-  Node,
-  Plugin,
-  Subscription,
-  Unsubscribe,
-} from "./types"
+import mutate, { Mutation } from "./mutate"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import NodeArrayHandler from "./NodeArrayHandler"
+
+/**
+ * Represents an Arbor tree node.
+ */
+export type Node<T extends object = object> = T & {
+  $unwrap(): T
+  $clone(): Node<T>
+  get $tree(): Arbor<T>
+  get $path(): Path
+  get $children(): NodeCache
+}
+
+/**
+ * Controls Arbor's mutation behavior.
+ *
+ * 1. `forgiven`: Tells Arbor to propagate mutation side-effects to the original
+ * node underlying value, keeping the previous and next nodes state in sync, although
+ * nodes will still rely on structural sharing in order to determine diffs between state
+ * tree snapshops. This allows for multiple subsequent mutations to be triggered off of
+ * the same node reference.
+ *
+ * @example
+ *
+ * ```ts
+ * const state = { count: 0 }
+ * const tree = new Arbor(state, { mode: MutationMode.FORGIVEN })
+ * const root = tree.root
+ * root.count++
+ * => 1
+ * root.count++
+ * => 2
+ * ```
+ *
+ * 2. `strict`: Prevents mutation side-effects from being propagated to the original
+ * node underlying value. Subsequent mutations triggered off of the same node reference
+ * will yield the same result.
+ *
+ * @example
+ *
+ * ```ts
+ * cosnt state = { count: 0 }
+ * const tree = new Arbor(state, { mode: MutationMode.STRICT })
+ * const root = tree.root
+ * root.count++
+ * => 1
+ * root.count++
+ * => 1
+ * ```
+ */
+export enum MutationMode {
+  FORGIVEN,
+  STRICT,
+}
+
+export type ArborConfig = {
+  mode?: MutationMode
+}
+
+/**
+ * Describes a function used by users to cancel their state updates subscription.
+ */
+export type Unsubscribe = () => void
+
+/**
+ * Subscription function used to notify subscribers about state updates.
+ */
+export type Subscription<T extends object> = (
+  newState: Node<T>,
+  oldState: T
+) => void
+
+/**
+ * Describes an Arbor Plugin
+ */
+export interface Plugin<T extends object> {
+  /**
+   * Allows the plugin to configure itself with the given state tree instance.
+   *
+   * @param store an instance of a state tree
+   * @returns a resolved promise if the configuration was successful, or a rejected one otherwise.
+   */
+  configure(store: Arbor<T>): Promise<void>
+}
+
+export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
 
 /**
  * Implements the Arbor state tree abstraction
@@ -29,7 +104,7 @@ import NodeArrayHandler from "./NodeArrayHandler"
  * ```
  *
  */
-export default class Arbor<T extends object = {}> implements IStateTree {
+export default class Arbor<T extends object = {}> {
   /**
    * Controls whether or not Arbor should propagate mutation side-effects
    * to the original node underlying value.

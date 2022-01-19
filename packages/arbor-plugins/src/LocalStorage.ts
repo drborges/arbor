@@ -1,4 +1,4 @@
-import type { IStateTree, Plugin } from "@arborjs/store"
+import Arbor, { Plugin } from "@arborjs/store"
 
 import debounce from "./debounce"
 
@@ -44,7 +44,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
     }, config.debounceBy)
   }
 
-  async configure(store: IStateTree<T>) {
+  async configure(store: Arbor<T>) {
     const data = await this.load()
     const deserialize = this.config.deserialize || (() => data)
     const deserialized = deserialize(data)
