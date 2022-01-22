@@ -1,6 +1,6 @@
 import { memoryUsage } from "process"
 
-import Arbor from "../dist/index.esm.js"
+import Arbor from "../dist/index.mjs"
 import { createDeeplyNestedState, readRecursevly } from "./helpers.mjs"
 
 export function checkMemoryAllocationWhenProduceNextStateViaArbor() {

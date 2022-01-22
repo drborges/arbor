@@ -1,6 +1,6 @@
 import { performance } from "perf_hooks"
 
-import Arbor from "../dist/index.esm.js"
+import Arbor from "../dist/index.mjs"
 import { createDeeplyNestedState, readRecursevly } from "./helpers.mjs"
 
 export function readingLeafNodeFromArborStateTree() {

@@ -27,3 +27,9 @@ build({
   outfile: `${dist}/index.esm.js`,
   format: "esm",
 })
+
+build({
+  ...config,
+  outfile: `${dist}/index.mjs`,
+  format: "esm",
+})
