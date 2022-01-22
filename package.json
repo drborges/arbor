@@ -14,12 +14,6 @@
         ],
         "outputs": []
       },
-      "test:perf": {
-        "dependsOn": [
-          "^build"
-        ],
-        "outputs": []
-      },
       "lint": {
         "outputs": []
       },
@@ -34,7 +28,7 @@
   ],
   "scripts": {
     "clean": "yarn workspaces foreach run clean",
-    "build": "npx turbo run lint build test test:perf"
+    "build": "npx turbo run lint build test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.1",

@@ -1,4 +1,4 @@
-const defaultDepth = 10000
+export const defaultDepth = 10000
 
 export const createDeeplyNestedState = (depth = defaultDepth, state = {}) => {
   const level = `level${depth}`
