@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 import type { Node } from "./Arbor"
 
 export type Predicate<T> = (item: T) => boolean
@@ -50,6 +49,12 @@ export default class Collection<T extends Item> {
     }
 
     return mapped
+  }
+
+  forEach(cb: (item: T) => void) {
+    for (const item of this) {
+      cb(item)
+    }
   }
 
   filter(predicate: Predicate<T>): T[] {

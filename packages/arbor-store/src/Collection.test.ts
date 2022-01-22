@@ -212,6 +212,24 @@ describe("Collection", () => {
     })
   })
 
+  describe("#forEach", () => {
+    it("allows iterating over each element within the collection", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+      const users: User[] = []
+
+      store.root.forEach((user) => {
+        users.push(user)
+      })
+
+      expect(users[0]).toBe(store.root.fetch("abc"))
+      expect(users[1]).toBe(store.root.fetch("abd"))
+      expect(users[2]).toBe(store.root.fetch("abe"))
+    })
+  })
+
   describe("#filter", () => {
     it("filter items from a collection", () => {
       const user1 = { uuid: "abc", name: "Bob" }
@@ -572,12 +590,28 @@ describe("Collection", () => {
       const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
-      const [first, ...tail] = store.root
+      const [head, ...tail] = store.root
 
-      expect(first).toBe(store.root.first)
+      expect(head).toBe(store.root.first)
       expect(tail.length).toBe(2)
       expect(tail[0]).toBe(store.root.fetch("abd"))
       expect(tail[1]).toBe(store.root.fetch("abe"))
+    })
+
+    it("can be iterated over with for ... of", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+      const users: User[] = []
+
+      for (const user of store.root) {
+        users.push(user)
+      }
+
+      expect(users[0]).toBe(store.root.fetch("abc"))
+      expect(users[1]).toBe(store.root.fetch("abd"))
+      expect(users[2]).toBe(store.root.fetch("abe"))
     })
   })
 })
