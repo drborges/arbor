@@ -14,6 +14,9 @@ const config = {
   bundle: true,
   minify: true,
   external: Object.keys(dependencies).concat(Object.keys(peerDependencies)),
+  define: {
+    "global.DEBUG": false,
+  },
 }
 
 build({

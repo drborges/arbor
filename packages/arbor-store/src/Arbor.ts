@@ -165,7 +165,8 @@ export default class Arbor<T extends object = {}> {
       this.#root = newRoot
 
       this.notify(newRoot, oldRootValue)
-    } else {
+    } else if (global.DEBUG) {
+      // eslint-disable-next-line no-console
       console.warn(
         `Could not mutate path ${path}. The path no longer exists within the state tree.`
       )
