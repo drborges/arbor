@@ -1,10 +1,14 @@
 import { memoryUsage } from "process"
 
 import Arbor from "../dist/index.mjs"
-import { createDeeplyNestedState, readRecursevly } from "./helpers.mjs"
+import {
+  createDeeplyNestedState,
+  defaultDepth,
+  readRecursevly,
+} from "./helpers.mjs"
 
 export function checkMemoryAllocationWhenProduceNextStateViaArbor() {
-  console.log("\nHeap Allocation")
+  console.log(`\nHeap Allocation (State Tree Depth: ${defaultDepth})`)
   global.gc()
   const initial = memoryUsage()
   const state = createDeeplyNestedState()
@@ -38,6 +42,17 @@ export function checkMemoryAllocationWhenProduceNextStateViaArbor() {
   console.log(
     "  After mutating leaf node",
     (afterMutatingLeafNode.heapUsed - afterAccessingLeafNode.heapUsed) / 1000,
+    "Kb"
+  )
+
+  const newLeafNode = readRecursevly(store.root)
+  newLeafNode.newProp = "mutating leaf node..."
+  const afterMutatingLeafNodeASecondTime = memoryUsage()
+  console.log(
+    "  After mutating leaf node a second time",
+    (afterMutatingLeafNodeASecondTime.heapUsed -
+      afterMutatingLeafNode.heapUsed) /
+      1000,
     "Kb"
   )
 }
