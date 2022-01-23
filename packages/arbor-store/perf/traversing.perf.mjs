@@ -1,7 +1,11 @@
 import { performance } from "perf_hooks"
 
 import Arbor from "../dist/index.mjs"
-import { createDeeplyNestedState, readRecursevly } from "./helpers.mjs"
+import {
+  createDeeplyNestedState,
+  defaultDepth,
+  readRecursevly,
+} from "./helpers.mjs"
 
 export function readingLeafNodeFromArborStateTree() {
   const state = createDeeplyNestedState()
@@ -11,7 +15,7 @@ export function readingLeafNodeFromArborStateTree() {
   readRecursevly(store.root)
   performance.mark("finish")
   performance.measure(
-    "Reading a leaf node within a very tall Arbor state tree",
+    `Reading a leaf node from an Arbor state tree (depth = ${defaultDepth})`,
     "start",
     "finish"
   )
@@ -20,7 +24,7 @@ export function readingLeafNodeFromArborStateTree() {
   readRecursevly(store.root)
   performance.mark("finish")
   performance.measure(
-    "Reading a leaf node within a very tall but cached Arbor state tree",
+    `Reading a leaf node from a cached Arbor state tree (depth = ${defaultDepth})`,
     "start",
     "finish"
   )
@@ -33,7 +37,7 @@ export function readingLeafNodeFromPlainObjectStateTree() {
   readRecursevly(state)
   performance.mark("finish")
   performance.measure(
-    "Reading a leaf node within a very tall plain object state tree",
+    `Reading a leaf node from a plain object state tree (depth = ${defaultDepth})`,
     "start",
     "finish"
   )

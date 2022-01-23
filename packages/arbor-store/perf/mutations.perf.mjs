@@ -20,7 +20,7 @@ export function produceNextStateViaArbor() {
   node.newProp = "mutating leaf node..."
   performance.mark("finish")
   performance.measure(
-    `Producing next state tree via Arbor mutation (depth = ${defaultDepth})`,
+    `Producing the next state tree via Arbor mutation (depth = ${defaultDepth})`,
     "start",
     "finish"
   )
@@ -37,7 +37,7 @@ export function produceNextStateViaArborProducer() {
   })
   performance.mark("finish")
   performance.measure(
-    `Producing next state tree via Arbor producer (depth = ${defaultDepth})`,
+    `Producing the next state tree via Arbor producer (depth = ${defaultDepth})`,
     "start",
     "finish"
   )
@@ -54,7 +54,7 @@ export function produceNextStateViaImmerProducer() {
   })
   performance.mark("finish")
   performance.measure(
-    `Producing next state tree via Immer producer (depth = ${defaultDepth})`,
+    `Producing the next state tree via Immer producer (depth = ${defaultDepth})`,
     "start",
     "finish"
   )
@@ -68,7 +68,7 @@ export function produceNextStateViaManualReducer() {
   reduceRecursevly(state)
   performance.mark("finish")
   performance.measure(
-    `Producing next state tree via plain reducer (depth = ${defaultDepth})`,
+    `Producing the next state tree via plain reducer (depth = ${defaultDepth})`,
     "start",
     "finish"
   )
