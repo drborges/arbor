@@ -1,3 +1,4 @@
+import IndexedDB from "./IndexedDB"
 import LocalStorage from "./LocalStorage"
 
-export { LocalStorage }
+export { LocalStorage, IndexedDB }
