@@ -51,7 +51,8 @@
     "test": "jest --passWithNoTests",
     "test:perf": "node --stack-size=200000 --expose-gc perf/index.mjs",
     "dev": "jest --watch",
-    "build": "yarn clean && node ../../tools/build.js && yarn tsc",
+    "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
+    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc",
     "prepublish": "yarn build",
     "publish": "np"
   }
