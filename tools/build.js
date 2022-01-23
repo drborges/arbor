@@ -1,8 +1,10 @@
+const process = require("process")
 const { build } = require("esbuild")
 
 const cwd = process.cwd()
 const dist = `${cwd}/dist`
 const src = `${cwd}/src`
+const isProduction = process.env.NODE_ENV === "production"
 
 const {
   dependencies = {},
@@ -12,8 +14,11 @@ const {
 const config = {
   entryPoints: [`${src}/index.ts`],
   bundle: true,
-  minify: true,
+  minify: isProduction,
   external: Object.keys(dependencies).concat(Object.keys(peerDependencies)),
+  define: {
+    "global.DEBUG": !isProduction,
+  },
 }
 
 build({

@@ -43,7 +43,6 @@ export default function mutate<T extends object, K extends object>(
 
     return root
   } catch (e) {
-    console.debug(e)
     return undefined
   }
 }
