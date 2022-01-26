@@ -1,11 +1,6 @@
-import Arbor, { Node } from "@arborjs/store"
+import Arbor, { isNode } from "@arborjs/store"
 
 import useArbor from "./useArbor"
-
-function isNode<T extends object>(value: any): value is Node<T> {
-  const isNodeValue = value as Node<T>
-  return typeof isNodeValue?.$unwrap === "function"
-}
 
 export default function useArborValue<T extends object, S = T>(
   store: Arbor<T>,
