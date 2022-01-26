@@ -9,11 +9,13 @@ import Arbor, {
 
 import useArbor from "./useArbor"
 import useArborState from "./useArborState"
+import useArborValue from "./useArborValue"
 
 export {
   Collection,
   useArbor,
   useArborState,
+  useArborValue,
   Path,
   produce,
   MutationMode,
