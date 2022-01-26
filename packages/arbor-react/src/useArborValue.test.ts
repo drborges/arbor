@@ -16,6 +16,14 @@ describe("useArborValue", () => {
     expect(result.current).toBe(initialState)
   })
 
+  it("throws an error if hook is not given an instance of Arbor store", () => {
+    const initialState = {
+      users: [{ name: "Alice" }, { name: "Bob" }],
+    }
+
+    expect(() => useArborValue(initialState as any)).toThrowError()
+  })
+
   it("updates the state when the store mutates", () => {
     const initialState = {
       users: [{ name: "Alice" }, { name: "Bob" }],
