@@ -1,8 +1,6 @@
 import isNode from "./isNode"
 import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
-import type { Node } from "./Arbor"
-
 export type Predicate<T> = (item: T) => boolean
 export interface Item {
   uuid: string
