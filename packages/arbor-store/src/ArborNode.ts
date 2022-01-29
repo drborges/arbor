@@ -1,6 +1,7 @@
 import isNode from "./isNode"
+import { NotAnArborNodeError } from "./errors"
 
-import type { AttributesOf, Node } from "./Arbor"
+import type { AttributesOf } from "./Arbor"
 
 export default class ArborNode<T extends object> {
   constructor(attributes: Partial<AttributesOf<T>> = {}) {
@@ -8,8 +9,8 @@ export default class ArborNode<T extends object> {
   }
 
   detach() {
-    const node = this as unknown as Node<T>
-    if (!isNode(node)) return
+    const node = this
+    if (!isNode(node)) throw new NotAnArborNodeError()
 
     const parentPath = node.$path.parent
     const id = node.$path.props[node.$path.props.length - 1]
@@ -19,8 +20,8 @@ export default class ArborNode<T extends object> {
   }
 
   attach(): ArborNode<T> {
-    const node = this as unknown as Node<T>
-    if (!isNode(node)) return this
+    const node = this
+    if (!isNode(node)) throw new NotAnArborNodeError()
 
     const parentPath = node.$path.parent
     const id = node.$path.props[node.$path.props.length - 1]
@@ -32,19 +33,19 @@ export default class ArborNode<T extends object> {
   }
 
   merge(attributes: Partial<AttributesOf<T>>): ArborNode<T> {
-    const node = this as unknown as Node<T>
-    if (!isNode(node)) return this
+    if (!isNode(this)) throw new NotAnArborNodeError()
 
-    node.$tree.mutate(node.$path, (value) => {
+    this.$tree.mutate(this.$path, (value) => {
       Object.assign(value, attributes)
     })
 
-    return node.$tree.getNodeAt(node.$path)
+    return this.$tree.getNodeAt(this.$path)
   }
 
   reload(): ArborNode<T> {
-    const node = this as unknown as Node<T>
-    return isNode(node) ? node.$tree.getNodeAt(node.$path) : this
+    if (!isNode(this)) throw new NotAnArborNodeError()
+
+    return this.$tree.getNodeAt(this.$path)
   }
 
   isAttached(): boolean {
@@ -56,7 +57,8 @@ export default class ArborNode<T extends object> {
   }
 
   get path(): string {
-    const node = this as unknown as Node<T>
-    return node.$path.toString()
+    if (!isNode(this)) throw new NotAnArborNodeError()
+
+    return this.$path.toString()
   }
 }

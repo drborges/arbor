@@ -1,5 +1,6 @@
 import Arbor from "./Arbor"
 import Collection from "./Collection"
+import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 import type { Node } from "./Arbor"
 
@@ -47,7 +48,15 @@ describe("Collection", () => {
 
       expect(() =>
         store.root.add({ uuid: undefined, name: "Bob" })
-      ).toThrowError("Collection items must have a string 'uuid'")
+      ).toThrowError(MissingUUIDError)
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const collection = new Collection<User>()
+
+      expect(() =>
+        collection.add({ uuid: undefined, name: "Bob" })
+      ).toThrowError(NotAnArborNodeError)
     })
   })
 
@@ -75,10 +84,18 @@ describe("Collection", () => {
       const store = new Arbor(new Collection<User>())
 
       expect(() => store.root.addMany(user1, user2)).toThrowError(
-        "Collection items must have a string 'uuid'"
+        MissingUUIDError
       )
 
       expect(store.root.length).toBe(0)
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const collection = new Collection<User>()
+
+      expect(() =>
+        collection.addMany({ uuid: undefined, name: "Bob" })
+      ).toThrowError(NotAnArborNodeError)
     })
   })
 
@@ -133,6 +150,14 @@ describe("Collection", () => {
       const updatedItem = store.root.merge(user, { name: "Bob Updated" })
 
       expect(updatedItem).toBeUndefined()
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const collection = new Collection<User>()
+
+      expect(() =>
+        collection.merge({ uuid: undefined, name: "Bob" }, {})
+      ).toThrowError(NotAnArborNodeError)
     })
   })
 
@@ -196,6 +221,17 @@ describe("Collection", () => {
       expect(store.root.fetch("abc")).toBe(originalBob)
       expect(store.root.fetch("abd")).toBe(originalAlice)
       expect(store.root.fetch("abe")).toBe(originalBarbara)
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const collection = new Collection<User>()
+
+      expect(() =>
+        collection.mergeBy(
+          () => true,
+          () => ({})
+        )
+      ).toThrowError(NotAnArborNodeError)
     })
   })
 
@@ -291,6 +327,15 @@ describe("Collection", () => {
       const user = store.root.fetch("abc") as Node<User>
 
       expect(user).toBeUndefined()
+    })
+
+    it("fetches the item even when the collection is not bound to an Arbor store", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const collection = new Collection<User>(user1, user2)
+
+      expect(collection.fetch("abc")).toBe(user1)
+      expect(collection.fetch("abd")).toBe(user2)
     })
   })
 
@@ -533,6 +578,14 @@ describe("Collection", () => {
       expect(deleted).toBe(user)
       expect(store.root.fetch("abc")).toBeUndefined()
     })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const collection = new Collection<User>()
+
+      expect(() => collection.delete("some uuid")).toThrowError(
+        NotAnArborNodeError
+      )
+    })
   })
 
   describe("#deleteBy", () => {
@@ -550,6 +603,14 @@ describe("Collection", () => {
       expect(store.root.fetch("abc")).toBeUndefined()
       expect(store.root.fetch("abe")).toBeUndefined()
     })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const collection = new Collection<User>()
+
+      expect(() => collection.deleteBy(() => true)).toThrowError(
+        NotAnArborNodeError
+      )
+    })
   })
 
   describe("#clear", () => {
@@ -562,6 +623,12 @@ describe("Collection", () => {
       store.root.clear()
 
       expect(store.root.length).toBe(0)
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const collection = new Collection<User>()
+
+      expect(() => collection.clear()).toThrowError(NotAnArborNodeError)
     })
   })
 

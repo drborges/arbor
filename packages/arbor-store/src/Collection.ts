@@ -1,4 +1,5 @@
-import type { Node } from "./Arbor"
+import isNode from "./isNode"
+import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 export type Predicate<T> = (item: T) => boolean
 export interface Item {
@@ -18,11 +19,12 @@ export default class Collection<T extends Item> {
   }
 
   addMany(...items: T[]): T[] {
-    const node = this as unknown as Node<T>
+    const node = this
+    if (!isNode(node)) throw new NotAnArborNodeError()
 
     items.forEach((item) => {
       if (item.uuid == null) {
-        throw new Error("Collection items must have a string 'uuid'")
+        throw new MissingUUIDError()
       }
     })
 
@@ -78,8 +80,10 @@ export default class Collection<T extends Item> {
   }
 
   merge(uuidOrItem: T | string, data: Partial<T>): T {
+    const node = this
+    if (!isNode(node)) throw new NotAnArborNodeError()
+
     const item = this.fetch(uuidOrItem)
-    const node = this as unknown as Node<T>
 
     if (item === undefined) {
       return undefined
@@ -98,8 +102,9 @@ export default class Collection<T extends Item> {
   }
 
   mergeBy(predicate: Predicate<T>, updateFn: (item: T) => Partial<T>): T[] {
+    const node = this
     const updatedIds: string[] = []
-    const node = this as unknown as Node<T>
+    if (!isNode(node)) throw new NotAnArborNodeError()
 
     node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
       Object.values(collection).forEach((value: T) => {
@@ -122,7 +127,9 @@ export default class Collection<T extends Item> {
 
   fetch(uuidOrItem: string | T): T | undefined {
     const uuid = extractUUIDFrom(uuidOrItem)
-    const node = this as unknown as Node<T>
+    const node = this
+
+    if (!isNode(node)) return this[uuid]
 
     return uuid ? node.$tree.getNodeAt(node.$path.child(uuid)) : undefined
   }
@@ -211,8 +218,10 @@ export default class Collection<T extends Item> {
   }
 
   delete(uuidOrItem: string | T) {
+    const node = this
+    if (!isNode(node)) throw new NotAnArborNodeError()
+
     let deleted: T
-    const node = this as unknown as Node<T>
     const uuid = extractUUIDFrom(uuidOrItem)
 
     if (uuid) {
@@ -226,8 +235,9 @@ export default class Collection<T extends Item> {
   }
 
   deleteBy(predicate: Predicate<T>): T[] {
+    const node = this
     const deleted: T[] = []
-    const node = this as unknown as Node<T>
+    if (!isNode(node)) throw new NotAnArborNodeError()
 
     node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
       Object.values(collection).forEach((value: T) => {
@@ -242,7 +252,9 @@ export default class Collection<T extends Item> {
   }
 
   clear() {
-    const node = this as unknown as Node<T>
+    const node = this
+    if (!isNode(node)) throw new NotAnArborNodeError()
+
     node.$tree.mutate(node.$path, (collection) => {
       Object.keys(collection).forEach((key) => {
         delete collection[key]
