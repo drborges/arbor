@@ -1,6 +1,7 @@
 import Arbor from "./Arbor"
 import ArborNode from "./ArborNode"
 import Collection from "./Collection"
+import { NotAnArborNodeError } from "./errors"
 
 describe("ArborNode", () => {
   class Todo extends ArborNode<Todo> {
@@ -25,6 +26,12 @@ describe("ArborNode", () => {
       expect(store.root.fetch("abc")).toBeUndefined()
       expect(todo1.isAttached()).toBe(false)
     })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const todo = new Todo()
+
+      expect(() => todo.detach()).toThrowError(NotAnArborNodeError)
+    })
   })
 
   describe("#attach", () => {
@@ -47,6 +54,12 @@ describe("ArborNode", () => {
 
       expect(todo1.isAttached()).toBe(true)
       expect(store.root.fetch("abc")).toBe(todo1)
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const todo = new Todo()
+
+      expect(() => todo.attach()).toThrowError(NotAnArborNodeError)
     })
   })
 
@@ -72,6 +85,12 @@ describe("ArborNode", () => {
         new Todo({ uuid: "abc", text: "Walk the dogs", completed: false })
       )
     })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const todo = new Todo()
+
+      expect(() => todo.merge({})).toThrowError(NotAnArborNodeError)
+    })
   })
 
   describe("#reload", () => {
@@ -96,6 +115,12 @@ describe("ArborNode", () => {
       expect(todo).not.toBe(store.root.fetch("abc"))
       expect(reloaded).toBe(store.root.fetch("abc"))
     })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const todo = new Todo()
+
+      expect(() => todo.reload()).toThrowError(NotAnArborNodeError)
+    })
   })
 
   describe("#isAttached", () => {
@@ -112,6 +137,12 @@ describe("ArborNode", () => {
       expect(todo.isAttached()).toBe(true)
       store.root.delete("abc")
       expect(todo.isAttached()).toBe(false)
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const todo = new Todo()
+
+      expect(() => todo.isAttached()).toThrowError(NotAnArborNodeError)
     })
   })
 
@@ -130,6 +161,12 @@ describe("ArborNode", () => {
       todo.text = "Walk the dogs"
       expect(todo.isStale()).toBe(true)
     })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const todo = new Todo()
+
+      expect(() => todo.isStale()).toThrowError(NotAnArborNodeError)
+    })
   })
 
   describe("#path", () => {
@@ -144,6 +181,12 @@ describe("ArborNode", () => {
       const todo = store.root.todos.fetch("abc")
 
       expect(todo.path).toBe("/todos/abc")
+    })
+
+    it("throws an error when used on an instance not bound to an Arbor store", () => {
+      const todo = new Todo()
+
+      expect(() => todo.path).toThrowError(NotAnArborNodeError)
     })
   })
 })
