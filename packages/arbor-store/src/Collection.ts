@@ -1,4 +1,5 @@
 import isNode from "./isNode"
+import { ArborProxy } from "./proxiable"
 import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 export type Predicate<T> = (item: T) => boolean
@@ -16,6 +17,10 @@ export default class Collection<T extends Item> {
     items.forEach((item) => {
       this[item.uuid] = item
     })
+  }
+
+  get [ArborProxy]() {
+    return true
   }
 
   addMany(...items: T[]): T[] {
