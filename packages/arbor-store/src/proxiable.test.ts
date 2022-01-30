@@ -1,7 +1,8 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
 import ArborNode from "./ArborNode"
-import proxiable, { ArborProxy, Clonable } from "./proxiable"
+import { Clonable } from "./isClonable"
+import proxiable, { ArborProxy } from "./proxiable"
 
 class NotProxiable {}
 class Proxiable {
