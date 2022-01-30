@@ -13,12 +13,8 @@ class Proxiable {
 class Users extends Array {}
 class User extends ArborNode<User> {}
 class UserSet extends Set<User> implements Clonable<UserSet> {
-  constructor(...users: User[]) {
-    super(users)
-  }
-
   $clone(): UserSet {
-    return new UserSet(...this.values())
+    return new UserSet(this.values())
   }
 }
 
