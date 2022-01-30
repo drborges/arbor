@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
-import Arbor from "./Arbor"
+import Arbor, { Node } from "./Arbor"
 import ArborNode from "./ArborNode"
 import Collection from "./Collection"
 import { warmup } from "./test.helpers"
@@ -64,6 +64,56 @@ describe("Arbor", () => {
 
       expect(Path.root.walk(store.root)).toBe(store.root)
       expect(Path.parse("/users/1").walk(store.root)).toBe(store.root.users[1])
+    })
+  })
+
+  describe("#mutate", () => {
+    it("mutates a given path within the state tree", () => {
+      const initialState = {
+        users: [{ name: "Bob" }, { name: "Alice" }],
+      }
+
+      const store = new Arbor(initialState)
+      const initialRoot = store.root
+      const initialUsers = store.root.users
+      const initialUser0 = store.root.users[0]
+      const initialUser1 = store.root.users[1]
+
+      store.mutate<{ name: string }>(Path.parse("/users/0"), (user) => {
+        user.name = "Bob 2"
+      })
+
+      expect(store.root).not.toBe(initialRoot)
+      expect(store.root.users).not.toBe(initialUsers)
+      expect(store.root.users[0]).not.toBe(initialUser0)
+      expect(store.root.users[1]).toBe(initialUser1)
+      expect(store.root).toEqual({
+        users: [{ name: "Bob 2" }, { name: "Alice" }],
+      })
+    })
+
+    it("mutates a given node within the state tree", () => {
+      const initialState = {
+        users: [{ name: "Bob" }, { name: "Alice" }],
+      }
+
+      const store = new Arbor(initialState)
+      const initialRoot = store.root
+      const initialUsers = store.root.users
+      const initialUser0 = store.root.users[0] as Node<{ name: string }>
+      const initialUser1 = store.root.users[1]
+
+      store.mutate(initialUser0, (user) => {
+        user.name = "Bob 2"
+      })
+
+      expect(store.root).not.toBe(initialRoot)
+      expect(store.root.users).not.toBe(initialUsers)
+      expect(store.root.users[0]).not.toBe(initialUser0)
+      expect(store.root.users[1]).toBe(initialUser1)
+      expect(store.root).toEqual({
+        users: [{ name: "Bob 2" }, { name: "Alice" }],
+      })
     })
   })
 
