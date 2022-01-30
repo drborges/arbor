@@ -1,7 +1,8 @@
 import Path from "./Path"
 import isNode from "./isNode"
+import clone from "./clone"
+import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
-import { clone, clonable } from "./cloning"
 import Arbor, { Node } from "./Arbor"
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
@@ -40,7 +41,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
       return childValue.bind(proxy)
     }
 
-    if (!clonable(childValue)) {
+    if (!proxiable(childValue)) {
       return childValue
     }
 
@@ -54,7 +55,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     if (proxy[prop] === newValue || target[prop] === newValue) return true
 
     const unwrapped = isNode(newValue) ? newValue.$unwrap() : newValue
-    const value = clonable(unwrapped) ? clone(unwrapped) : unwrapped
+    const value = proxiable(unwrapped) ? clone(unwrapped) : unwrapped
 
     this.$tree.mutate(this.$path, (t: T) => {
       t[prop] = value

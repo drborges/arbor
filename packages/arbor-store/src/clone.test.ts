@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
-import { clone } from "./cloning"
+import clone from "./clone"
+import { Clonable } from "./isClonable"
 
 class Address {
   constructor(public street: string) {}
@@ -10,6 +11,12 @@ class User {
 }
 
 class Users extends Array<User> {}
+
+class UserSet extends Set<User> implements Clonable<UserSet> {
+  $clone(): UserSet {
+    return new UserSet(this.values())
+  }
+}
 
 describe("clone", () => {
   it("clones a literal object applying structural sharing", () => {
@@ -61,7 +68,19 @@ describe("clone", () => {
     expect(clonedUsers).toEqual(new Users(new User("Bob"), new User("Alice")))
   })
 
-  it("returns performs a no-op if given value is not clonnable", () => {
+  it("relies on the user defined cloning logic in order to clone value", () => {
+    const users = new UserSet([new User("Bob"), new User("Alice")])
+    const clonedUsers = clone(users)
+
+    expect(clonedUsers).toBeInstanceOf(UserSet)
+    expect(clonedUsers[0]).toBe(users[0])
+    expect(clonedUsers[1]).toBe(users[1])
+    expect(clonedUsers).toEqual(
+      new UserSet([new User("Bob"), new User("Alice")])
+    )
+  })
+
+  it("returns performs a no-op if given value is not clonable", () => {
     expect(clone(null)).toBe(null)
     expect(clone(undefined)).toBe(undefined)
     expect(clone(2 as any)).toBe(2 as any)

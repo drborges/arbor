@@ -1,4 +1,4 @@
-import Arbor, { MutationMode } from "@arborjs/store"
+import Arbor, { ArborNode, MutationMode } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
@@ -185,7 +185,7 @@ describe("useArbor", () => {
   })
 
   it("supports custom object types to represent the state", () => {
-    class InputHandler {
+    class InputHandler extends ArborNode<InputHandler> {
       value = ""
       settings = {}
       onChange(e: { target: { value: string } }) {
@@ -215,11 +215,11 @@ describe("useArbor", () => {
 
   it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {
     expect(() => useArbor(new Date())).toThrowError(
-      "useArbor must be initialized with either an instance of Arbor or a clonable object"
+      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
 
     expect(() => useArbor("No strings allowed" as any)).toThrowError(
-      "useArbor must be initialized with either an instance of Arbor or a clonable object"
+      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
   })
 })

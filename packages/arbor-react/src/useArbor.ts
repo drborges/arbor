@@ -1,4 +1,4 @@
-import Arbor, { clonable } from "@arborjs/store"
+import Arbor, { proxiable } from "@arborjs/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 /**
@@ -43,9 +43,9 @@ export default function useArbor<
   T = K extends Arbor<infer D> ? D : K,
   S = T
 >(storeOrState: K, selector = (root: T) => root as unknown as S) {
-  if (!clonable(storeOrState)) {
+  if (!(storeOrState instanceof Arbor) && !proxiable(storeOrState)) {
     throw new Error(
-      "useArbor must be initialized with either an instance of Arbor or a clonable object"
+      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
   }
 
