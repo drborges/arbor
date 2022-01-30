@@ -1,7 +1,8 @@
 import Path from "./Path"
-import mutate, { Mutation } from "./mutate"
+import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
+import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 
 /**
@@ -153,7 +154,8 @@ export default class Arbor<T extends object = {}> {
    * @param path the path within the state tree affected by the mutation.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
-  mutate<V extends object>(path: Path, mutation: Mutation<V>) {
+  mutate<V extends object>(pathOrNode: Path | Node<V>, mutation: Mutation<V>) {
+    const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
     const oldRootValue = this.root.$unwrap()
     const newRoot = mutate(this.root, path, mutation)
 
