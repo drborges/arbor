@@ -1,7 +1,4 @@
 export const ArborProxy = Symbol.for("ArborProxy")
-export interface Clonable<T extends object> {
-  $clone(): T
-}
 
 export default function proxiable(value: any): boolean {
   return (
