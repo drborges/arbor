@@ -1,6 +1,6 @@
 import Path from "./Path"
-import NodeCache from "./NodeCache"
 import Arbor from "./Arbor"
+import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 
 export default class NodeArrayHandler<T extends object> extends NodeHandler<

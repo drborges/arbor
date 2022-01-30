@@ -1,11 +1,12 @@
 import Path from "./Path"
+import clone from "./clone"
 import stitch from "./stitch"
 import isNode from "./isNode"
 import produce from "./produce"
+import proxiable from "./proxiable"
 import { Mutation } from "./mutate"
 import ArborNode from "./ArborNode"
 import Collection from "./Collection"
-import { clone, clonable } from "./cloning"
 import Arbor, {
   Node,
   MutationMode,
@@ -28,7 +29,7 @@ export type {
 
 export {
   clone,
-  clonable,
+  proxiable,
   Collection,
   ArborNode,
   Path,

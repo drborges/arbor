@@ -45,7 +45,7 @@ export default function useArbor<
 >(storeOrState: K, selector = (root: T) => root as unknown as S) {
   if (!clonable(storeOrState)) {
     throw new Error(
-      "useArbor must be initialized with either an instance of Arbor or a clonable object"
+      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
   }
 
