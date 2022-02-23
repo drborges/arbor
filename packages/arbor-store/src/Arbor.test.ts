@@ -282,6 +282,19 @@ describe("Arbor", () => {
       expect(store.root[0].completed).toBe(false)
     })
 
+    it("can be refreshed", () => {
+      const store = new Arbor([
+        new Todo({ text: "Do the dishes", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
+      ])
+
+      const firstTodo = store.root[0]
+      firstTodo.complete()
+      firstTodo.text = "Updated content"
+
+      expect(firstTodo.reload()).toEqual(new Todo({ text: "Updated content", completed: true }))
+    })
+
     describe("Collection", () => {
       it("allows managing collections of items", () => {
         const store = new Arbor(

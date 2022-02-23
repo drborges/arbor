@@ -122,7 +122,7 @@ describe("useArbor", () => {
     expect(result.current).toBe(2)
   })
 
-  it("when running forgiven mutation mode, subsequent mutations can be triggered off the same node reference", () => {
+  it("when running forgiven mutation mode, subsequent mutations to the same path can be triggered off the same node reference", () => {
     const state = { count: 0 }
     const store = new Arbor(state, { mode: MutationMode.FORGIVEN })
     const { result } = renderHook(() => useArbor(store))
