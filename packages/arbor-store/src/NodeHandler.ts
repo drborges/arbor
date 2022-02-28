@@ -57,7 +57,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     const unwrapped = isNode(newValue) ? newValue.$unwrap() : newValue
     const value = proxiable(unwrapped) ? clone(unwrapped) : unwrapped
 
-    this.$tree.mutate(this.$path, (t: T) => {
+    this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
     })
 
@@ -68,7 +68,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     const childValue = Reflect.get(target, prop)
 
     if (prop in target) {
-      this.$tree.mutate(this.$path, (t: T) => {
+      this.$tree.mutate(this as unknown as Node<T>, (t: T) => {
         delete t[prop]
       })
 

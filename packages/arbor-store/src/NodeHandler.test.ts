@@ -417,6 +417,25 @@ describe("NodeHandler", () => {
           ],
         })
       })
+
+      it("supports subsequent mutations to the same path when on forgiven mode", () => {
+        const user = {
+          name: "Alice",
+          age: 30
+        }
+
+        const store = new Arbor(user, {
+          mode: MutationMode.FORGIVEN
+        })
+
+        const alice = store.root
+        delete alice.name
+        delete alice.age
+
+        expect(user).toEqual({})
+        expect(alice).toEqual({})
+        expect(store.root).toEqual({})
+      })
     })
   })
 

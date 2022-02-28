@@ -54,8 +54,8 @@ export type Node<T extends object = object> = T & {
  * ```
  */
 export enum MutationMode {
-  FORGIVEN,
   STRICT,
+  FORGIVEN,
 }
 
 export type ArborConfig = {
@@ -156,12 +156,13 @@ export default class Arbor<T extends object = {}> {
    */
   mutate<V extends object>(pathOrNode: Path | Node<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
+    const node = isNode(pathOrNode) ? pathOrNode : path.walk(this.root) as Node<V>
     const oldRootValue = this.root.$unwrap()
     const newRoot = mutate(this.root, path, mutation)
 
     if (newRoot) {
       if (this.mode === MutationMode.FORGIVEN) {
-        mutation(path.walk(oldRootValue) as V)
+        mutation(node.$unwrap())
       }
 
       this.#root = newRoot

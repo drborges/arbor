@@ -40,7 +40,7 @@ export default class ArborNode<T extends object> {
   merge(attributes: Partial<AttributesOf<T>>): ArborNode<T> {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
-    this.$tree.mutate(this.$path, (value) => {
+    this.$tree.mutate(this, (value) => {
       Object.assign(value, attributes)
     })
 
