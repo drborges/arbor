@@ -35,6 +35,34 @@ describe("Arbor", () => {
     })
   })
 
+  it("supports subsequent mutations to the same path", () => {
+    const user = {
+      name: "Alice",
+      age: 30
+    }
+
+    const store = new Arbor(user)
+
+    const alice = store.root
+    alice.name = "Alice Doe"
+    alice.age = 31
+
+    expect(user).toEqual({
+      name: "Alice",
+      age: 30
+    })
+
+    expect(alice).toEqual({
+      name: "Alice",
+      age: 30
+    })
+
+    expect(store.root).toEqual({
+      name: "Alice Doe",
+      age: 31
+    })
+  })
+
   it("supports subsequent mutations to the same path when on forgiven mode", () => {
     const user = {
       name: "Alice",

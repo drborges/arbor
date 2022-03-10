@@ -67,7 +67,7 @@ describe("NodeHandler", () => {
       expect(node.users[1]).toBe(node.users[1])
     })
 
-    it("binds function properties to the proxy itseld", () => {
+    it("binds function properties to the proxy itself", () => {
       const tree = new Arbor({
         id: 1,
         text: "Clean the house",
