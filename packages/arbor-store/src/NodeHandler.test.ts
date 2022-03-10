@@ -84,6 +84,19 @@ describe("NodeHandler", () => {
       expect(tree.root.completed).toBe(true)
     })
 
+    it("memoizes function properties so that different callers end up with the same function reference", () => {
+      const tree = new Arbor({
+        id: 1,
+        text: "Clean the house",
+        completed: false,
+        complete() {
+          this.completed = true
+        },
+      })
+
+      expect (tree.root.complete).toBe(tree.root.complete)
+    })
+
     it("allow proxied values to define properties whose names match properties in the ProxyHandler API", () => {
       class Message {
         msg = "Hello World"
