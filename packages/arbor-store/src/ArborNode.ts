@@ -19,9 +19,8 @@ export default class ArborNode<T extends object> {
 
     const parentPath = node.$path.parent
     const id = node.$path.props[node.$path.props.length - 1]
-    node.$tree.mutate(parentPath, (parent) => {
-      delete parent[id]
-    })
+    const parent = node.$tree.getNodeAt(parentPath)
+    delete parent[id]
   }
 
   attach(): ArborNode<T> {
