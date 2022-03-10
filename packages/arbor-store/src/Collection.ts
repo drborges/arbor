@@ -140,34 +140,6 @@ export default class Collection<T extends Item> {
     return uuid ? node.$tree.getNodeAt(node.$path.child(uuid)) : undefined
   }
 
-  get values(): T[] {
-    return Object.values(this)
-  }
-
-  get uuids(): string[] {
-    return Object.keys(this)
-  }
-
-  get first(): T {
-    let first: T
-
-    for (first of this) {
-      break
-    }
-
-    return first
-  }
-
-  get last(): T {
-    let last: T
-
-    for (const item of this) {
-      last = item
-    }
-
-    return last
-  }
-
   get length(): number {
     return Object.keys(this).length
   }
