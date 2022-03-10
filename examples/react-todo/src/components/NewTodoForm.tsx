@@ -1,16 +1,17 @@
 import React, { SyntheticEvent } from "react"
 
-import { add } from "../store/useTodos"
+import { add, store } from "../store/useTodos"
 import useNewTodo from "../store/useNewTodo"
-import { activate, current } from "../store/useTodosFilter"
+import useTodosFilter, { activate } from "../store/useTodosFilter"
 
 export default function NewTodoForm() {
-  const { input } = useNewTodo()
+  const input = useNewTodo()
+  const filter = useTodosFilter()
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     add(input.value)
     input.value = ""
-    if (current() === "completed") activate()
+    if (filter.value === "completed") activate()
   }
 
   return (
