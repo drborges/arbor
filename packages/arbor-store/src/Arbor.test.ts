@@ -390,14 +390,14 @@ describe("Arbor", () => {
           )
         )
 
-        const firstItem = store.root["abc"]
-        const lastItem = store.root["bcd"]
+        const firstItem = store.root.fetch("abc")
+        const lastItem = store.root.fetch("bcd")
         store.root.delete(firstItem)
         // does not trigger any mutations since the node is no longer in the state tree
         firstItem.completed = true
 
         expect(store.root[firstItem.uuid]).toBeUndefined()
-        expect(store.root["bcd"]).toBe(lastItem)
+        expect(store.root.fetch("bcd")).toBe(lastItem)
       })
     })
   })

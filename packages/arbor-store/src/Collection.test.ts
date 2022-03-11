@@ -555,10 +555,10 @@ describe("Collection", () => {
       expect(cloned).toBeInstanceOf(Collection)
       expect(cloned).not.toBe(store.root.$unwrap())
       expect(cloned.length).toBe(2)
-      expect((cloned["abc"] as Node<User>).$unwrap()).toBe(user1)
-      expect((cloned["abd"] as Node<User>).$unwrap()).toBe(user2)
-      expect(cloned["abc"]).toBe(store.root["abc"])
-      expect(cloned["abd"]).toBe(store.root["abd"])
+      expect((cloned.fetch("abc") as Node<User>).$unwrap()).toBe(user1)
+      expect((cloned.fetch("abd") as Node<User>).$unwrap()).toBe(user2)
+      expect(cloned.fetch("abc")).toBe(store.root.fetch("abc"))
+      expect(cloned.fetch("abd")).toBe(store.root.fetch("abd"))
     })
   })
 
@@ -571,7 +571,7 @@ describe("Collection", () => {
 
       const [head, ...tail] = store.root
 
-      expect(head).toBe(store.root["abc"])
+      expect(head).toBe(store.root.fetch("abc"))
       expect(tail.length).toBe(2)
       expect(tail[0]).toBe(store.root.fetch("abd"))
       expect(tail[1]).toBe(store.root.fetch("abe"))
