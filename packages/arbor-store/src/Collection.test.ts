@@ -339,94 +339,6 @@ describe("Collection", () => {
     })
   })
 
-  describe("#values", () => {
-    it("returns an array containing all items in the collection", () => {
-      const user1 = { uuid: "abc", name: "Bob" }
-      const user2 = { uuid: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const users = store.root.values
-      const bob = users[0] as Node<User>
-      const alice = users[1] as Node<User>
-
-      expect(users.length).toBe(2)
-      expect(bob.$unwrap()).toBe(user1)
-      expect(alice.$unwrap()).toBe(user2)
-    })
-
-    it("returns an empty array when there are no items in the collection", () => {
-      const store = new Arbor(new Collection<User>())
-
-      const users = store.root.values
-
-      expect(users).toEqual([])
-    })
-  })
-
-  describe("#uuids", () => {
-    it("returns an array containing all uuids of all items in the collection", () => {
-      const user1 = { uuid: "abc", name: "Bob" }
-      const user2 = { uuid: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const uuids = store.root.uuids
-
-      expect(uuids.length).toBe(2)
-      expect(uuids[0]).toBe("abc")
-      expect(uuids[1]).toBe("abd")
-    })
-
-    it("returns an empty array when there are no items in the collection", () => {
-      const store = new Arbor(new Collection<User>())
-
-      const ids = store.root.uuids
-
-      expect(ids).toEqual([])
-    })
-  })
-
-  describe("#first", () => {
-    // The order of items is based on the insertion order. This is only valid if the item ids are non numeric-like
-    it("fetches the first item in the collection", () => {
-      const user1 = { uuid: "abc", name: "Bob" }
-      const user2 = { uuid: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const user = store.root.first as Node<User>
-
-      expect(user.$unwrap()).toBe(user1)
-    })
-
-    it("returns undefined if the collection is empty", () => {
-      const store = new Arbor(new Collection<User>())
-
-      const user = store.root.first
-
-      expect(user).toBeUndefined()
-    })
-  })
-
-  describe("#last", () => {
-    // The order of items is based on the insertion order. This is only valid if the item ids are non numeric-like
-    it("fetches the last item in the collection", () => {
-      const user1 = { uuid: "abc", name: "Bob" }
-      const user2 = { uuid: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const user = store.root.last as Node<User>
-
-      expect(user.$unwrap()).toBe(user2)
-    })
-
-    it("returns undefined if the collection is empty", () => {
-      const store = new Arbor(new Collection<User>())
-
-      const user = store.root.last
-
-      expect(user).toBeUndefined()
-    })
-  })
-
   describe("#length", () => {
     it("returns the number of items in the collection", () => {
       const user1 = { uuid: "abc", name: "Bob" }
@@ -643,10 +555,10 @@ describe("Collection", () => {
       expect(cloned).toBeInstanceOf(Collection)
       expect(cloned).not.toBe(store.root.$unwrap())
       expect(cloned.length).toBe(2)
-      expect((cloned.first as Node<User>).$unwrap()).toBe(user1)
-      expect((cloned.last as Node<User>).$unwrap()).toBe(user2)
-      expect(cloned.first).toBe(store.root.first)
-      expect(cloned.last).toBe(store.root.last)
+      expect((cloned.fetch("abc") as Node<User>).$unwrap()).toBe(user1)
+      expect((cloned.fetch("abd") as Node<User>).$unwrap()).toBe(user2)
+      expect(cloned.fetch("abc")).toBe(store.root.fetch("abc"))
+      expect(cloned.fetch("abd")).toBe(store.root.fetch("abd"))
     })
   })
 
@@ -659,7 +571,7 @@ describe("Collection", () => {
 
       const [head, ...tail] = store.root
 
-      expect(head).toBe(store.root.first)
+      expect(head).toBe(store.root.fetch("abc"))
       expect(tail.length).toBe(2)
       expect(tail[0]).toBe(store.root.fetch("abd"))
       expect(tail[1]).toBe(store.root.fetch("abe"))

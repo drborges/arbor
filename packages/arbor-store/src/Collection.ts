@@ -1,4 +1,5 @@
 import isNode from "./isNode"
+import { Node } from "./Arbor"
 import { ArborProxy } from "./proxiable"
 import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
@@ -33,7 +34,7 @@ export default class Collection<T extends Item> {
       }
     })
 
-    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+    node.$tree.mutate<Collection<T>>(node as Node<Collection<T>>, (collection) => {
       items.forEach((item) => {
         collection[item.uuid] = item
       })
@@ -96,7 +97,7 @@ export default class Collection<T extends Item> {
 
     delete data.uuid
 
-    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+    node.$tree.mutate<Collection<T>>(node as Node<Collection<T>>, (collection) => {
       collection[item.uuid] = {
         ...item,
         ...data,
@@ -111,7 +112,7 @@ export default class Collection<T extends Item> {
     const updatedIds: string[] = []
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+    node.$tree.mutate<Collection<T>>(node as Node<Collection<T>>, (collection) => {
       Object.values(collection).forEach((value: T) => {
         if (predicate(value)) {
           const newValue = {
@@ -137,34 +138,6 @@ export default class Collection<T extends Item> {
     if (!isNode(node)) return this[uuid]
 
     return uuid ? node.$tree.getNodeAt(node.$path.child(uuid)) : undefined
-  }
-
-  get values(): T[] {
-    return Object.values(this)
-  }
-
-  get uuids(): string[] {
-    return Object.keys(this)
-  }
-
-  get first(): T {
-    let first: T
-
-    for (first of this) {
-      break
-    }
-
-    return first
-  }
-
-  get last(): T {
-    let last: T
-
-    for (const item of this) {
-      last = item
-    }
-
-    return last
   }
 
   get length(): number {
@@ -230,7 +203,7 @@ export default class Collection<T extends Item> {
     const uuid = extractUUIDFrom(uuidOrItem)
 
     if (uuid) {
-      node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+      node.$tree.mutate<Collection<T>>(node as Node<Collection<T>>, (collection) => {
         deleted = collection[uuid]
         delete collection[uuid]
       })
@@ -244,7 +217,7 @@ export default class Collection<T extends Item> {
     const deleted: T[] = []
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    node.$tree.mutate<Collection<T>>(node.$path, (collection) => {
+    node.$tree.mutate<Collection<T>>(node as Node<Collection<T>>, (collection) => {
       Object.values(collection).forEach((value: T) => {
         if (predicate(value)) {
           delete collection[value.uuid]
@@ -260,7 +233,7 @@ export default class Collection<T extends Item> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    node.$tree.mutate(node.$path, (collection) => {
+    node.$tree.mutate(node, (collection) => {
       Object.keys(collection).forEach((key) => {
         delete collection[key]
       })

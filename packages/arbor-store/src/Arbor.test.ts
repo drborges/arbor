@@ -1,12 +1,98 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
-import Arbor, { Node } from "./Arbor"
+import Arbor, { MutationMode, Node } from "./Arbor"
 import ArborNode from "./ArborNode"
 import Collection from "./Collection"
 import { warmup } from "./test.helpers"
 
 describe("Arbor", () => {
+  it("correctly updates the store when making sequential updates to a given node", () => {
+    const user = {
+      name: "Alice",
+      age: 30
+    }
+
+    const store = new Arbor(user)
+
+    const alice = store.root
+    alice.name = "Alice Doe"
+    alice.age = 31
+
+    expect(user).toEqual({
+      name: "Alice",
+      age: 30
+    })
+
+    expect(alice).toEqual({
+      name: "Alice",
+      age: 30
+    })
+
+    expect(store.root).toEqual({
+      name: "Alice Doe",
+      age: 31
+    })
+  })
+
+  it("supports subsequent mutations to the same path", () => {
+    const user = {
+      name: "Alice",
+      age: 30
+    }
+
+    const store = new Arbor(user)
+
+    const alice = store.root
+    alice.name = "Alice Doe"
+    alice.age = 31
+
+    expect(user).toEqual({
+      name: "Alice",
+      age: 30
+    })
+
+    expect(alice).toEqual({
+      name: "Alice",
+      age: 30
+    })
+
+    expect(store.root).toEqual({
+      name: "Alice Doe",
+      age: 31
+    })
+  })
+
+  it("supports subsequent mutations to the same path when on forgiven mode", () => {
+    const user = {
+      name: "Alice",
+      age: 30
+    }
+
+    const store = new Arbor(user, {
+      mode: MutationMode.FORGIVEN
+    })
+
+    const alice = store.root
+    alice.name = "Alice Doe"
+    alice.age = 31
+
+    expect(user).toEqual({
+      name: "Alice Doe",
+      age: 31
+    })
+
+    expect(alice).toEqual({
+      name: "Alice Doe",
+      age: 31
+    })
+
+    expect(store.root).toEqual({
+      name: "Alice Doe",
+      age: 31
+    })
+  })
+
   describe("#root", () => {
     it("retrieves the root node", () => {
       const initialState = {
@@ -282,6 +368,19 @@ describe("Arbor", () => {
       expect(store.root[0].completed).toBe(false)
     })
 
+    it("can be refreshed", () => {
+      const store = new Arbor([
+        new Todo({ text: "Do the dishes", completed: false }),
+        new Todo({ text: "Clean the house", completed: true }),
+      ])
+
+      const firstTodo = store.root[0]
+      firstTodo.complete()
+      firstTodo.text = "Updated content"
+
+      expect(firstTodo.reload()).toEqual(new Todo({ text: "Updated content", completed: true }))
+    })
+
     describe("Collection", () => {
       it("allows managing collections of items", () => {
         const store = new Arbor(
@@ -291,14 +390,14 @@ describe("Arbor", () => {
           )
         )
 
-        const firstItem = store.root.first
-        const lastItem = store.root.last
+        const firstItem = store.root.fetch("abc")
+        const lastItem = store.root.fetch("bcd")
         store.root.delete(firstItem)
         // does not trigger any mutations since the node is no longer in the state tree
         firstItem.completed = true
 
         expect(store.root[firstItem.uuid]).toBeUndefined()
-        expect(store.root.first).toBe(lastItem)
+        expect(store.root.fetch("bcd")).toBe(lastItem)
       })
     })
   })

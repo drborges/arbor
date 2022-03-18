@@ -67,7 +67,7 @@ describe("NodeHandler", () => {
       expect(node.users[1]).toBe(node.users[1])
     })
 
-    it("binds function properties to the proxy itseld", () => {
+    it("binds function properties to the proxy itself", () => {
       const tree = new Arbor({
         id: 1,
         text: "Clean the house",
@@ -82,6 +82,19 @@ describe("NodeHandler", () => {
       complete()
 
       expect(tree.root.completed).toBe(true)
+    })
+
+    it("memoizes function properties so that different callers end up with the same function reference", () => {
+      const tree = new Arbor({
+        id: 1,
+        text: "Clean the house",
+        completed: false,
+        complete() {
+          this.completed = true
+        },
+      })
+
+      expect (tree.root.complete).toBe(tree.root.complete)
     })
 
     it("allow proxied values to define properties whose names match properties in the ProxyHandler API", () => {
@@ -416,6 +429,25 @@ describe("NodeHandler", () => {
             { name: "User 2", address: { street: "Street 2" } },
           ],
         })
+      })
+
+      it("supports subsequent mutations to the same path when on forgiven mode", () => {
+        const user = {
+          name: "Alice",
+          age: 30
+        }
+
+        const store = new Arbor(user, {
+          mode: MutationMode.FORGIVEN
+        })
+
+        const alice = store.root
+        delete alice.name
+        delete alice.age
+
+        expect(user).toEqual({})
+        expect(alice).toEqual({})
+        expect(store.root).toEqual({})
       })
     })
   })

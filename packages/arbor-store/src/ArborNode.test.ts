@@ -34,6 +34,33 @@ describe("ArborNode", () => {
     })
   })
 
+  describe("#parent", () => {
+    it("allows accessing a parent node in the state tree", () => {
+      const store = new Arbor(
+        new Collection(
+          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+        )
+      )
+
+      const todo = store.root.fetch("abc")
+
+      const todos = todo.parent()
+
+      expect(todos).toBe(store.root)
+    })
+
+    it("returns undefined if parent node does not exist", () => {
+      const store = new Arbor(
+        new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+      )
+
+      const parent = store.root.parent()
+
+      expect(parent).toBe(undefined)
+    })
+  })
+
   describe("#attach", () => {
     it("allows attaching nodes back into the state tree", () => {
       const store = new Arbor(

@@ -9,9 +9,5 @@ export const store = new Arbor<Input>({
 })
 
 export default function useNewTodo() {
-  const input = useArbor(store)
-
-  return {
-    input,
-  }
+  return useArbor(store)
 }

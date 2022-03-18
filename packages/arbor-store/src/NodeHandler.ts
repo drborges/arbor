@@ -5,6 +5,21 @@ import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
 import Arbor, { Node } from "./Arbor"
 
+function memoizedFunctionBoundToProxy<T extends object>(target: T, prop: string, value: Function, proxy: Node<T>) {
+  const boundPropName = `bound_${prop.toString()}`
+  const boundFn = Reflect.get(target, boundPropName, proxy)
+
+  if (!boundFn) {
+    Object.defineProperty(target, boundPropName, {
+      enumerable: false,
+      configurable: false,
+      value: value.bind(proxy),
+    })
+  }
+
+  return Reflect.get(target, boundPropName, proxy)
+}
+
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
     public readonly $tree: Arbor,
@@ -38,7 +53,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     }
 
     if (typeof childValue === "function") {
-      return childValue.bind(proxy)
+      return memoizedFunctionBoundToProxy<T>(target, prop, childValue, proxy)
     }
 
     if (!proxiable(childValue)) {
@@ -57,7 +72,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     const unwrapped = isNode(newValue) ? newValue.$unwrap() : newValue
     const value = proxiable(unwrapped) ? clone(unwrapped) : unwrapped
 
-    this.$tree.mutate(this.$path, (t: T) => {
+    this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
     })
 
@@ -68,7 +83,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     const childValue = Reflect.get(target, prop)
 
     if (prop in target) {
-      this.$tree.mutate(this.$path, (t: T) => {
+      this.$tree.mutate(this as unknown as Node<T>, (t: T) => {
         delete t[prop]
       })
 

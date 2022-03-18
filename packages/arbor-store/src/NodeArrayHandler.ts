@@ -1,5 +1,5 @@
 import Path from "./Path"
-import Arbor from "./Arbor"
+import Arbor, { Node } from "./Arbor"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 
@@ -23,7 +23,7 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   push(...item: T[]): number {
     let size: number
 
-    this.$tree.mutate(this.$path, (node: T[]) => {
+    this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       size = node.push(...item)
     })
 
@@ -31,7 +31,7 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   }
 
   reverse() {
-    this.$tree.mutate(this.$path, (node: T[]) => {
+    this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       node.reverse()
     })
 
@@ -43,7 +43,7 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   pop(): T {
     let popped: T
 
-    this.$tree.mutate(this.$path, (node: T[]) => {
+    this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       popped = node.pop()
     })
 
@@ -55,7 +55,7 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   shift(): T {
     let shifted: T
 
-    this.$tree.mutate(this.$path, (node: T[]) => {
+    this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       shifted = node.shift()
     })
 
@@ -65,7 +65,7 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   }
 
   sort(compareFn: (a: T, b: T) => number): T[] {
-    this.$tree.mutate(this.$path, (node: T[]) => {
+    this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       node.sort(compareFn)
     })
 
@@ -77,7 +77,7 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   splice(start: number, deleteCount: number, ...items: T[]): T[] {
     let deleted: T[] = []
 
-    this.$tree.mutate(this.$path, (node: T[]) => {
+    this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       deleted = node.splice(start, deleteCount, ...items)
     })
 
@@ -89,7 +89,7 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
   unshift(...items: T[]): number {
     let size: number
 
-    this.$tree.mutate(this.$path, (node: T[]) => {
+    this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       size = node.unshift(...items)
     })
 

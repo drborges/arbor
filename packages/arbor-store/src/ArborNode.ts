@@ -2,7 +2,7 @@ import isNode from "./isNode"
 import { ArborProxy } from "./proxiable"
 import { NotAnArborNodeError } from "./errors"
 
-import type { AttributesOf } from "./Arbor"
+import type { AttributesOf, Node } from "./Arbor"
 
 export default class ArborNode<T extends object> {
   constructor(attributes: Partial<AttributesOf<T>> = {}) {
@@ -13,15 +13,25 @@ export default class ArborNode<T extends object> {
     return true
   }
 
-  detach() {
+  parent<K extends object>(): Node<K> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     const parentPath = node.$path.parent
+
+    if (parentPath === null) {
+      return undefined
+    }
+
+    return node.$tree.getNodeAt(parentPath)
+  }
+
+  detach() {
+    const node = this
+    if (!isNode(node)) throw new NotAnArborNodeError()
+
     const id = node.$path.props[node.$path.props.length - 1]
-    node.$tree.mutate(parentPath, (parent) => {
-      delete parent[id]
-    })
+    delete this.parent()[id]
   }
 
   attach(): ArborNode<T> {
@@ -40,7 +50,7 @@ export default class ArborNode<T extends object> {
   merge(attributes: Partial<AttributesOf<T>>): ArborNode<T> {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
-    this.$tree.mutate(this.$path, (value) => {
+    this.$tree.mutate(this, (value) => {
       Object.assign(value, attributes)
     })
 

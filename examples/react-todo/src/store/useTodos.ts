@@ -1,10 +1,10 @@
 import { v4 as uuid } from "uuid"
-import Arbor, { useArbor } from "@arborjs/react"
+import Arbor, { Collection, ArborNode, useArbor } from "@arborjs/react"
 
 export type Status = "completed" | "incompleted"
 
-export class Todo {
-  id!: string
+export class Todo extends ArborNode<Todo> {
+  uuid = uuid()
   text!: string
   status: Status = "incompleted"
 
@@ -19,14 +19,17 @@ export class Todo {
   get completed() {
     return this.status === "completed"
   }
+
+  get id() {
+    return this.uuid
+  }
 }
 
-export const store = new Arbor<Todo[]>([])
+export const store = new Arbor(new Collection<Todo>())
 
 export const add = (text: string) => {
-  store.root.push(
+  store.root.add(
     Todo.from({
-      id: uuid(),
       text,
       status: "incompleted",
     })
@@ -34,9 +37,5 @@ export const add = (text: string) => {
 }
 
 export default function useTodos() {
-  const todos = useArbor(store)
-
-  return {
-    todos,
-  }
+  return useArbor(store)
 }
