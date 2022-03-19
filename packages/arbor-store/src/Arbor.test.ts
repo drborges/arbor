@@ -10,7 +10,7 @@ describe("Arbor", () => {
   it("correctly updates the store when making sequential updates to a given node", () => {
     const user = {
       name: "Alice",
-      age: 30
+      age: 30,
     }
 
     const store = new Arbor(user)
@@ -21,24 +21,24 @@ describe("Arbor", () => {
 
     expect(user).toEqual({
       name: "Alice",
-      age: 30
+      age: 30,
     })
 
     expect(alice).toEqual({
       name: "Alice",
-      age: 30
+      age: 30,
     })
 
     expect(store.root).toEqual({
       name: "Alice Doe",
-      age: 31
+      age: 31,
     })
   })
 
   it("supports subsequent mutations to the same path", () => {
     const user = {
       name: "Alice",
-      age: 30
+      age: 30,
     }
 
     const store = new Arbor(user)
@@ -49,28 +49,28 @@ describe("Arbor", () => {
 
     expect(user).toEqual({
       name: "Alice",
-      age: 30
+      age: 30,
     })
 
     expect(alice).toEqual({
       name: "Alice",
-      age: 30
+      age: 30,
     })
 
     expect(store.root).toEqual({
       name: "Alice Doe",
-      age: 31
+      age: 31,
     })
   })
 
   it("supports subsequent mutations to the same path when on forgiven mode", () => {
     const user = {
       name: "Alice",
-      age: 30
+      age: 30,
     }
 
     const store = new Arbor(user, {
-      mode: MutationMode.FORGIVEN
+      mode: MutationMode.FORGIVEN,
     })
 
     const alice = store.root
@@ -79,17 +79,17 @@ describe("Arbor", () => {
 
     expect(user).toEqual({
       name: "Alice Doe",
-      age: 31
+      age: 31,
     })
 
     expect(alice).toEqual({
       name: "Alice Doe",
-      age: 31
+      age: 31,
     })
 
     expect(store.root).toEqual({
       name: "Alice Doe",
-      age: 31
+      age: 31,
     })
   })
 
@@ -138,7 +138,11 @@ describe("Arbor", () => {
       store.notify = jest.fn(store.notify)
       const newRoot = store.setRoot(newState)
 
-      expect(store.notify).toHaveBeenCalledWith(newRoot, initialState)
+      expect(store.notify).toHaveBeenCalledWith(
+        newRoot,
+        initialState,
+        Path.root
+      )
     })
   })
 
@@ -378,7 +382,9 @@ describe("Arbor", () => {
       firstTodo.complete()
       firstTodo.text = "Updated content"
 
-      expect(firstTodo.reload()).toEqual(new Todo({ text: "Updated content", completed: true }))
+      expect(firstTodo.reload()).toEqual(
+        new Todo({ text: "Updated content", completed: true })
+      )
     })
 
     describe("Collection", () => {

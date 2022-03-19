@@ -72,7 +72,8 @@ export type Unsubscribe = () => void
  */
 export type Subscription<T extends object> = (
   newState: Node<T>,
-  oldState: T
+  oldState: T,
+  mutationPath: Path
 ) => void
 
 /**
@@ -156,7 +157,9 @@ export default class Arbor<T extends object = {}> {
    */
   mutate<V extends object>(pathOrNode: Path | Node<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    const node = isNode(pathOrNode) ? pathOrNode : path.walk(this.root) as Node<V>
+    const node = isNode(pathOrNode)
+      ? pathOrNode
+      : (path.walk(this.root) as Node<V>)
     const oldRootValue = this.root.$unwrap()
     const newRoot = mutate(this.root, path, mutation)
 
@@ -167,7 +170,7 @@ export default class Arbor<T extends object = {}> {
 
       this.#root = newRoot
 
-      this.notify(newRoot, oldRootValue)
+      this.notify(newRoot, oldRootValue, path)
     } else if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -218,7 +221,7 @@ export default class Arbor<T extends object = {}> {
     const oldRoot = this.root?.$unwrap()
     const node = this.createNode(Path.root, value)
     this.#root = node as Node<T>
-    this.notify(node, oldRoot)
+    this.notify(node, oldRoot, Path.root)
     return node
   }
 
@@ -241,10 +244,11 @@ export default class Arbor<T extends object = {}> {
    *
    * @param newState the new state tree root node.
    * @param oldState the value of the previous state tree root node.
+   * @param mutationPath the path within the state tree that was the mutation target.
    */
-  notify(newState: Node<T>, oldState: T) {
+  notify(newState: Node<T>, oldState: T, mutationPath: Path) {
     this.#subscriptions.forEach((subscription) => {
-      subscription(newState, oldState)
+      subscription(newState, oldState, mutationPath)
     })
   }
 
