@@ -102,6 +102,15 @@ export default class Path {
   }
 
   /**
+   * Compares its value equality with a given path
+   * @param path a path to compare to
+   * @returns true if both paths have the same value, false otherwise
+   */
+  is(path: Path) {
+    return this.toString() === path.toString()
+  }
+
+  /**
    * Computes the string representation of the path object.
    *
    * @example
