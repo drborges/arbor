@@ -1,4 +1,4 @@
-import Arbor, { Path, Plugin } from "@arborjs/store"
+import Arbor, { Plugin } from "@arborjs/store"
 
 import debounce from "./debounce"
 
