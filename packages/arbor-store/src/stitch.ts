@@ -1,4 +1,3 @@
-import Path from "./Path"
 import Arbor from "./Arbor"
 
 /**
@@ -30,18 +29,9 @@ function propagateUpdatesToUnderlyingStores<T extends object>(
       const stitchedStore = descriptor[key]
 
       if (stitchedStore.root.$unwrap() !== value) {
-        const previousStitchedStoreRoot = stitchedStore.root.$unwrap()
-        const newStitchedStoreRootNode = stitchedStore.setRoot(value)
-        stitchedStore.notify(
-          newStitchedStoreRootNode,
-          previousStitchedStoreRoot,
-          new Path(key)
-        )
+        stitchedStore.setRoot(value)
       }
     })
-
-
-
   })
 }
 
