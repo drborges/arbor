@@ -1,15 +1,19 @@
 import classnames from "classnames"
-import React, { memo, useState } from "react"
+import React, { memo, useEffect, useState } from "react"
 
 import { Todo } from "../store/useTodos"
 
 export interface TodoProps {
   todo: Todo
-  onRemove: () => void
+  onRemove: (todo: Todo) => void
 }
 
 export default memo(function TodoView({ todo, onRemove }: TodoProps) {
   const [editing, setEditing] = useState(false)
+
+  useEffect(() => {
+    console.log(">>>>>>> Why is the todo reference changing on every update?", todo.uuid)
+  }, [todo])
 
   return (
     <div className={classnames("todo-view", { completed: todo.completed })}>
@@ -36,7 +40,7 @@ export default memo(function TodoView({ todo, onRemove }: TodoProps) {
       >
         ✏️
       </button>
-      <button type="button" onClick={onRemove}>
+      <button type="button" onClick={() => onRemove(todo)}>
         ❌
       </button>
     </div>

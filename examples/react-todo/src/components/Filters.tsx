@@ -1,9 +1,9 @@
-import React, { ChangeEvent } from "react"
+import React, { ChangeEvent, memo } from "react"
 
 import useTodosFilter, { FilterValue, select } from "../store/useTodosFilter"
 import Filter from "./Filter"
 
-export default function Filters() {
+export default memo(function Filters() {
   const filter = useTodosFilter()
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     select(e.target.value as FilterValue)
@@ -33,4 +33,4 @@ export default function Filters() {
       />
     </div>
   )
-}
+})

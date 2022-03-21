@@ -1,7 +1,6 @@
 import React from "react"
 import ReactDOM from "react-dom"
 
-import "./store"
 import App from "./components/App"
 
 import "./index.css"

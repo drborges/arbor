@@ -1,10 +1,10 @@
-import React, { SyntheticEvent } from "react"
+import React, { memo, SyntheticEvent } from "react"
 
 import { add, store } from "../store/useTodos"
 import useNewTodo from "../store/useNewTodo"
 import useTodosFilter, { activate } from "../store/useTodosFilter"
 
-export default function NewTodoForm() {
+export default memo(function NewTodoForm() {
   const input = useNewTodo()
   const filter = useTodosFilter()
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
@@ -26,4 +26,4 @@ export default function NewTodoForm() {
       </form>
     </div>
   )
-}
+})
