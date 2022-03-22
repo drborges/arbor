@@ -13,7 +13,7 @@ export default memo(function TodoList() {
       {filterTodos(todos, filter.value).map((todo) => (
         <TodoView
           key={todo.uuid}
-          todo={todo}
+          id={todo.uuid}
           onRemove={todos.onRemove}
         />
       ))}

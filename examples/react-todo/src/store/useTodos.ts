@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid"
-import Arbor, { Collection, ArborNode, useArbor } from "@arborjs/react"
+import Arbor, { Collection, ArborNode, useArbor, useArborNode } from "@arborjs/react"
 import { LocalStorage } from "@arborjs/plugins"
 
 export type Status = "completed" | "incompleted"
@@ -56,5 +56,5 @@ export const add = (text: string) => {
 }
 
 export default function useTodos() {
-  return useArbor(store)
+  return useArborNode(store.root)
 }
