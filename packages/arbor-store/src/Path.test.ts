@@ -76,4 +76,17 @@ describe("Path", () => {
       expect(path.walk(obj)).toBe(obj.state.users[1])
     })
   })
+
+  describe("#is", () => {
+    it("compares two paths by value", () => {
+      expect(Path.root.is(Path.root)).toBe(true)
+      expect(Path.parse("/").is(Path.root)).toBe(true)
+      expect(new Path("users").is(Path.parse("/users"))).toBe(true)
+      expect(Path.parse("/users").is(Path.parse("/users"))).toBe(true)
+
+      expect(Path.parse("/users").is(Path.root)).toBe(false)
+      expect(new Path("users").is(Path.parse("/"))).toBe(false)
+      expect(Path.parse("/users/123").is(Path.parse("/users"))).toBe(false)
+    })
+  })
 })

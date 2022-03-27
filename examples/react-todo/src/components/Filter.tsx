@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react"
+import React, { ChangeEvent, memo } from "react"
 
 import { FilterValue } from "../store/useTodosFilter"
 
@@ -9,7 +9,7 @@ interface FilterProps {
   value: FilterValue
 }
 
-export default function Filter({
+export default memo(function Filter({
   label,
   onChange,
   selected,
@@ -28,4 +28,4 @@ export default function Filter({
       <label htmlFor={`filter-${value}`}>{label}</label>
     </div>
   )
-}
+})

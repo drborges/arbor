@@ -1,9 +1,9 @@
-import React from "react"
+import React, { memo } from "react"
 import { useArbor } from "@arborjs/react"
 
 import { store } from "../store/useTodos"
 
-export default function Summary() {
+export default memo(function Summary() {
   const total = useArbor(store, todos => todos.length)
   const completed = useArbor(
     store,
@@ -15,4 +15,4 @@ export default function Summary() {
       {completed} of {total} completed
     </div>
   )
-}
+})

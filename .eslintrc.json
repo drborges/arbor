@@ -3,7 +3,7 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "jest"],
   "ignorePatterns": ["dist"],
-  "extends": ["airbnb-typescript", "prettier", "plugin:jest/recommended"],
+  "extends": ["airbnb-typescript", "prettier", "plugin:jest/recommended", "plugin:react-hooks/recommended"],
   "rules": {
     "prefer-destructuring": "off",
     "import/no-cycle": "off",

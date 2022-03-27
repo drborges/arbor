@@ -50,9 +50,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
     const deserialized = deserialize(data)
 
     if (deserialized && typeof deserialized === "object") {
-      const oldState = store.root.$unwrap()
-      const root = store.setRoot(deserialized)
-      store.notify(root, oldState)
+      store.setRoot(deserialized)
     }
 
     store.subscribe((newState) => {

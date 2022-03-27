@@ -1,15 +1,18 @@
+import { useArborNode } from "@arborjs/react"
+import { Node } from "@arborjs/store"
 import classnames from "classnames"
-import React, { memo, useState } from "react"
+import React, { memo, useEffect, useState } from "react"
 
-import { Todo } from "../store/useTodos"
+import { store, Todo } from "../store/useTodos"
 
 export interface TodoProps {
-  todo: Todo
-  onRemove: () => void
+  id: string
+  onRemove: (todo: Todo) => void
 }
 
-export default memo(function TodoView({ todo, onRemove }: TodoProps) {
+export default memo(function TodoView({ id, onRemove }: TodoProps) {
   const [editing, setEditing] = useState(false)
+  const todo = useArborNode(store.root.fetch(id))
 
   return (
     <div className={classnames("todo-view", { completed: todo.completed })}>
@@ -36,7 +39,7 @@ export default memo(function TodoView({ todo, onRemove }: TodoProps) {
       >
         ✏️
       </button>
-      <button type="button" onClick={onRemove}>
+      <button type="button" onClick={() => onRemove(todo)}>
         ❌
       </button>
     </div>
