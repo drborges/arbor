@@ -52,7 +52,8 @@ export default function useArbor<
   const store = useMemo(
     () =>
       storeOrState instanceof Arbor ? storeOrState : new Arbor(storeOrState),
-    []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [] // Ensure the store is initialized only once in case the caller is providing an initial state value
   )
 
   const [state, setState] = useState(selector(store.root))
@@ -63,13 +64,13 @@ export default function useArbor<
     if (nextState !== state) {
       setState(nextState)
     }
-  }, [selector, store])
+  }, [selector, state, store.root])
 
   useEffect(() => {
     update()
 
     return store.subscribe(update)
-  }, [selector, store])
+  }, [selector, store, update])
 
   return state
 }
