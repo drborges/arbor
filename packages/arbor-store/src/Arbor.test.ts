@@ -216,7 +216,8 @@ describe("Arbor", () => {
       const store = new Arbor(initialState)
 
       return new Promise((resolve) => {
-        store.subscribe((newState, oldState) => {
+        store.subscribe(({ newState, oldState, mutationPath }) => {
+          expect(mutationPath).toEqual(Path.parse("/users"))
           expect(initialState).toBe(oldState)
           expect(oldState).toEqual({
             users: [{ name: "User 1" }],

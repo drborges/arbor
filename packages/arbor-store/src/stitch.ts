@@ -24,7 +24,7 @@ function propagateUpdatesToUnderlyingStores<T extends object>(
   store: Arbor<T>,
   descriptor: Descriptor
 ) {
-  store.subscribe((newState) => {
+  store.subscribe(({ newState }) => {
     Object.entries(newState.$unwrap()).forEach(([key, value]) => {
       const stitchedStore = descriptor[key]
 
@@ -61,7 +61,7 @@ function subscribeToUnderlyingStoreUpdates<T extends object>(
 ) {
   Object.entries(descriptor).forEach((entry) => {
     const [key, stitchedStore] = entry
-    stitchedStore.subscribe((underlyingStoreNewRoot) => {
+    stitchedStore.subscribe(({ newState: underlyingStoreNewRoot }) => {
       const value = underlyingStoreNewRoot.$unwrap()
 
       if (store.root[key]?.$unwrap() !== value) {

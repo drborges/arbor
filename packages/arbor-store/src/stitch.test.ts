@@ -39,8 +39,8 @@ describe("stitch", () => {
       posts: postStore,
     })
 
-    appStore.subscribe((nextState) => {
-      expect(nextState).toEqual({
+    appStore.subscribe(({ newState }) => {
+      expect(newState).toEqual({
         users: [],
         posts: [{ content: "A new post" }],
       })
@@ -57,8 +57,8 @@ describe("stitch", () => {
       posts: postStore,
     })
 
-    appStore.subscribe((nextState) => {
-      expect(nextState).toEqual({
+    appStore.subscribe(({ newState }) => {
+      expect(newState).toEqual({
         users: [],
         posts: [{ content: "A new post" }],
       })
@@ -75,9 +75,9 @@ describe("stitch", () => {
       posts: postStore,
     })
 
-    appStore.subscribe((nextState) => {
-      expect(postStore.root).toEqual(nextState.posts)
-      expect(nextState).toEqual({
+    appStore.subscribe(({ newState }) => {
+      expect(postStore.root).toEqual(newState.posts)
+      expect(newState).toEqual({
         users: [],
         posts: [{ content: "A new post" }],
       })
@@ -99,8 +99,8 @@ describe("stitch", () => {
       posts: postStore,
     })
 
-    const unsubscribe1 = appStore.subscribe((nextState) => {
-      expect(nextState).toEqual({
+    const unsubscribe1 = appStore.subscribe(({ newState }) => {
+      expect(newState).toEqual({
         users: [],
       })
     })
@@ -108,8 +108,8 @@ describe("stitch", () => {
     delete appStore.root.posts
     unsubscribe1()
 
-    appStore.subscribe((nextState) => {
-      expect(nextState).toEqual({
+    appStore.subscribe(({ newState }) => {
+      expect(newState).toEqual({
         users: [],
         posts: [{ content: "some post" }],
       })

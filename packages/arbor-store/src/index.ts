@@ -12,11 +12,11 @@ import Arbor, {
   Node,
   MutationMode,
   ArborConfig,
-  Unsubscribe,
-  Subscription,
   AttributesOf,
   Plugin,
 } from "./Arbor"
+
+import { Subscriber, Unsubscribe } from "./PubSub"
 
 export type {
   Node,
@@ -24,7 +24,7 @@ export type {
   ArborConfig,
   Mutation,
   Unsubscribe,
-  Subscription,
+  Subscriber,
   AttributesOf,
   Plugin,
 }

@@ -4,6 +4,7 @@ import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
+import PubSub, { Subscriber, Unsubscribe } from "./PubSub"
 
 /**
  * Represents an Arbor tree node.
@@ -63,20 +64,6 @@ export type ArborConfig = {
 }
 
 /**
- * Describes a function used by users to cancel their state updates subscription.
- */
-export type Unsubscribe = () => void
-
-/**
- * Subscription function used to notify subscribers about state updates.
- */
-export type Subscription<T extends object> = (
-  newState: Node<T>,
-  oldState: T,
-  mutationPath: Path
-) => void
-
-/**
  * Describes an Arbor Plugin
  */
 export interface Plugin<T extends object> {
@@ -121,9 +108,9 @@ export default class Arbor<T extends object = {}> {
   #root: Node<T>
 
   /**
-   * Holds all state change subscriptions.
+   * Tracks all subscribers listening to any store mutations.
    */
-  #subscriptions: Set<Subscription<T>> = new Set()
+  #subscribers = new PubSub()
 
   /**
    * Create a new Arbor instance.
@@ -152,7 +139,7 @@ export default class Arbor<T extends object = {}> {
    * => { users: [{ name: "John Doe" }]}
    * ```
    *
-   * @param path the path within the state tree affected by the mutation.
+   * @param pathOrNode the path or node instance within the state tree affected by the mutation.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
   mutate<V extends object>(pathOrNode: Path | Node<V>, mutation: Mutation<V>) {
@@ -231,12 +218,8 @@ export default class Arbor<T extends object = {}> {
    * @param subscription a function to be called whenever a state update occurs.
    * @returns an unsubscribe function that can be used to cancel the subscription.
    */
-  subscribe(subscription: Subscription<T>): Unsubscribe {
-    this.#subscriptions.add(subscription)
-
-    return () => {
-      this.#subscriptions.delete(subscription)
-    }
+  subscribe(subscriber: Subscriber<T>): Unsubscribe {
+    return this.#subscribers.subscribe(subscriber)
   }
 
   /**
@@ -247,8 +230,10 @@ export default class Arbor<T extends object = {}> {
    * @param mutationPath the path within the state tree that was the mutation target.
    */
   notify(newState: Node<T>, oldState: T, mutationPath: Path) {
-    this.#subscriptions.forEach((subscription) => {
-      subscription(newState, oldState, mutationPath)
+    this.#subscribers.publish({
+      newState,
+      oldState,
+      mutationPath,
     })
   }
 

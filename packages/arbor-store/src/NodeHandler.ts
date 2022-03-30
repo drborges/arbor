@@ -1,11 +1,17 @@
 import Path from "./Path"
-import isNode from "./isNode"
 import clone from "./clone"
+import isNode from "./isNode"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
 import Arbor, { Node } from "./Arbor"
+import PubSub, { Subscriber, Unsubscribe } from "./PubSub"
 
-function memoizedFunctionBoundToProxy<T extends object>(target: T, prop: string, value: Function, proxy: Node<T>) {
+function memoizedFunctionBoundToProxy<T extends object>(
+  target: T,
+  prop: string,
+  value: Function,
+  proxy: Node<T>
+) {
   const boundPropName = `bound_${prop.toString()}`
   const boundFn = Reflect.get(target, boundPropName, proxy)
 
