@@ -53,7 +53,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
       store.setRoot(deserialized)
     }
 
-    store.subscribe((newState) => {
+    store.subscribe(({ newState }) => {
       this.update(newState.$unwrap())
     })
   }
