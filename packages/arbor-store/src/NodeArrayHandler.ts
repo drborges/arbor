@@ -1,20 +1,9 @@
-import Path from "./Path"
-import Arbor, { Node } from "./Arbor"
-import NodeCache from "./NodeCache"
+import { Node } from "./Arbor"
 import NodeHandler from "./NodeHandler"
 
 export default class NodeArrayHandler<T extends object> extends NodeHandler<
   T[]
 > {
-  constructor(
-    $tree: Arbor,
-    $path: Path,
-    $value: T[],
-    $children = new NodeCache()
-  ) {
-    super($tree, $path, $value, $children)
-  }
-
   deleteProperty(_target: T[], prop: string): boolean {
     this.splice(parseInt(prop, 10), 1)
     return true

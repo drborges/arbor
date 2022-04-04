@@ -12,6 +12,8 @@ import PubSub, { Subscriber, Unsubscribe } from "./PubSub"
 export type Node<T extends object = object> = T & {
   $unwrap(): T
   $clone(): Node<T>
+  $subscribe(subscriber: Subscriber<T>): Unsubscribe
+  $notify(newState: Node<T>, oldState: T, mutationPath: Path): void
   get $tree(): Arbor<T>
   get $path(): Path
   get $children(): NodeCache
@@ -157,6 +159,9 @@ export default class Arbor<T extends object = {}> {
 
       this.#root = newRoot
 
+      // Notifies subscribers listening to changes on the node itself
+      node.$notify(this.getNodeAt(path), node, path)
+      // Notifies subscribers listening to all changes in the store
       this.notify(newRoot, oldRootValue, path)
     } else if (global.DEBUG) {
       // eslint-disable-next-line no-console
@@ -179,11 +184,18 @@ export default class Arbor<T extends object = {}> {
   createNode<V extends object>(
     path: Path,
     value: V,
-    children = new NodeCache()
+    children = new NodeCache(),
+    subscribers = new PubSub<V>()
   ): Node<V> {
     const handler = Array.isArray(value)
-      ? new NodeArrayHandler(this, path, value, children)
-      : new NodeHandler(this, path, value, children)
+      ? new NodeArrayHandler(
+          this,
+          path,
+          value,
+          children,
+          subscribers as PubSub<V[]>
+        )
+      : new NodeHandler(this, path, value, children, subscribers)
 
     return new Proxy<V>(value, handler as ProxyHandler<V>) as Node<V>
   }

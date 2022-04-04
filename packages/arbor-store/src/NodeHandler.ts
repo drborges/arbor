@@ -31,7 +31,8 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     public readonly $tree: Arbor,
     protected readonly $path: Path,
     protected readonly $value: T,
-    readonly $children = new NodeCache()
+    readonly $children = new NodeCache(),
+    readonly $subscribers = new PubSub<T>()
   ) {}
 
   $unwrap(): T {
@@ -39,7 +40,24 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   }
 
   $clone(): Node<T> {
-    return this.$tree.createNode(this.$path, clone(this.$value), this.$children)
+    return this.$tree.createNode(
+      this.$path,
+      clone(this.$value),
+      this.$children,
+      this.$subscribers
+    )
+  }
+
+  $subscribe(subscriber: Subscriber<T>): Unsubscribe {
+    return this.$subscribers.subscribe(subscriber)
+  }
+
+  $notify(newState: Node<T>, oldState: T, mutationPath: Path) {
+    this.$subscribers.publish({
+      newState,
+      oldState,
+      mutationPath,
+    })
   }
 
   get(target: T, prop: string, proxy: Node<T>) {

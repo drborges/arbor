@@ -209,29 +209,52 @@ describe("Arbor", () => {
 
   describe("State Change Subscriptions", () => {
     it("subscribes to any state changes", () => {
-      const initialState = {
-        users: [{ name: "User 1" }],
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const expectedMutationEvent = {
+        newState: { users: [{ name: "User 1" }, { name: "User 2" }] },
+        oldState: { users: [{ name: "User 1" }] },
+        mutationPath: Path.parse("/users"),
       }
 
-      const store = new Arbor(initialState)
-
-      return new Promise((resolve) => {
-        store.subscribe(({ newState, oldState, mutationPath }) => {
-          expect(mutationPath).toEqual(Path.parse("/users"))
-          expect(initialState).toBe(oldState)
-          expect(oldState).toEqual({
-            users: [{ name: "User 1" }],
-          })
-
-          expect(newState).toEqual({
-            users: [{ name: "User 1" }, { name: "User 2" }],
-          })
-
-          resolve(newState)
-        })
-
-        store.root.users.push({ name: "User 2" })
+      const store = new Arbor({
+        users: [{ name: "User 1" }],
       })
+
+      store.subscribe(subscriber1)
+      store.subscribe(subscriber2)
+
+      store.root.users.push({ name: "User 2" })
+
+      expect(subscriber1).toHaveBeenCalledWith(expectedMutationEvent)
+      expect(subscriber2).toHaveBeenCalledWith(expectedMutationEvent)
+    })
+
+    it("subscribes to changes to a specific node", () => {
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const subscriber3 = jest.fn()
+      const expectedMutationEvent = {
+        newState: { name: "Bob" },
+        oldState: { name: "User 1" },
+        mutationPath: Path.parse("/users/0"),
+      }
+
+      const store = new Arbor({
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      })
+
+      const user1 = store.root.users[0] as Node<{ name: string }>
+      const user2 = store.root.users[1] as Node<{ name: string }>
+      user1.$subscribe(subscriber1)
+      user1.$subscribe(subscriber2)
+      user2.$subscribe(subscriber3)
+
+      store.root.users[0].name = "Bob"
+
+      expect(subscriber1).toHaveBeenCalledWith(expectedMutationEvent)
+      expect(subscriber2).toHaveBeenCalledWith(expectedMutationEvent)
+      expect(subscriber3).not.toHaveBeenCalled()
     })
 
     it("handles mutations to nodes no longer attached to the state tree", () => {

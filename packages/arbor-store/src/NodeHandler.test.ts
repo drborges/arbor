@@ -94,7 +94,7 @@ describe("NodeHandler", () => {
         },
       })
 
-      expect (tree.root.complete).toBe(tree.root.complete)
+      expect(tree.root.complete).toBe(tree.root.complete)
     })
 
     it("allow proxied values to define properties whose names match properties in the ProxyHandler API", () => {
@@ -434,11 +434,11 @@ describe("NodeHandler", () => {
       it("supports subsequent mutations to the same path when on forgiven mode", () => {
         const user = {
           name: "Alice",
-          age: 30
+          age: 30,
         }
 
         const store = new Arbor(user, {
-          mode: MutationMode.FORGIVEN
+          mode: MutationMode.FORGIVEN,
         })
 
         const alice = store.root
@@ -537,6 +537,55 @@ describe("NodeHandler", () => {
       expect(node.users).toBe(copy.users)
       expect(node.users[0]).toBe(copy.users[0])
       expect(node.users[0].address).toBe(copy.users[0].address)
+    })
+  })
+
+  describe("subscriptions", () => {
+    it("subscribes to changes on a given state tree node", () => {
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const expectedMutationEvent = {
+        newState: { name: "Bob" },
+        oldState: { name: "User 1" },
+        mutationPath: Path.parse("/users/0"),
+      }
+
+      const tree = new Arbor({
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      })
+
+      const node = tree.root.users[0] as Node<User>
+      node.$subscribe(subscriber1)
+      node.$subscribe(subscriber2)
+
+      node.name = "Bob"
+
+      expect(subscriber1).toHaveBeenCalledWith(expectedMutationEvent)
+      expect(subscriber2).toHaveBeenCalledWith(expectedMutationEvent)
+    })
+
+    it("unsubscribes from changes on a given state tree node", () => {
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const expectedMutationEvent = {
+        newState: { name: "Bob" },
+        oldState: { name: "User 1" },
+        mutationPath: Path.parse("/users/0"),
+      }
+
+      const tree = new Arbor({
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      })
+
+      const node = tree.root.users[0] as Node<User>
+      node.$subscribe(subscriber1)
+      const unsubscribe = node.$subscribe(subscriber2)
+      unsubscribe()
+
+      node.name = "Bob"
+
+      expect(subscriber1).toHaveBeenCalledWith(expectedMutationEvent)
+      expect(subscriber2).not.toHaveBeenCalled()
     })
   })
 })
