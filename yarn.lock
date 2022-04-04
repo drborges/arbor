@@ -9,7 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@arborjs/plugins@workspace:packages/arbor-plugins"
   dependencies:
-    "@arborjs/store": 0.0.1-alpha.29
+    "@arborjs/store": 0.0.1-alpha.30
     "@types/jest": ^26.0.23
     esbuild: ^0.12.12
     eslint: ^7.32.0
@@ -20,7 +20,7 @@ __metadata:
     ts-jest: ^26.5.6
     typescript: ^4.2.4
   peerDependencies:
-    "@arborjs/store": 0.0.1-alpha.29
+    "@arborjs/store": 0.0.1-alpha.30
     idb: "*"
   languageName: unknown
   linkType: soft
@@ -29,14 +29,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@arborjs/react@workspace:packages/arbor-react"
   dependencies:
-    "@arborjs/store": 0.0.1-alpha.29
+    "@arborjs/store": 0.0.1-alpha.30
     "@testing-library/react-hooks": ^7.0.0
     "@types/jest": ^26.0.23
     "@types/react": 17.0.15
     "@types/react-dom": 17.0.2
     esbuild: ^0.12.12
     eslint: ^7.32.0
-    eslint-plugin-react-hooks: ^4.3.0
+    eslint-plugin-react-hooks: 4.2.0
     jest: ^26.6.3
     np: ^7.5.0
     react: ^17.0.2
@@ -44,13 +44,13 @@ __metadata:
     ts-jest: ^26.5.6
     typescript: ^4.2.4
   peerDependencies:
-    "@arborjs/store": 0.0.1-alpha.29
+    "@arborjs/store": 0.0.1-alpha.30
     react: ^17.0.2
     react-dom: ^17.0.2
   languageName: unknown
   linkType: soft
 
-"@arborjs/store@0.0.1-alpha.29, @arborjs/store@workspace:packages/arbor-store":
+"@arborjs/store@0.0.1-alpha.30, @arborjs/store@workspace:packages/arbor-store":
   version: 0.0.0-use.local
   resolution: "@arborjs/store@workspace:packages/arbor-store"
   dependencies:
@@ -3303,21 +3303,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-hooks@npm:^4.2.0":
+"eslint-plugin-react-hooks@npm:4.2.0":
   version: 4.2.0
   resolution: "eslint-plugin-react-hooks@npm:4.2.0"
   peerDependencies:
     eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
   checksum: ead5c5be3ded82a0cf295b064376adb1998a43e2262b605eecc0efc88283dec4e159ca39307fafb3d8e661dd08e5a4c8cdfed97eea78f923954f72bad6e20397
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-react-hooks@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "eslint-plugin-react-hooks@npm:4.3.0"
-  peerDependencies:
-    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
-  checksum: 0ba1566ba0780bbc75a5921f49188edf232db2085ab32c8d3889592f0db9d6fadc97fcf639775e0101dec6b5409ca3c803ec44213b90c8bacaf0bdf921871c2e
   languageName: node
   linkType: hard
 
@@ -7728,7 +7719,7 @@ resolve@^2.0.0-next.3:
     eslint-plugin-jest: ^24.3.6
     eslint-plugin-jsx-a11y: ^6.4.1
     eslint-plugin-react: ^7.24.0
-    eslint-plugin-react-hooks: ^4.2.0
+    eslint-plugin-react-hooks: 4.2.0
     np: ^7.5.0
     turbo: ^1.0.23
     typescript: ^4.3.5
