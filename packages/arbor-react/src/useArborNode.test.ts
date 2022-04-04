@@ -8,7 +8,7 @@ describe("useArborNode", () => {
     const store = new Arbor({
       counter: {
         count: 0,
-      }
+      },
     })
 
     const { result } = renderHook(() => useArborNode(store.root.counter))
@@ -20,7 +20,7 @@ describe("useArborNode", () => {
     const store = new Arbor({
       counter: {
         count: 0,
-      }
+      },
     })
 
     const { result } = renderHook(() => useArborNode(store.root.counter))
@@ -40,6 +40,27 @@ describe("useArborNode", () => {
     expect(result.current.count).toBe(5)
   })
 
+  it("updates its internal state when initial state changes", () => {
+    const store = new Arbor({
+      counter1: {
+        count: 0,
+      },
+      counter2: {
+        count: 1,
+      },
+    })
+
+    const { result, rerender } = renderHook(({ node }) => useArborNode(node), {
+      initialProps: { node: store.root.counter1 },
+    })
+
+    expect(result.current.count).toBe(0)
+
+    rerender({ node: store.root.counter2 })
+
+    expect(result.current.count).toBe(1)
+  })
+
   it("does not trigger a state update when selected state is not changed", () => {
     const store = new Arbor({
       counter1: {
@@ -50,9 +71,7 @@ describe("useArborNode", () => {
       },
     })
 
-    const { result } = renderHook(() =>
-      useArborNode(store.root.counter1)
-    )
+    const { result } = renderHook(() => useArborNode(store.root.counter1))
 
     expect(result.all.length).toBe(1)
     expect(result.current).toBe(store.root.counter1)
@@ -91,10 +110,12 @@ describe("useArborNode", () => {
     const store = new Arbor({
       counter: {
         count: 0,
-      }
+      },
     })
 
-    const { result, unmount } = renderHook(() => useArborNode(store.root.counter))
+    const { result, unmount } = renderHook(() =>
+      useArborNode(store.root.counter)
+    )
 
     const initialSstate = result.current
 
