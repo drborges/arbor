@@ -1,5 +1,10 @@
 import { v4 as uuid } from "uuid"
-import Arbor, { Collection, ArborNode, useArbor, useArborNode } from "@arborjs/react"
+import Arbor, {
+  Collection,
+  ArborNode,
+  useArbor,
+  useArborNode,
+} from "@arborjs/react"
 import { LocalStorage } from "@arborjs/plugins"
 
 export type Status = "completed" | "incompleted"
@@ -39,9 +44,9 @@ const persistence = new LocalStorage<TodosCollection>({
   debounceBy: 300,
   deserialize: (todos) => {
     const items = Object.values(todos || {}) as Partial<Todo>[]
-    const todoItems = items.map(item => Todo.from(item))
+    const todoItems = items.map((item) => Todo.from(item))
     return new TodosCollection(...todoItems)
-  }
+  },
 })
 
 store.use(persistence)
