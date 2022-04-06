@@ -17,7 +17,7 @@ export default class IndexedDB<T extends object> implements Plugin<T> {
 
     store.setRoot(initialState)
     store.subscribe(({ newState }) => {
-      this.config.update(db, newState)
+      this.config.update(db, newState.$unwrap())
     })
   }
 }

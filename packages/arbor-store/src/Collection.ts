@@ -24,7 +24,7 @@ export default class Collection<T extends Item> {
     return true
   }
 
-  addMany(...items: T[]): T[] {
+  addMany(...items: T[]): Node<T>[] {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -45,7 +45,7 @@ export default class Collection<T extends Item> {
     )
   }
 
-  add(item: T): T {
+  add(item: T): Node<T> {
     return this.addMany(item)[0]
   }
 
@@ -85,11 +85,11 @@ export default class Collection<T extends Item> {
     return undefined
   }
 
-  merge(uuidOrItem: T | string, data: Partial<T>): T {
+  merge(uuidOrItem: T | string, data: Partial<T>): Node<T> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    const item = this.fetch(uuidOrItem)
+    const item = this.fetch(uuidOrItem) as Item
 
     if (item === undefined) {
       return undefined
@@ -107,7 +107,7 @@ export default class Collection<T extends Item> {
     return node.$tree.getNodeAt(node.$path.child(item.uuid))
   }
 
-  mergeBy(predicate: Predicate<T>, updateFn: (item: T) => Partial<T>): T[] {
+  mergeBy(predicate: Predicate<T>, updateFn: (item: T) => Partial<T>): Node<T>[] {
     const node = this
     const updatedIds: string[] = []
     if (!isNode(node)) throw new NotAnArborNodeError()
@@ -131,7 +131,7 @@ export default class Collection<T extends Item> {
     )
   }
 
-  fetch(uuidOrItem: string | T): T | undefined {
+  fetch(uuidOrItem: string | T): Node<T> | undefined {
     const uuid = extractUUIDFrom(uuidOrItem)
     const node = this
 

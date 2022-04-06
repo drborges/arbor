@@ -56,10 +56,10 @@ export default function useArbor<
     [] // Ensure the store is initialized only once in case the caller is providing an initial state value
   )
 
-  const [state, setState] = useState(selector(store.root))
+  const [state, setState] = useState(selector(store.root as T))
 
   const update = useCallback(() => {
-    const nextState = selector(store.root)
+    const nextState = selector(store.root as T)
 
     if (nextState !== state) {
       setState(nextState)

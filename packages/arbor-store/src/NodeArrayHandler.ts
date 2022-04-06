@@ -53,14 +53,14 @@ export default class NodeArrayHandler<T extends object> extends NodeHandler<
     return shifted
   }
 
-  sort(compareFn: (a: T, b: T) => number): T[] {
+  sort(compareFn: (a: T, b: T) => number): Node<T>[] {
     this.$tree.mutate(this as unknown as Node<T[]>, (node: T[]) => {
       node.sort(compareFn)
     })
 
     this.$children.reset()
 
-    return this.$tree.getNodeAt(this.$path)
+    return this.$tree.getNodeAt(this.$path) as Node<T>[]
   }
 
   splice(start: number, deleteCount: number, ...items: T[]): T[] {

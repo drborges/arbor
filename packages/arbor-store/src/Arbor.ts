@@ -9,7 +9,17 @@ import PubSub, { Subscriber, Unsubscribe } from "./PubSub"
 /**
  * Represents an Arbor tree node.
  */
-export type Node<T extends object = object> = T & {
+export type Node<T extends object = object> = {
+  [P in keyof T]: T[P] extends object
+    ? T[P] extends Function
+      ? T[P]
+      : T[P] extends Array<infer D>
+        ? D extends object
+          ? T[P] & Partial<Node<D>>
+          : Node<T[P]>
+        : Node<T[P]>
+    : T[P]
+} & {
   $unwrap(): T
   $clone(): Node<T>
   $subscribe(subscriber: Subscriber<T>): Unsubscribe
@@ -160,7 +170,7 @@ export default class Arbor<T extends object = {}> {
       this.#root = newRoot
 
       // Notifies subscribers listening to changes on the node itself
-      node.$notify(this.getNodeAt(path), node, path)
+      node.$notify(this.getNodeAt(path), node.$unwrap(), path)
       // Notifies subscribers listening to all changes in the store
       this.notify(newRoot, oldRootValue, path)
     } else if (global.DEBUG) {
