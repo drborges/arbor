@@ -111,6 +111,15 @@ export default class Path {
   }
 
   /**
+   * Checks if the path starts with the given path
+   * @param path the path to check
+   * @returns true if this path starts with the given path, false otherwise
+   */
+  startsWith(path: Path) {
+    return this.toString().startsWith(path?.toString())
+  }
+
+  /**
    * Computes the string representation of the path object.
    *
    * @example

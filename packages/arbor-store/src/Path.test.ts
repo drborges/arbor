@@ -89,4 +89,15 @@ describe("Path", () => {
       expect(Path.parse("/users/123").is(Path.parse("/users"))).toBe(false)
     })
   })
+
+  describe("#startsWith", () => {
+    it("checks if a path is an ancestor of another path", () => {
+      expect(Path.parse("/users").startsWith(Path.root)).toBe(true)
+      expect(Path.parse("/users").startsWith(Path.parse("/"))).toBe(true)
+      expect(Path.parse("/users").startsWith(Path.parse("/users"))).toBe(true)
+      expect(Path.parse("/users").startsWith(Path.parse("/users/0"))).toBe(false)
+      expect(Path.parse("/users").startsWith(null)).toBe(false)
+      expect(Path.parse("/users").startsWith(undefined)).toBe(false)
+    })
+  })
 })
