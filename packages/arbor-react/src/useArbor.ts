@@ -1,4 +1,4 @@
-import Arbor, { proxiable } from "@arborjs/store"
+import Arbor, { Node, proxiable, isNode, Subscriber } from "@arborjs/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 /**
@@ -39,38 +39,52 @@ import { useCallback, useEffect, useMemo, useState } from "react"
  * @returns the current state of the Arbor state tree.
  */
 export default function useArbor<
-  K extends Arbor | object,
-  T = K extends Arbor<infer D> ? D : K,
+  K extends Arbor | Node | object,
+  T = K extends Arbor<infer D> ? D : K extends Node<infer D> ? D : K,
   S = T
->(storeOrState: K, selector = (root: T) => root as unknown as S) {
-  if (!(storeOrState instanceof Arbor) && !proxiable(storeOrState)) {
+>(target: K, selector = (root: T) => root as unknown as S) {
+  if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
     throw new Error(
-      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
+      "useArbor must be initialized with either an instance of Arbor, an Arbor Node or a proxiable object"
     )
   }
 
-  const store = useMemo(
-    () =>
-      storeOrState instanceof Arbor ? storeOrState : new Arbor(storeOrState),
+  const store = useMemo(() => {
+    if (target instanceof Arbor) return target
+    if (isNode(target)) return target.$tree
+    return new Arbor(target)
+    // Initializes the store only once. We may need to revisit this
+    // I'm thinking scenarios where users want to create local state
+    // based on props that can change over time.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [] // Ensure the store is initialized only once in case the caller is providing an initial state value
-  )
+  }, [])
 
-  const [state, setState] = useState(selector(store.root as T))
+  const targetNode = useMemo(() => isNode(target) ? target : store.root, [store.root, target])
+  const selectedNode = useMemo(() => selector(targetNode), [selector, targetNode])
+  const [state, setState] = useState(selectedNode)
 
-  const update = useCallback(() => {
-    const nextState = selector(store.root as T)
-
-    if (nextState !== state) {
-      setState(nextState)
+  const update: Subscriber<object> = useCallback(({ mutationPath }) => {
+    if (!mutationPath.startsWith(targetNode.$path)) {
+      return
     }
-  }, [selector, state, store.root])
+
+    const newTargetNode = store.getNodeAt(targetNode.$path)
+    const newSelectedState = selector(newTargetNode as unknown as T)
+
+    if (newSelectedState !== state) {
+      setState(newSelectedState)
+    }
+  }, [selector, state, store, targetNode.$path])
 
   useEffect(() => {
-    update()
+    update({
+      oldState: null,
+      newState: targetNode,
+      mutationPath: targetNode.$path,
+    })
 
     return store.subscribe(update)
-  }, [selector, store, update])
+  }, [store, targetNode, update])
 
   return state
 }

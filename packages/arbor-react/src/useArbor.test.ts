@@ -214,12 +214,52 @@ describe("useArbor", () => {
   })
 
   it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {
-    expect(() => useArbor(new Date())).toThrowError(
-      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
-    )
+    expect(() => useArbor(new Date())).toThrowError()
+    expect(() => useArbor("No strings allowed" as any)).toThrowError()
+  })
 
-    expect(() => useArbor("No strings allowed" as any)).toThrowError(
-      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
-    )
+  it("allows subscribing to mutations targeting subtrees", () => {
+    const store = new Arbor({
+      users: [
+        {
+          name: "Alice",
+          address: { street: "123 Walnut" }
+        },
+        {
+          name: "Bob",
+          address: { street: "123 Chestnut" }
+        },
+      ]
+    })
+
+    const alice = store.root.users[0]
+
+    const { result } = renderHook(() => useArbor(alice))
+
+    act(() => {
+      alice.name = "Alice Doe"
+    })
+
+    expect(result.all.length).toBe(2)
+    expect(result.current.name).toBe("Alice Doe")
+
+    act(() => {
+      alice.address.street = "321 Walnut"
+    })
+
+    expect(result.all.length).toBe(3)
+    expect(result.current.address.street).toBe("321 Walnut")
+
+    act(() => {
+      store.root.users[1].name = "Bob Doe"
+    })
+
+    expect(result.all.length).toBe(3) // does not re-render
+
+    act(() => {
+      store.root.users = []
+    })
+
+    expect(result.all.length).toBe(3) // does not re-render
   })
 })
