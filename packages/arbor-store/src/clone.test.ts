@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import clone from "./clone"
-import { Clonable } from "./isClonable"
+import { Clonable } from "./Arbor"
 
 class Address {
   constructor(public street: string) {}

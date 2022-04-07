@@ -1,45 +1,40 @@
-import Path from "./Path"
-import clone from "./clone"
-import stitch from "./stitch"
-import isNode from "./isNode"
-import produce from "./produce"
-import { Mutation } from "./mutate"
-import ArborNode from "./ArborNode"
-import Collection from "./Collection"
-import proxiable, { ArborProxy } from "./proxiable"
-import isClonable, { Clonable } from "./isClonable"
 import Arbor, {
-  Node,
-  MutationMode,
   ArborConfig,
   AttributesOf,
+  MutationMode,
+  Node,
   Plugin,
 } from "./Arbor"
 
+import Path from "./Path"
+import stitch from "./stitch"
+import isNode from "./isNode"
+import produce from "./produce"
+import ArborNode from "./ArborNode"
+import { Mutation } from "./mutate"
+import Collection from "./Collection"
 import { Subscriber, Unsubscribe } from "./PubSub"
+import proxiable, { ArborProxy } from "./proxiable"
 
 export type {
   Node,
-  Clonable,
-  ArborConfig,
-  Mutation,
-  Unsubscribe,
-  Subscriber,
-  AttributesOf,
   Plugin,
+  Mutation,
+  Subscriber,
+  ArborConfig,
+  Unsubscribe,
+  AttributesOf,
 }
 
 export {
-  clone,
-  isClonable,
-  proxiable,
-  Collection,
-  ArborNode,
-  ArborProxy,
   Path,
-  produce,
-  MutationMode,
   isNode,
   stitch,
+  produce,
+  ArborNode,
+  proxiable,
+  Collection,
+  ArborProxy,
+  MutationMode,
   Arbor as default,
 }

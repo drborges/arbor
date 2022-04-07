@@ -1,6 +1,4 @@
-export interface Clonable<T extends object> {
-  $clone(): T
-}
+import { Clonable } from "./Arbor"
 
 export default function isClonable<T extends object>(
   value: any

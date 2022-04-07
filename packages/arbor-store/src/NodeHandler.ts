@@ -28,7 +28,7 @@ function memoizedFunctionBoundToProxy<T extends object>(
 
 export default class NodeHandler<T extends object> implements ProxyHandler<T> {
   constructor(
-    public readonly $tree: Arbor,
+    readonly $tree: Arbor,
     protected readonly $path: Path,
     protected readonly $value: T,
     readonly $children = new NodeCache(),

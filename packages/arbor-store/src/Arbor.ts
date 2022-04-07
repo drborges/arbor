@@ -6,10 +6,23 @@ import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 import PubSub, { Subscriber, Unsubscribe } from "./PubSub"
 
-/**
- * Represents an Arbor tree node.
- */
-export type Node<T extends object = object> = {
+export interface Subscribable<T extends object> {
+  $subscribe(subscriber: Subscriber<T>): Unsubscribe
+}
+
+export interface Notifyable<T extends object> {
+  $notify(newState: Node<T>, oldState: T, mutationPath: Path): void
+}
+
+export interface Unwrappable<T extends object> {
+  $unwrap(): T
+}
+
+export interface Clonable<T extends object> {
+  $clone(): T
+}
+
+export type Tree<T extends object = object> = {
   [P in keyof T]: T[P] extends object
     ? T[P] extends Function
       ? T[P]
@@ -19,11 +32,12 @@ export type Node<T extends object = object> = {
           : Node<T[P]>
         : Node<T[P]>
     : T[P]
-} & {
-  $unwrap(): T
-  $clone(): Node<T>
-  $subscribe(subscriber: Subscriber<T>): Unsubscribe
-  $notify(newState: Node<T>, oldState: T, mutationPath: Path): void
+}
+
+/**
+ * Represents an Arbor tree node.
+ */
+export type Node<T extends object = object> = Tree<T> & Subscribable<T> & Notifyable<T> & Unwrappable<T> & Clonable<Node<T>> & {
   get $tree(): Arbor<T>
   get $path(): Path
   get $children(): NodeCache
@@ -156,9 +170,7 @@ export default class Arbor<T extends object = {}> {
    */
   mutate<V extends object>(pathOrNode: Path | Node<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    const node = isNode(pathOrNode)
-      ? pathOrNode
-      : (path.walk(this.root) as Node<V>)
+    const node = isNode(pathOrNode) ? pathOrNode : (path.walk(this.root) as Node<V>)
     const oldRootValue = this.root.$unwrap()
     const newRoot = mutate(this.root, path, mutation)
 

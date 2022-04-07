@@ -1,4 +1,5 @@
-import isClonable, { Clonable } from "./isClonable"
+import { Clonable } from "./Arbor"
+import isClonable from "./isClonable"
 
 class User implements Clonable<User> {
   $clone(): User {
