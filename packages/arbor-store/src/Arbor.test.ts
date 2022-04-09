@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import Path from "./Path"
-import Arbor, { MutationMode, Node } from "./Arbor"
+import Arbor, { MutationMode } from "./Arbor"
 import ArborNode from "./ArborNode"
 import Collection from "./Collection"
+import Path from "./Path"
 import { warmup } from "./test.helpers"
 
 describe("Arbor", () => {
@@ -190,7 +190,7 @@ describe("Arbor", () => {
       const store = new Arbor(initialState)
       const initialRoot = store.root
       const initialUsers = store.root.users
-      const initialUser0 = store.root.users[0] as Node<{ name: string }>
+      const initialUser0 = store.root.users[0]
       const initialUser1 = store.root.users[1]
 
       store.mutate(initialUser0, (user) => {

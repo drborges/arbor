@@ -228,8 +228,8 @@ describe("NodeHandler", () => {
 
       store.root.users[0] = store.root.users[1]
 
-      const node1 = store.root.users[0] as Node<User>
-      const node2 = store.root.users[1] as Node<User>
+      const node1 = store.root.users[0]
+      const node2 = store.root.users[1]
 
       expect(store.root.users).toEqual([{ name: "User 2" }, { name: "User 2" }])
       expect(node1.$path.toString()).toEqual("/users/0")
@@ -469,9 +469,9 @@ describe("NodeHandler", () => {
       ) as Node<State>
 
       expect(node.$unwrap()).toBe(state)
-      expect((node.users as Node<User[]>).$unwrap()).toBe(state.users)
-      expect((node.users[0] as Node<User>).$unwrap()).toBe(state.users[0])
-      expect((node.users[1] as Node<User>).$unwrap()).toBe(state.users[1])
+      expect(node.users.$unwrap()).toBe(state.users)
+      expect(node.users[0].$unwrap()).toBe(state.users[0])
+      expect(node.users[1].$unwrap()).toBe(state.users[1])
     })
   })
 
@@ -492,9 +492,9 @@ describe("NodeHandler", () => {
       ) as Node<State>
 
       expect(node.$path.toString()).toEqual("/")
-      expect((node.users as Node<User[]>).$path.toString()).toEqual("/users")
-      expect((node.users[0] as Node<User>).$path.toString()).toEqual("/users/0")
-      expect((node.users[1] as Node<User>).$path.toString()).toEqual("/users/1")
+      expect(node.users.$path.toString()).toEqual("/users")
+      expect(node.users[0].$path.toString()).toEqual("/users/0")
+      expect(node.users[1].$path.toString()).toEqual("/users/1")
     })
   })
 

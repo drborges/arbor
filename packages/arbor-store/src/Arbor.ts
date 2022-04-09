@@ -187,9 +187,7 @@ export default class Arbor<T extends object = {}> {
    */
   mutate<V extends object>(pathOrNode: Path | Node<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    const node = isNode(pathOrNode)
-      ? pathOrNode
-      : (path.walk(this.root) as Node<V>)
+    const node = isNode(pathOrNode) ? pathOrNode : (path.walk(this.root) as Node<V>)
     const oldRootValue = this.root.$unwrap()
     const newRoot = mutate(this.root, path, mutation)
 

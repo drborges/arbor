@@ -18,8 +18,8 @@ describe("NodeArrayHandler", () => {
     const tree = new Arbor<User[]>(state)
     const node = new Proxy(
       state,
-      new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<User[]>
-    ) as Node<User[]>
+      new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
+    )
 
     expect(node).toBeInstanceOf(Array)
   })
@@ -30,9 +30,7 @@ describe("NodeArrayHandler", () => {
       const tree = new Arbor<User[]>(state)
       const node = new Proxy(
         state,
-        new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<
-          User[]
-        >
+        new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
       ) as Node<User[]>
 
       warmup(node[0].address)
@@ -85,8 +83,8 @@ describe("NodeArrayHandler", () => {
       const originalRoot = tree.root
       const originalBob = tree.root[0]
       const originalAlice = tree.root[1]
-      const first = tree.root.first as Node<User>
-      const last = tree.root.last as Node<User>
+      const first = tree.root.first
+      const last = tree.root.last
 
       expect(originalRoot).toBeInstanceOf(Users)
       expect(first.$unwrap()).toBe(state[0])
