@@ -1,6 +1,7 @@
 import { Node } from "./Arbor"
+import Path from "./Path"
 
 export default function isNode<T extends object>(value: any): value is Node<T> {
-  const isNodeValue = value as Node<T>
-  return typeof isNodeValue?.$unwrap === "function"
+  const node = value as Node<T>
+  return typeof node?.$unwrap === "function" && node?.$path instanceof Path
 }
