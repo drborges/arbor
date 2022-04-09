@@ -88,7 +88,7 @@ function subscribeToUnderlyingStoreUpdates<T extends object>(
  * ```
  */
 export type Descriptor = {
-  [key: string]: Arbor<object>
+  [key: string]: Arbor<any>
 }
 
 /**

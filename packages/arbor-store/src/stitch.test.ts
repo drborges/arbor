@@ -1,4 +1,4 @@
-import Arbor from "./Arbor"
+import Arbor, { ArrayNode } from "./Arbor"
 import stitch from "./stitch"
 
 type User = {
@@ -83,7 +83,7 @@ describe("stitch", () => {
       })
     })
 
-    appStore.root.posts = [{ content: "A new post" }]
+    appStore.root.posts = [{ content: "A new post" }] as ArrayNode<Post>
   })
 
   it("restores deleted root keys when underlying store is updated", () => {
