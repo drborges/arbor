@@ -6,12 +6,42 @@ import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 
 /**
- * Represents an Arbor tree node.
+ * Describes an Arbor state tree Array node's API.
  */
-export type Node<T extends object = object> = T & {
+export type ArrayNode<T> = Array<T extends object ? Node<T> : T> & {
+  [key: number]: T extends object
+    ? T extends Array<infer D>
+      ? ArrayNode<D>
+      : Node<T>
+    : T
+
+  $unwrap(): T
+  $clone(): ArrayNode<T>
+  get $tree(): Arbor
+  get $path(): Path
+  get $children(): NodeCache
+}
+
+/**
+ * Recursively describes the props of an Arbor state tree node.
+ */
+export type NodeProps<T extends object> = {
+  [P in keyof T]: T[P] extends object
+    ? T[P] extends Function
+      ? T[P]
+      : T[P] extends Array<infer D>
+        ? ArrayNode<D>
+        : Node<T[P]>
+    : T[P]
+}
+
+/**
+ * Describes an Arbor state tree node's API.
+ */
+export type Node<T extends object = object> = NodeProps<T> & T & {
   $unwrap(): T
   $clone(): Node<T>
-  get $tree(): Arbor<T>
+  get $tree(): Arbor
   get $path(): Path
   get $children(): NodeCache
 }
