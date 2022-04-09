@@ -3,11 +3,11 @@ import Arbor, { Node } from "./Arbor"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 
-export default class NodeArrayHandler<T extends object> extends NodeHandler<
+export default class NodeArrayHandler<T extends object, K extends object = any> extends NodeHandler<
   T[]
 > {
   constructor(
-    $tree: Arbor,
+    $tree: Arbor<K>,
     $path: Path,
     $value: T[],
     $children = new NodeCache()

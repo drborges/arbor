@@ -20,9 +20,9 @@ function memoizedFunctionBoundToProxy<T extends object>(target: T, prop: string,
   return Reflect.get(target, boundPropName, proxy)
 }
 
-export default class NodeHandler<T extends object> implements ProxyHandler<T> {
+export default class NodeHandler<T extends object, K extends object = any> implements ProxyHandler<T> {
   constructor(
-    public readonly $tree: Arbor,
+    public readonly $tree: Arbor<K>,
     protected readonly $path: Path,
     protected readonly $value: T,
     readonly $children = new NodeCache()
