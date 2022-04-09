@@ -15,7 +15,7 @@ export type ArrayNode<T> = Array<T extends object ? Node<T> : T> & {
       : Node<T>
     : T
 
-  $unwrap(): T
+  $unwrap(): T[]
   $clone(): ArrayNode<T>
   get $tree(): Arbor
   get $path(): Path
