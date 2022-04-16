@@ -31,7 +31,7 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
       ) as Node<State>
 
       warmup(node.users[0])
@@ -54,7 +54,7 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(
+        new NodeHandler(
           tree,
           Path.root,
           state,
@@ -94,7 +94,7 @@ describe("NodeHandler", () => {
         },
       })
 
-      expect (tree.root.complete).toBe(tree.root.complete)
+      expect(tree.root.complete).toBe(tree.root.complete)
     })
 
     it("allow proxied values to define properties whose names match properties in the ProxyHandler API", () => {
@@ -434,11 +434,11 @@ describe("NodeHandler", () => {
       it("supports subsequent mutations to the same path when on forgiven mode", () => {
         const user = {
           name: "Alice",
-          age: 30
+          age: 30,
         }
 
         const store = new Arbor(user, {
-          mode: MutationMode.FORGIVEN
+          mode: MutationMode.FORGIVEN,
         })
 
         const alice = store.root
@@ -465,7 +465,7 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
       ) as Node<State>
 
       expect(node.$unwrap()).toBe(state)
@@ -488,7 +488,7 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
       ) as Node<State>
 
       expect(node.$path.toString()).toEqual("/")
@@ -507,7 +507,7 @@ describe("NodeHandler", () => {
       const tree = new Arbor(state)
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
       ) as Node<State>
 
       warmup(node.users[0])
@@ -528,7 +528,7 @@ describe("NodeHandler", () => {
       const tree = new Arbor(state)
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
       ) as Node<State>
 
       const copy = node.$clone()

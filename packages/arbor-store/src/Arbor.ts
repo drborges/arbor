@@ -106,7 +106,7 @@ export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
  * ```
  *
  */
-export default class Arbor<T extends object = {}> {
+export default class Arbor<T extends object> {
   /**
    * Controls whether or not Arbor should propagate mutation side-effects
    * to the original node underlying value.
@@ -195,7 +195,7 @@ export default class Arbor<T extends object = {}> {
     children = new NodeCache()
   ): Node<V> {
     const handler = Array.isArray(value)
-      ? new NodeArrayHandler(this, path, value, children)
+      ? new NodeArrayHandler(this, path, value as V[], children)
       : new NodeHandler(this, path, value, children)
 
     return new Proxy<V>(value, handler as ProxyHandler<V>) as Node<V>

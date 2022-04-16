@@ -5,7 +5,12 @@ import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
 import Arbor, { Node } from "./Arbor"
 
-function memoizedFunctionBoundToProxy<T extends object>(target: T, prop: string, value: Function, proxy: Node<T>) {
+function memoizedFunctionBoundToProxy<T extends object>(
+  target: T,
+  prop: string,
+  value: Function,
+  proxy: Node<T>
+) {
   const boundPropName = `bound_${prop.toString()}`
   const boundFn = Reflect.get(target, boundPropName, proxy)
 
@@ -20,9 +25,11 @@ function memoizedFunctionBoundToProxy<T extends object>(target: T, prop: string,
   return Reflect.get(target, boundPropName, proxy)
 }
 
-export default class NodeHandler<T extends object> implements ProxyHandler<T> {
+export default class NodeHandler<T extends object, K extends object>
+  implements ProxyHandler<T>
+{
   constructor(
-    public readonly $tree: Arbor,
+    public readonly $tree: Arbor<K>,
     protected readonly $path: Path,
     protected readonly $value: T,
     readonly $children = new NodeCache()

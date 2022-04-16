@@ -39,7 +39,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
  * @returns the current state of the Arbor state tree.
  */
 export default function useArbor<
-  K extends Arbor | object,
+  K extends Arbor<object> | object,
   T = K extends Arbor<infer D> ? D : K,
   S = T
 >(storeOrState: K, selector = (root: T) => root as unknown as S) {

@@ -18,7 +18,7 @@ describe("NodeArrayHandler", () => {
     const tree = new Arbor<User[]>(state)
     const node = new Proxy(
       state,
-      new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<User[]>
+      new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
     ) as Node<User[]>
 
     expect(node).toBeInstanceOf(Array)
@@ -30,9 +30,7 @@ describe("NodeArrayHandler", () => {
       const tree = new Arbor<User[]>(state)
       const node = new Proxy(
         state,
-        new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<
-          User[]
-        >
+        new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
       ) as Node<User[]>
 
       warmup(node[0].address)
@@ -49,9 +47,7 @@ describe("NodeArrayHandler", () => {
       const tree = new Arbor<User[]>(state)
       const node = new Proxy(
         state,
-        new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<
-          User[]
-        >
+        new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
       ) as Node<User[]>
 
       const copy = node.$clone()
