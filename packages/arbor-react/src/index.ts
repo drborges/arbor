@@ -1,7 +1,7 @@
 import Arbor, {
   Path,
   Collection,
-  ArborNode,
+  BaseNode,
   produce,
   stitch,
   MutationMode,
@@ -22,6 +22,6 @@ export {
   produce,
   MutationMode,
   stitch,
-  ArborNode,
+  BaseNode,
   Arbor as default,
 }

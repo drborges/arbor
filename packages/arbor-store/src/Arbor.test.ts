@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
 import Arbor, { MutationMode, INode } from "./Arbor"
-import ArborNode from "./ArborNode"
+import BaseNode from "./BaseNode"
 import Collection from "./Collection"
 import { warmup } from "./test.helpers"
 
@@ -313,7 +313,7 @@ describe("Arbor", () => {
   })
 
   describe("custom data model", () => {
-    class Todo extends ArborNode<Todo> {
+    class Todo extends BaseNode<Todo> {
       uuid!: string
       text!: string
       completed: boolean

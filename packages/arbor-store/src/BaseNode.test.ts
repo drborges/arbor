@@ -1,10 +1,10 @@
 import Arbor from "./Arbor"
-import ArborNode from "./ArborNode"
+import BaseNode from "./BaseNode"
 import Collection from "./Collection"
 import { NotAnArborNodeError } from "./errors"
 
-describe("ArborNode", () => {
-  class Todo extends ArborNode<Todo> {
+describe("BaseNode", () => {
+  class Todo extends BaseNode<Todo> {
     uuid!: string
     text!: string
     completed: boolean
@@ -52,7 +52,7 @@ describe("ArborNode", () => {
 
     it("returns undefined if parent node does not exist", () => {
       const store = new Arbor(
-        new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+        new Todo({ uuid: "abc", text: "Do the dishes", completed: false })
       )
 
       const parent = store.root.parent()

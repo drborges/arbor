@@ -4,7 +4,7 @@ import { NotAnArborNodeError } from "./errors"
 
 import type { AttributesOf, INode } from "./Arbor"
 
-export default class ArborNode<T extends object> {
+export default class BaseNode<T extends object> {
   constructor(attributes: Partial<AttributesOf<T>> = {}) {
     Object.assign(this, attributes)
   }
@@ -34,7 +34,7 @@ export default class ArborNode<T extends object> {
     delete this.parent()[id]
   }
 
-  attach(): ArborNode<T> {
+  attach(): BaseNode<T> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -47,7 +47,7 @@ export default class ArborNode<T extends object> {
     return node.$tree.getNodeAt(node.$path)
   }
 
-  merge(attributes: Partial<AttributesOf<T>>): ArborNode<T> {
+  merge(attributes: Partial<AttributesOf<T>>): BaseNode<T> {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
     this.$tree.mutate(this, (value) => {
@@ -57,7 +57,7 @@ export default class ArborNode<T extends object> {
     return this.$tree.getNodeAt(this.$path)
   }
 
-  reload(): ArborNode<T> {
+  reload(): BaseNode<T> {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
     return this.$tree.getNodeAt(this.$path)

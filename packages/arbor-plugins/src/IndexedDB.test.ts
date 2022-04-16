@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto"
 import { IDBPDatabase, openDB } from "idb"
-import Arbor, { ArborNode, Collection } from "@arborjs/store"
+import Arbor, { BaseNode, Collection } from "@arborjs/store"
 
 import IndexedDB, { Config } from "./IndexedDB"
 
@@ -10,7 +10,7 @@ const uuid = (
     `uuid-${n}`
 )()
 
-class Todo extends ArborNode<Todo> {
+class Todo extends BaseNode<Todo> {
   uuid = uuid()
   text!: string
   status = "todo"
