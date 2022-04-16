@@ -3,7 +3,6 @@ import Arbor, {
   Collection,
   BaseNode,
   produce,
-  stitch,
   MutationMode,
 } from "@arborjs/store"
 
@@ -21,7 +20,6 @@ export {
   Path,
   produce,
   MutationMode,
-  stitch,
   BaseNode,
   Arbor as default,
 }

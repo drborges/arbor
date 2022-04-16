@@ -1,6 +1,5 @@
 import Path from "./Path"
 import clone from "./clone"
-import stitch from "./stitch"
 import isNode from "./isNode"
 import produce from "./produce"
 import { Mutation } from "./mutate"
@@ -42,6 +41,5 @@ export {
   produce,
   MutationMode,
   isNode,
-  stitch,
   Arbor as default,
 }
