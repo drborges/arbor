@@ -1,7 +1,7 @@
 import Path from "./Path"
 import { unwrap, warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
-import Arbor, { MutationMode, INode } from "./Arbor"
+import Arbor, { INode, MutationMode } from "./Arbor"
 
 interface Address {
   street: string
@@ -19,7 +19,7 @@ describe("NodeArrayHandler", () => {
     const node = new Proxy(
       state,
       new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
-    ) as INode<User[]>
+    )
 
     expect(node).toBeInstanceOf(Array)
   })
@@ -135,7 +135,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -240,7 +240,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -451,7 +451,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -593,7 +593,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -718,7 +718,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -831,7 +831,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -940,7 +940,7 @@ describe("NodeArrayHandler", () => {
       const state = [{ name: "User 3", address: { street: "Street 3" } }]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
 
       expect(root.$children.has(user1.$unwrap())).toBe(true)

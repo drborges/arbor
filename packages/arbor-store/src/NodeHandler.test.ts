@@ -2,7 +2,7 @@ import Path from "./Path"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import Arbor, { MutationMode, INode } from "./Arbor"
-import { children, unwrap, warmup } from "./test.helpers"
+import { children, toINode, unwrap, warmup } from "./test.helpers"
 
 interface Address {
   street: string
@@ -213,7 +213,9 @@ describe("NodeHandler", () => {
 
       tree.root.users[0].name = "User 1 Updated"
 
-      expect(tree.root.$unwrap()).not.toBe(state)
+      const root = toINode(tree.root)
+
+      expect(root.$unwrap()).not.toBe(state)
       expect(unwrap(tree.root.users)).not.toBe(state.users)
       expect(unwrap(tree.root.users[0])).not.toBe(state.users[0])
       expect(unwrap(tree.root.users[0].address)).toBe(state.users[0].address)

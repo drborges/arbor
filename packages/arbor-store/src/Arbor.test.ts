@@ -100,7 +100,7 @@ describe("Arbor", () => {
       }
       const store = new Arbor(initialState)
 
-      const node = store.root
+      const node = store.root as INode<{ users: { name: string }[] }>
 
       expect(node.$unwrap()).toBe(initialState)
     })

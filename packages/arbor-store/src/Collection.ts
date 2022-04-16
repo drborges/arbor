@@ -121,7 +121,7 @@ export default class Collection<T extends Item> {
     node.$tree.mutate<Collection<T>>(
       node as INode<Collection<T>>,
       (collection) => {
-        Object.values(collection).forEach((value: T) => {
+        Object.values(collection).forEach((value) => {
           if (predicate(value)) {
             const newValue = {
               ...value,
@@ -185,7 +185,7 @@ export default class Collection<T extends Item> {
     return Object.values(this).sort(compare)
   }
 
-  slice(start: number, end: number) {
+  slice(start: number, end: number): T[] {
     let i = 0
     const slice = []
 

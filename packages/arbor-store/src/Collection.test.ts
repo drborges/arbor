@@ -1,8 +1,9 @@
-import Arbor from "./Arbor"
+import Arbor, { ArborNode } from "./Arbor"
 import Collection from "./Collection"
 import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 import type { INode } from "./Arbor"
+import { toINode } from "./test.helpers"
 
 interface User {
   uuid: string
@@ -548,15 +549,14 @@ describe("Collection", () => {
     it("shallowly clones the collection into a new one", () => {
       const user1 = { uuid: "abc", name: "Bob" }
       const user2 = { uuid: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const cloned = store.root.$clone()
+      const store = new Arbor(new Collection<ArborNode<User>>(user1, user2))
+      const cloned = toINode(store.root).$clone()
 
       expect(cloned).toBeInstanceOf(Collection)
-      expect(cloned).not.toBe(store.root.$unwrap())
+      expect(cloned).not.toBe(toINode(store.root).$unwrap())
       expect(cloned.length).toBe(2)
-      expect((cloned.fetch("abc") as INode<User>).$unwrap()).toBe(user1)
-      expect((cloned.fetch("abd") as INode<User>).$unwrap()).toBe(user2)
+      expect(toINode(cloned.fetch("abc")).$unwrap()).toBe(user1)
+      expect(toINode(cloned.fetch("abd")).$unwrap()).toBe(user2)
       expect(cloned.fetch("abc")).toBe(store.root.fetch("abc"))
       expect(cloned.fetch("abd")).toBe(store.root.fetch("abd"))
     })

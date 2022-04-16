@@ -6,6 +6,17 @@ import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 
 /**
+ * Recursively describes the props of an Arbor state tree node.
+ */
+export type ArborNode<T extends object> = {
+  [P in keyof T]: T[P] extends object
+    ? T[P] extends Function
+      ? T[P]
+      : ArborNode<T[P]>
+    : T[P]
+}
+
+/**
  * Represents an Arbor state tree node with all of its internal API exposed.
  */
 export type INode<T extends object = object> = T & {
@@ -159,9 +170,9 @@ export default class Arbor<T extends object> {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
     const node = isNode(pathOrNode)
       ? pathOrNode
-      : (path.walk(this.root) as INode<V>)
-    const oldRootValue = this.root.$unwrap()
-    const newRoot = mutate(this.root, path, mutation)
+      : (path.walk(this.#root) as INode<V>)
+    const oldRootValue = this.#root.$unwrap()
+    const newRoot = mutate(this.#root, path, mutation)
 
     if (newRoot) {
       if (this.mode === MutationMode.FORGIVEN) {
@@ -218,7 +229,7 @@ export default class Arbor<T extends object> {
    * @returns the root node.
    */
   setRoot(value: T): INode<T> {
-    const oldRoot = this.root?.$unwrap()
+    const oldRoot = this.#root?.$unwrap()
     const node = this.createNode(Path.root, value)
     this.#root = node as INode<T>
     this.notify(node, oldRoot, Path.root)
@@ -259,7 +270,7 @@ export default class Arbor<T extends object> {
   /**
    * Returns the current state tree root node.
    */
-  get root(): INode<T> {
+  get root(): ArborNode<T> {
     return this.#root
   }
 }

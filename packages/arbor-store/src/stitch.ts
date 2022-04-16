@@ -1,4 +1,4 @@
-import Arbor from "./Arbor"
+import Arbor, { INode } from "./Arbor"
 
 /**
  * Ensure that updates to the stitched store's root keys are propagated to the corresponding underlying store.
@@ -27,8 +27,9 @@ function propagateUpdatesToUnderlyingStores<T extends object>(
   store.subscribe((newState) => {
     Object.entries(newState.$unwrap()).forEach(([key, value]) => {
       const stitchedStore = descriptor[key]
+      const root = stitchedStore.root as INode<T>
 
-      if (stitchedStore.root.$unwrap() !== value) {
+      if (root.$unwrap() !== value) {
         stitchedStore.setRoot(value)
       }
     })
@@ -113,7 +114,8 @@ export default function stitch<T extends object>(
 ): Arbor<T> {
   const initialState = Object.entries(descriptor).reduce((state, entry) => {
     const [key, store] = entry
-    state[key] = store.root.$unwrap()
+    const root = store.root as INode<T>
+    state[key] = root.$unwrap()
     return state
   }, {}) as T
 
