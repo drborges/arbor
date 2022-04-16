@@ -1,4 +1,4 @@
-import Arbor, { Plugin } from "@arborjs/store"
+import Arbor, { INode, Plugin } from "@arborjs/store"
 
 import debounce from "./debounce"
 
@@ -53,8 +53,9 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
       store.setRoot(deserialized)
     }
 
-    store.subscribe((newState) => {
-      this.update(newState.$unwrap())
+    store.subscribe(({ state }) => {
+      const node = state.current as INode<T>
+      this.update(node.$unwrap())
     })
   }
 

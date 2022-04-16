@@ -1,4 +1,4 @@
-import Arbor, { proxiable } from "@arborjs/store"
+import Arbor, { ArborNode, proxiable } from "@arborjs/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 /**
@@ -38,11 +38,10 @@ import { useCallback, useEffect, useMemo, useState } from "react"
  * @param storeOrRepository either an instance of Arbor or Repository.
  * @returns the current state of the Arbor state tree.
  */
-export default function useArbor<
-  K extends Arbor | object,
-  T = K extends Arbor<infer D> ? D : K,
-  S = T
->(storeOrState: K, selector = (root: T) => root as unknown as S) {
+export default function useArbor<T extends object, S = T>(
+  storeOrState: Arbor<T> | T,
+  selector = (root: ArborNode<T>) => root as unknown as S
+) {
   if (!(storeOrState instanceof Arbor) && !proxiable(storeOrState)) {
     throw new Error(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"

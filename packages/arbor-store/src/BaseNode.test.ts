@@ -1,10 +1,10 @@
 import Arbor from "./Arbor"
-import ArborNode from "./ArborNode"
+import BaseNode from "./BaseNode"
 import Collection from "./Collection"
 import { NotAnArborNodeError } from "./errors"
 
-describe("ArborNode", () => {
-  class Todo extends ArborNode<Todo> {
+describe("BaseNode", () => {
+  class Todo extends BaseNode<Todo> {
     uuid!: string
     text!: string
     completed: boolean
@@ -14,8 +14,16 @@ describe("ArborNode", () => {
     it("allows detaching a node from the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         )
       )
 
@@ -38,8 +46,16 @@ describe("ArborNode", () => {
     it("allows accessing a parent node in the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         )
       )
 
@@ -52,7 +68,11 @@ describe("ArborNode", () => {
 
     it("returns undefined if parent node does not exist", () => {
       const store = new Arbor(
-        new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
+        Todo.from<Todo>({
+          uuid: "abc",
+          text: "Do the dishes",
+          completed: false,
+        })
       )
 
       const parent = store.root.parent()
@@ -65,8 +85,16 @@ describe("ArborNode", () => {
     it("allows attaching nodes back into the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         )
       )
 
@@ -94,8 +122,16 @@ describe("ArborNode", () => {
     it("allows merging attributes to the node", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         )
       )
 
@@ -109,7 +145,11 @@ describe("ArborNode", () => {
       expect(store.root.fetch("bcd")).toBe(todo2)
       expect(store.root.fetch("abc")).not.toBe(todo1)
       expect(store.root.fetch("abc")).toEqual(
-        new Todo({ uuid: "abc", text: "Walk the dogs", completed: false })
+        Todo.from<Todo>({
+          uuid: "abc",
+          text: "Walk the dogs",
+          completed: false,
+        })
       )
     })
 
@@ -124,8 +164,16 @@ describe("ArborNode", () => {
     it("allows reloading stale nodes", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         )
       )
 
@@ -154,8 +202,16 @@ describe("ArborNode", () => {
     it("checks whether or not a node belongs to the state tree", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         )
       )
 
@@ -177,8 +233,16 @@ describe("ArborNode", () => {
     it("checks whether or not a node is out dated", () => {
       const store = new Arbor(
         new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         )
       )
 
@@ -200,8 +264,16 @@ describe("ArborNode", () => {
     it("retrieves the node path within the state tree", () => {
       const store = new Arbor({
         todos: new Collection(
-          new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-          new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+          Todo.from<Todo>({
+            uuid: "abc",
+            text: "Do the dishes",
+            completed: false,
+          }),
+          Todo.from<Todo>({
+            uuid: "bcd",
+            text: "Clean the house",
+            completed: true,
+          })
         ),
       })
 

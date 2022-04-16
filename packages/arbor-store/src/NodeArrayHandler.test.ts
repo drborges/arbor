@@ -1,7 +1,7 @@
 import Path from "./Path"
 import { unwrap, warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
-import Arbor, { MutationMode, Node } from "./Arbor"
+import Arbor, { INode, MutationMode } from "./Arbor"
 
 interface Address {
   street: string
@@ -18,8 +18,8 @@ describe("NodeArrayHandler", () => {
     const tree = new Arbor<User[]>(state)
     const node = new Proxy(
       state,
-      new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<User[]>
-    ) as Node<User[]>
+      new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
+    )
 
     expect(node).toBeInstanceOf(Array)
   })
@@ -30,10 +30,8 @@ describe("NodeArrayHandler", () => {
       const tree = new Arbor<User[]>(state)
       const node = new Proxy(
         state,
-        new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<
-          User[]
-        >
-      ) as Node<User[]>
+        new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
+      ) as INode<User[]>
 
       warmup(node[0].address)
 
@@ -49,10 +47,8 @@ describe("NodeArrayHandler", () => {
       const tree = new Arbor<User[]>(state)
       const node = new Proxy(
         state,
-        new NodeArrayHandler<User>(tree, Path.root, state) as ProxyHandler<
-          User[]
-        >
-      ) as Node<User[]>
+        new NodeArrayHandler(tree, Path.root, state) as ProxyHandler<User[]>
+      ) as INode<User[]>
 
       const copy = node.$clone()
 
@@ -85,8 +81,8 @@ describe("NodeArrayHandler", () => {
       const originalRoot = tree.root
       const originalBob = tree.root[0]
       const originalAlice = tree.root[1]
-      const first = tree.root.first as Node<User>
-      const last = tree.root.last as Node<User>
+      const first = tree.root.first as INode<User>
+      const last = tree.root.last as INode<User>
 
       expect(originalRoot).toBeInstanceOf(Users)
       expect(first.$unwrap()).toBe(state[0])
@@ -139,7 +135,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -244,7 +240,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -455,7 +451,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -597,7 +593,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -722,7 +718,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -835,7 +831,7 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
       const user2 = warmup(root[1])
       const user3 = warmup(root[2])
@@ -944,7 +940,7 @@ describe("NodeArrayHandler", () => {
       const state = [{ name: "User 3", address: { street: "Street 3" } }]
 
       const tree = new Arbor<User[]>(state)
-      const root = tree.root
+      const root = tree.root as INode<User[]>
       const user1 = warmup(root[0])
 
       expect(root.$children.has(user1.$unwrap())).toBe(true)

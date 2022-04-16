@@ -1,8 +1,8 @@
 import Path from "./Path"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import Arbor, { MutationMode, Node } from "./Arbor"
-import { children, unwrap, warmup } from "./test.helpers"
+import Arbor, { MutationMode, INode } from "./Arbor"
+import { children, toINode, unwrap, warmup } from "./test.helpers"
 
 interface Address {
   street: string
@@ -31,8 +31,8 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
-      ) as Node<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
+      ) as INode<State>
 
       warmup(node.users[0])
       warmup(node.users[1])
@@ -54,13 +54,13 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(
+        new NodeHandler(
           tree,
           Path.root,
           state,
           new NodeCache()
         ) as ProxyHandler<State>
-      ) as Node<State>
+      ) as INode<State>
 
       expect(node.users).toBe(node.users)
       expect(node.users[0]).toBe(node.users[0])
@@ -94,7 +94,7 @@ describe("NodeHandler", () => {
         },
       })
 
-      expect (tree.root.complete).toBe(tree.root.complete)
+      expect(tree.root.complete).toBe(tree.root.complete)
     })
 
     it("allow proxied values to define properties whose names match properties in the ProxyHandler API", () => {
@@ -213,7 +213,9 @@ describe("NodeHandler", () => {
 
       tree.root.users[0].name = "User 1 Updated"
 
-      expect(tree.root.$unwrap()).not.toBe(state)
+      const root = toINode(tree.root)
+
+      expect(root.$unwrap()).not.toBe(state)
       expect(unwrap(tree.root.users)).not.toBe(state.users)
       expect(unwrap(tree.root.users[0])).not.toBe(state.users[0])
       expect(unwrap(tree.root.users[0].address)).toBe(state.users[0].address)
@@ -228,8 +230,8 @@ describe("NodeHandler", () => {
 
       store.root.users[0] = store.root.users[1]
 
-      const node1 = store.root.users[0] as Node<User>
-      const node2 = store.root.users[1] as Node<User>
+      const node1 = store.root.users[0] as INode<User>
+      const node2 = store.root.users[1] as INode<User>
 
       expect(store.root.users).toEqual([{ name: "User 2" }, { name: "User 2" }])
       expect(node1.$path.toString()).toEqual("/users/0")
@@ -434,11 +436,11 @@ describe("NodeHandler", () => {
       it("supports subsequent mutations to the same path when on forgiven mode", () => {
         const user = {
           name: "Alice",
-          age: 30
+          age: 30,
         }
 
         const store = new Arbor(user, {
-          mode: MutationMode.FORGIVEN
+          mode: MutationMode.FORGIVEN,
         })
 
         const alice = store.root
@@ -465,13 +467,13 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
-      ) as Node<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
+      ) as INode<State>
 
       expect(node.$unwrap()).toBe(state)
-      expect((node.users as Node<User[]>).$unwrap()).toBe(state.users)
-      expect((node.users[0] as Node<User>).$unwrap()).toBe(state.users[0])
-      expect((node.users[1] as Node<User>).$unwrap()).toBe(state.users[1])
+      expect((node.users as INode<User[]>).$unwrap()).toBe(state.users)
+      expect((node.users[0] as INode<User>).$unwrap()).toBe(state.users[0])
+      expect((node.users[1] as INode<User>).$unwrap()).toBe(state.users[1])
     })
   })
 
@@ -488,13 +490,17 @@ describe("NodeHandler", () => {
 
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
-      ) as Node<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
+      ) as INode<State>
 
       expect(node.$path.toString()).toEqual("/")
-      expect((node.users as Node<User[]>).$path.toString()).toEqual("/users")
-      expect((node.users[0] as Node<User>).$path.toString()).toEqual("/users/0")
-      expect((node.users[1] as Node<User>).$path.toString()).toEqual("/users/1")
+      expect((node.users as INode<User[]>).$path.toString()).toEqual("/users")
+      expect((node.users[0] as INode<User>).$path.toString()).toEqual(
+        "/users/0"
+      )
+      expect((node.users[1] as INode<User>).$path.toString()).toEqual(
+        "/users/1"
+      )
     })
   })
 
@@ -507,8 +513,8 @@ describe("NodeHandler", () => {
       const tree = new Arbor(state)
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
-      ) as Node<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
+      ) as INode<State>
 
       warmup(node.users[0])
 
@@ -528,8 +534,8 @@ describe("NodeHandler", () => {
       const tree = new Arbor(state)
       const node = new Proxy(
         state,
-        new NodeHandler<State>(tree, Path.root, state) as ProxyHandler<State>
-      ) as Node<State>
+        new NodeHandler(tree, Path.root, state) as ProxyHandler<State>
+      ) as INode<State>
 
       const copy = node.$clone()
 

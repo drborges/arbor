@@ -1,8 +1,9 @@
-import Arbor from "./Arbor"
+import Arbor, { ArborNode } from "./Arbor"
 import Collection from "./Collection"
 import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
-import type { Node } from "./Arbor"
+import type { INode } from "./Arbor"
+import { toINode } from "./test.helpers"
 
 interface User {
   uuid: string
@@ -16,7 +17,7 @@ describe("Collection", () => {
       const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
-      const node = store.root.fetch("bcd") as Node<User>
+      const node = store.root.fetch("bcd") as INode<User>
 
       expect(node.$unwrap()).toBe(user2)
     })
@@ -24,7 +25,7 @@ describe("Collection", () => {
     it("returns undefined when no item is found", () => {
       const store = new Arbor(new Collection<User>())
 
-      const node = store.root.fetch("bcd") as Node<User>
+      const node = store.root.fetch("bcd") as INode<User>
 
       expect(node).toBeUndefined()
     })
@@ -36,7 +37,7 @@ describe("Collection", () => {
       const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1))
 
-      const newUser = store.root.add(user2) as Node<User>
+      const newUser = store.root.add(user2) as INode<User>
       const userById = store.root.fetch("bcd")
 
       expect(newUser).toBe(userById)
@@ -69,8 +70,8 @@ describe("Collection", () => {
       const newUsers = store.root.addMany(user1, user2)
       const user1ById = store.root.fetch("abc")
       const user2ById = store.root.fetch("bcd")
-      const newUser1 = newUsers[0] as Node<User>
-      const newUser2 = newUsers[1] as Node<User>
+      const newUser1 = newUsers[0] as INode<User>
+      const newUser2 = newUsers[1] as INode<User>
 
       expect(newUser1).toBe(user1ById)
       expect(newUser2).toBe(user2ById)
@@ -177,8 +178,8 @@ describe("Collection", () => {
       )
 
       const alice = store.root.fetch("abd")
-      const bob = updatedItems[0] as Node<User>
-      const barbara = updatedItems[1] as Node<User>
+      const bob = updatedItems[0] as INode<User>
+      const barbara = updatedItems[1] as INode<User>
 
       expect(updatedItems.length).toBe(2)
       expect(bob).toEqual({ uuid: "abc", name: "Bob Updated" })
@@ -290,7 +291,7 @@ describe("Collection", () => {
       const user3 = { uuid: "abe", name: "Barbara" }
       const store = new Arbor(new Collection<User>(user1, user2, user3))
 
-      const user = store.root.find((u) => u.name.startsWith("B")) as Node<User>
+      const user = store.root.find((u) => u.name.startsWith("B")) as INode<User>
 
       expect(user.$unwrap()).toBe(user1)
     })
@@ -302,8 +303,8 @@ describe("Collection", () => {
       const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
-      const bob = store.root.fetch("abc") as Node<User>
-      const alice = store.root.fetch("abd") as Node<User>
+      const bob = store.root.fetch("abc") as INode<User>
+      const alice = store.root.fetch("abd") as INode<User>
 
       expect(bob.$unwrap()).toBe(user1)
       expect(alice.$unwrap()).toBe(user2)
@@ -314,8 +315,8 @@ describe("Collection", () => {
       const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
-      const bob = store.root.fetch(user1) as Node<User>
-      const alice = store.root.fetch(user2) as Node<User>
+      const bob = store.root.fetch(user1) as INode<User>
+      const alice = store.root.fetch(user2) as INode<User>
 
       expect(bob.$unwrap()).toBe(user1)
       expect(alice.$unwrap()).toBe(user2)
@@ -324,7 +325,7 @@ describe("Collection", () => {
     it("returns undefined if no item is found", () => {
       const store = new Arbor(new Collection<User>())
 
-      const user = store.root.fetch("abc") as Node<User>
+      const user = store.root.fetch("abc") as INode<User>
 
       expect(user).toBeUndefined()
     })
@@ -452,7 +453,7 @@ describe("Collection", () => {
       const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
-      const deleted = store.root.delete(store.root.fetch("abd")) as Node<User>
+      const deleted = store.root.delete(store.root.fetch("abd")) as INode<User>
 
       expect(deleted).toBe(user2)
       expect(store.root.fetch("abd")).toBeUndefined()
@@ -463,7 +464,7 @@ describe("Collection", () => {
       const user2 = { uuid: "abd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1, user2))
 
-      const deleted = store.root.delete("abd") as Node<User>
+      const deleted = store.root.delete("abd") as INode<User>
 
       expect(deleted).toBe(user2)
       expect(store.root.fetch("abd")).toBeUndefined()
@@ -485,7 +486,7 @@ describe("Collection", () => {
       const user = { uuid: "abc", name: "Bob" }
       const store = new Arbor(new Collection<User>(user))
 
-      const deleted = store.root.delete(user) as Node<User>
+      const deleted = store.root.delete(user) as INode<User>
 
       expect(deleted).toBe(user)
       expect(store.root.fetch("abc")).toBeUndefined()
@@ -548,15 +549,14 @@ describe("Collection", () => {
     it("shallowly clones the collection into a new one", () => {
       const user1 = { uuid: "abc", name: "Bob" }
       const user2 = { uuid: "abd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const cloned = store.root.$clone()
+      const store = new Arbor(new Collection<ArborNode<User>>(user1, user2))
+      const cloned = toINode(store.root).$clone()
 
       expect(cloned).toBeInstanceOf(Collection)
-      expect(cloned).not.toBe(store.root.$unwrap())
+      expect(cloned).not.toBe(toINode(store.root).$unwrap())
       expect(cloned.length).toBe(2)
-      expect((cloned.fetch("abc") as Node<User>).$unwrap()).toBe(user1)
-      expect((cloned.fetch("abd") as Node<User>).$unwrap()).toBe(user2)
+      expect(toINode(cloned.fetch("abc")).$unwrap()).toBe(user1)
+      expect(toINode(cloned.fetch("abd")).$unwrap()).toBe(user2)
       expect(cloned.fetch("abc")).toBe(store.root.fetch("abc"))
       expect(cloned.fetch("abd")).toBe(store.root.fetch("abd"))
     })

@@ -1,4 +1,4 @@
-import Arbor, { ArborNode, MutationMode } from "@arborjs/store"
+import Arbor, { BaseNode, MutationMode } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
@@ -185,7 +185,7 @@ describe("useArbor", () => {
   })
 
   it("supports custom object types to represent the state", () => {
-    class InputHandler extends ArborNode<InputHandler> {
+    class InputHandler extends BaseNode<InputHandler> {
       value = ""
       settings = {}
       onChange(e: { target: { value: string } }) {

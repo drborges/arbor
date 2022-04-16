@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto"
 import { IDBPDatabase, openDB } from "idb"
-import Arbor, { ArborNode, Collection } from "@arborjs/store"
+import Arbor, { BaseNode, Collection } from "@arborjs/store"
 
 import IndexedDB, { Config } from "./IndexedDB"
 
@@ -10,7 +10,7 @@ const uuid = (
     `uuid-${n}`
 )()
 
-class Todo extends ArborNode<Todo> {
+class Todo extends BaseNode<Todo> {
   uuid = uuid()
   text!: string
   status = "todo"
@@ -73,7 +73,7 @@ describe("IndexedDB", () => {
     await store.use(createIndexedDB(config))
 
     expect(store.root).toEqual({
-      "uuid-0": new Todo({
+      "uuid-0": Todo.from<Todo>({
         uuid: "uuid-0",
         text: "Do the dishes",
         status: "todo",
@@ -88,7 +88,7 @@ describe("IndexedDB", () => {
     const updatePromise = new Promise((resolve) => {
       store.subscribe(() => {
         expect(store.root).toEqual({
-          "uuid-0": new Todo({
+          "uuid-0": Todo.from<Todo>({
             uuid: "uuid-0",
             text: "Do the dishes",
             status: "todo",
@@ -99,7 +99,7 @@ describe("IndexedDB", () => {
       })
     })
 
-    store.root.add(new Todo({ text: "Do the dishes" }))
+    store.root.add(Todo.from<Todo>({ text: "Do the dishes" }))
 
     return updatePromise
   })

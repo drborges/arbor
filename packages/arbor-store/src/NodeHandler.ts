@@ -3,9 +3,14 @@ import isNode from "./isNode"
 import clone from "./clone"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
-import Arbor, { Node } from "./Arbor"
+import Arbor, { INode } from "./Arbor"
 
-function memoizedFunctionBoundToProxy<T extends object>(target: T, prop: string, value: Function, proxy: Node<T>) {
+function memoizedFunctionBoundToProxy<T extends object>(
+  target: T,
+  prop: string,
+  value: Function,
+  proxy: INode<T>
+) {
   const boundPropName = `bound_${prop.toString()}`
   const boundFn = Reflect.get(target, boundPropName, proxy)
 
@@ -20,9 +25,11 @@ function memoizedFunctionBoundToProxy<T extends object>(target: T, prop: string,
   return Reflect.get(target, boundPropName, proxy)
 }
 
-export default class NodeHandler<T extends object> implements ProxyHandler<T> {
+export default class NodeHandler<T extends object, K extends object>
+  implements ProxyHandler<T>
+{
   constructor(
-    public readonly $tree: Arbor,
+    public readonly $tree: Arbor<K>,
     protected readonly $path: Path,
     protected readonly $value: T,
     readonly $children = new NodeCache()
@@ -32,11 +39,11 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     return this.$value
   }
 
-  $clone(): Node<T> {
+  $clone(): INode<T> {
     return this.$tree.createNode(this.$path, clone(this.$value), this.$children)
   }
 
-  get(target: T, prop: string, proxy: Node<T>) {
+  get(target: T, prop: string, proxy: INode<T>) {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
 
@@ -65,7 +72,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
       : this.$createChildNode(prop, childValue)
   }
 
-  set(target: T, prop: string, newValue: any, proxy: Node<T>): boolean {
+  set(target: T, prop: string, newValue: any, proxy: INode<T>): boolean {
     // Ignores the mutation if new value is the current value
     if (proxy[prop] === newValue || target[prop] === newValue) return true
 
@@ -83,7 +90,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     const childValue = Reflect.get(target, prop)
 
     if (prop in target) {
-      this.$tree.mutate(this as unknown as Node<T>, (t: T) => {
+      this.$tree.mutate(this as unknown as INode<T>, (t: T) => {
         delete t[prop]
       })
 
@@ -93,7 +100,7 @@ export default class NodeHandler<T extends object> implements ProxyHandler<T> {
     return true
   }
 
-  private $createChildNode<V extends object>(prop: string, value: V): Node<V> {
+  private $createChildNode<V extends object>(prop: string, value: V): INode<V> {
     const childPath = this.$path.child(prop)
     const childNode = this.$tree.createNode(childPath, value)
     return this.$children.set(value, childNode)

@@ -1,30 +1,31 @@
 import Path from "./Path"
 import clone from "./clone"
-import stitch from "./stitch"
 import isNode from "./isNode"
 import produce from "./produce"
 import { Mutation } from "./mutate"
-import ArborNode from "./ArborNode"
+import BaseNode from "./BaseNode"
 import Collection from "./Collection"
 import proxiable, { ArborProxy } from "./proxiable"
 import isClonable, { Clonable } from "./isClonable"
 import Arbor, {
-  Node,
+  INode,
   MutationMode,
   ArborConfig,
+  ArborNode,
   Unsubscribe,
-  Subscription,
+  Subscriber,
   AttributesOf,
   Plugin,
 } from "./Arbor"
 
 export type {
-  Node,
+  INode,
   Clonable,
   ArborConfig,
+  ArborNode,
   Mutation,
   Unsubscribe,
-  Subscription,
+  Subscriber,
   AttributesOf,
   Plugin,
 }
@@ -34,12 +35,11 @@ export {
   isClonable,
   proxiable,
   Collection,
-  ArborNode,
+  BaseNode,
   ArborProxy,
   Path,
   produce,
   MutationMode,
   isNode,
-  stitch,
   Arbor as default,
 }

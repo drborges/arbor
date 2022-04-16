@@ -1,17 +1,17 @@
 import Arbor from "./Arbor"
 import isNode from "./isNode"
 import produce from "./produce"
-import ArborNode from "./ArborNode"
+import BaseNode from "./BaseNode"
 
-class Todo extends ArborNode<Todo> {
+class Todo extends BaseNode<Todo> {
   id: number
   text: string
   completed = false
 }
 
 const currentState = [
-  new Todo({ id: 123, text: "Do the dishes" }),
-  new Todo({ id: 124, text: "Walk the dogs" }),
+  Todo.from<Todo>({ id: 123, text: "Do the dishes" }),
+  Todo.from<Todo>({ id: 124, text: "Walk the dogs" }),
 ]
 
 describe("mutate", () => {

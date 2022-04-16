@@ -1,5 +1,5 @@
 import Path from "./Path"
-import type { Node } from "./Arbor"
+import type { INode } from "./Arbor"
 
 /**
  * A mutation function used to update an Arbor tree node.
@@ -16,15 +16,15 @@ export type Mutation<T extends object> = (arg0: T) => void
  * @returns the resulting node after the mutation is applied.
  */
 export default function mutate<T extends object, K extends object>(
-  node: Node<T>,
+  node: INode<T>,
   path: Path,
   mutation: Mutation<K>
-): Node<T> {
+): INode<T> {
   try {
     const root = node.$clone()
 
-    const targetNode = path.props.reduce<Node<T>>((parent, prop) => {
-      const childNode = parent[prop] as Node<T>
+    const targetNode = path.props.reduce<INode<T>>((parent, prop) => {
+      const childNode = parent[prop] as INode<T>
       const childNodeCopy = childNode.$clone()
 
       parent.$unwrap()[prop] = childNodeCopy.$unwrap()

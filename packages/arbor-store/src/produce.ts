@@ -1,4 +1,4 @@
-import Arbor from "./Arbor"
+import Arbor, { INode } from "./Arbor"
 import { Mutation } from "./mutate"
 
 export default function produce<T extends object>(mutation: Mutation<T>) {
@@ -8,7 +8,8 @@ export default function produce<T extends object>(mutation: Mutation<T>) {
     }
 
     const store = new Arbor(state)
-    mutation(store.root)
-    return store.root.$unwrap()
+    mutation(store.root as T)
+    const newRoot = store.root as INode<T>
+    return newRoot.$unwrap()
   }
 }

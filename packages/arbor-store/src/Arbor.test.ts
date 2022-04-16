@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
-import Arbor, { MutationMode, Node } from "./Arbor"
-import ArborNode from "./ArborNode"
+import Arbor, { MutationMode, INode } from "./Arbor"
+import BaseNode from "./BaseNode"
 import Collection from "./Collection"
 import { warmup } from "./test.helpers"
 
@@ -100,7 +100,7 @@ describe("Arbor", () => {
       }
       const store = new Arbor(initialState)
 
-      const node = store.root
+      const node = store.root as INode<{ users: { name: string }[] }>
 
       expect(node.$unwrap()).toBe(initialState)
     })
@@ -190,7 +190,7 @@ describe("Arbor", () => {
       const store = new Arbor(initialState)
       const initialRoot = store.root
       const initialUsers = store.root.users
-      const initialUser0 = store.root.users[0] as Node<{ name: string }>
+      const initialUser0 = store.root.users[0] as INode<{ name: string }>
       const initialUser1 = store.root.users[1]
 
       store.mutate(initialUser0, (user) => {
@@ -216,17 +216,17 @@ describe("Arbor", () => {
       const store = new Arbor(initialState)
 
       return new Promise((resolve) => {
-        store.subscribe((newState, oldState) => {
-          expect(initialState).toBe(oldState)
-          expect(oldState).toEqual({
+        store.subscribe(({ state }) => {
+          expect(initialState).toBe(state.previous)
+          expect(state.previous).toEqual({
             users: [{ name: "User 1" }],
           })
 
-          expect(newState).toEqual({
+          expect(state.current).toEqual({
             users: [{ name: "User 1" }, { name: "User 2" }],
           })
 
-          resolve(newState)
+          resolve(state.current)
         })
 
         store.root.users.push({ name: "User 2" })
@@ -313,7 +313,7 @@ describe("Arbor", () => {
   })
 
   describe("custom data model", () => {
-    class Todo extends ArborNode<Todo> {
+    class Todo extends BaseNode<Todo> {
       uuid!: string
       text!: string
       completed: boolean
@@ -333,8 +333,8 @@ describe("Arbor", () => {
 
     it("supports user defined data models", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
       const todo1 = store.root[0]
@@ -348,15 +348,15 @@ describe("Arbor", () => {
       expect(todo1).not.toBe(store.root[0])
       expect(todo2).toBe(store.root[1])
       expect(store.root).toEqual([
-        new Todo({ text: "Walk the dog", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Walk the dog", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
     })
 
     it("can encasulate mutation logic", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
       let todo = store.root[0]
@@ -374,8 +374,8 @@ describe("Arbor", () => {
 
     it("can be refreshed", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
       const firstTodo = store.root[0]
@@ -383,7 +383,7 @@ describe("Arbor", () => {
       firstTodo.text = "Updated content"
 
       expect(firstTodo.reload()).toEqual(
-        new Todo({ text: "Updated content", completed: true })
+        Todo.from<Todo>({ text: "Updated content", completed: true })
       )
     })
 
@@ -391,8 +391,16 @@ describe("Arbor", () => {
       it("allows managing collections of items", () => {
         const store = new Arbor(
           new Collection(
-            new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-            new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+            Todo.from<Todo>({
+              uuid: "abc",
+              text: "Do the dishes",
+              completed: false,
+            }),
+            Todo.from<Todo>({
+              uuid: "bcd",
+              text: "Clean the house",
+              completed: true,
+            })
           )
         )
 
