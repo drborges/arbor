@@ -2,7 +2,7 @@ import isNode from "./isNode"
 import { ArborProxy } from "./proxiable"
 import { NotAnArborNodeError } from "./errors"
 
-import type { AttributesOf, Node } from "./Arbor"
+import type { AttributesOf, INode } from "./Arbor"
 
 export default class ArborNode<T extends object> {
   constructor(attributes: Partial<AttributesOf<T>> = {}) {
@@ -13,7 +13,7 @@ export default class ArborNode<T extends object> {
     return true
   }
 
-  parent<K extends object>(): Node<K> {
+  parent<K extends object>(): INode<K> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 

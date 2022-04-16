@@ -1,5 +1,5 @@
 import { useArborNode } from "@arborjs/react"
-import { Node } from "@arborjs/store"
+import { INode } from "@arborjs/store"
 import classnames from "classnames"
 import React, { memo, useEffect, useState } from "react"
 

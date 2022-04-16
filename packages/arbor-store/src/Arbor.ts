@@ -6,11 +6,11 @@ import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 
 /**
- * Represents an Arbor tree node.
+ * Represents an Arbor state tree node with all of its internal API exposed.
  */
-export type Node<T extends object = object> = T & {
+export type INode<T extends object = object> = T & {
   $unwrap(): T
-  $clone(): Node<T>
+  $clone(): INode<T>
   get $tree(): Arbor<T>
   get $path(): Path
   get $children(): NodeCache
@@ -71,7 +71,7 @@ export type Unsubscribe = () => void
  * Subscription function used to notify subscribers about state updates.
  */
 export type Subscription<T extends object> = (
-  newState: Node<T>,
+  newState: INode<T>,
   oldState: T,
   mutationPath: Path
 ) => void
@@ -118,7 +118,7 @@ export default class Arbor<T extends object> {
   /**
    * Tracks the current state tree root node.
    */
-  #root: Node<T>
+  #root: INode<T>
 
   /**
    * Holds all state change subscriptions.
@@ -155,11 +155,11 @@ export default class Arbor<T extends object> {
    * @param path the path within the state tree affected by the mutation.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
-  mutate<V extends object>(pathOrNode: Path | Node<V>, mutation: Mutation<V>) {
+  mutate<V extends object>(pathOrNode: Path | INode<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
     const node = isNode(pathOrNode)
       ? pathOrNode
-      : (path.walk(this.root) as Node<V>)
+      : (path.walk(this.root) as INode<V>)
     const oldRootValue = this.root.$unwrap()
     const newRoot = mutate(this.root, path, mutation)
 
@@ -193,12 +193,12 @@ export default class Arbor<T extends object> {
     path: Path,
     value: V,
     children = new NodeCache()
-  ): Node<V> {
+  ): INode<V> {
     const handler = Array.isArray(value)
       ? new NodeArrayHandler(this, path, value as V[], children)
       : new NodeHandler(this, path, value, children)
 
-    return new Proxy<V>(value, handler as ProxyHandler<V>) as Node<V>
+    return new Proxy<V>(value, handler as ProxyHandler<V>) as INode<V>
   }
 
   /**
@@ -207,7 +207,7 @@ export default class Arbor<T extends object> {
    * @param path the path of the node to be retrieved.
    * @returns the node at the given path.
    */
-  getNodeAt<V extends object>(path: Path): Node<V> {
+  getNodeAt<V extends object>(path: Path): INode<V> {
     return path.walk(this.#root)
   }
 
@@ -217,10 +217,10 @@ export default class Arbor<T extends object> {
    * @param value the value to be used as the root of the state tree.
    * @returns the root node.
    */
-  setRoot(value: T): Node<T> {
+  setRoot(value: T): INode<T> {
     const oldRoot = this.root?.$unwrap()
     const node = this.createNode(Path.root, value)
-    this.#root = node as Node<T>
+    this.#root = node as INode<T>
     this.notify(node, oldRoot, Path.root)
     return node
   }
@@ -246,7 +246,7 @@ export default class Arbor<T extends object> {
    * @param oldState the value of the previous state tree root node.
    * @param mutationPath the path within the state tree that was the mutation target.
    */
-  notify(newState: Node<T>, oldState: T, mutationPath: Path) {
+  notify(newState: INode<T>, oldState: T, mutationPath: Path) {
     this.#subscriptions.forEach((subscription) => {
       subscription(newState, oldState, mutationPath)
     })
@@ -259,7 +259,7 @@ export default class Arbor<T extends object> {
   /**
    * Returns the current state tree root node.
    */
-  get root(): Node<T> {
+  get root(): INode<T> {
     return this.#root
   }
 }

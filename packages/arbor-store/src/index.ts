@@ -9,7 +9,7 @@ import Collection from "./Collection"
 import proxiable, { ArborProxy } from "./proxiable"
 import isClonable, { Clonable } from "./isClonable"
 import Arbor, {
-  Node,
+  INode,
   MutationMode,
   ArborConfig,
   Unsubscribe,
@@ -19,7 +19,7 @@ import Arbor, {
 } from "./Arbor"
 
 export type {
-  Node,
+  INode,
   Clonable,
   ArborConfig,
   Mutation,
