@@ -5,8 +5,8 @@ import { NotAnArborNodeError } from "./errors"
 import type { AttributesOf, INode } from "./Arbor"
 
 export default class BaseNode<T extends object> {
-  constructor(attributes: Partial<AttributesOf<T>> = {}) {
-    Object.assign(this, attributes)
+  static from<K extends object>(data: Partial<K>): K {
+    return Object.assign(new this(), data) as unknown as K
   }
 
   get [ArborProxy]() {

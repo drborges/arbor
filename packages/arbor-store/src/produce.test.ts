@@ -10,8 +10,8 @@ class Todo extends BaseNode<Todo> {
 }
 
 const currentState = [
-  new Todo({ id: 123, text: "Do the dishes" }),
-  new Todo({ id: 124, text: "Walk the dogs" }),
+  Todo.from<Todo>({ id: 123, text: "Do the dishes" }),
+  Todo.from<Todo>({ id: 124, text: "Walk the dogs" }),
 ]
 
 describe("mutate", () => {

@@ -333,8 +333,8 @@ describe("Arbor", () => {
 
     it("supports user defined data models", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
       const todo1 = store.root[0]
@@ -348,15 +348,15 @@ describe("Arbor", () => {
       expect(todo1).not.toBe(store.root[0])
       expect(todo2).toBe(store.root[1])
       expect(store.root).toEqual([
-        new Todo({ text: "Walk the dog", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Walk the dog", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
     })
 
     it("can encasulate mutation logic", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
       let todo = store.root[0]
@@ -374,8 +374,8 @@ describe("Arbor", () => {
 
     it("can be refreshed", () => {
       const store = new Arbor([
-        new Todo({ text: "Do the dishes", completed: false }),
-        new Todo({ text: "Clean the house", completed: true }),
+        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
+        Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
       const firstTodo = store.root[0]
@@ -383,7 +383,7 @@ describe("Arbor", () => {
       firstTodo.text = "Updated content"
 
       expect(firstTodo.reload()).toEqual(
-        new Todo({ text: "Updated content", completed: true })
+        Todo.from<Todo>({ text: "Updated content", completed: true })
       )
     })
 
@@ -391,8 +391,16 @@ describe("Arbor", () => {
       it("allows managing collections of items", () => {
         const store = new Arbor(
           new Collection(
-            new Todo({ uuid: "abc", text: "Do the dishes", completed: false }),
-            new Todo({ uuid: "bcd", text: "Clean the house", completed: true })
+            Todo.from<Todo>({
+              uuid: "abc",
+              text: "Do the dishes",
+              completed: false,
+            }),
+            Todo.from<Todo>({
+              uuid: "bcd",
+              text: "Clean the house",
+              completed: true,
+            })
           )
         )
 
