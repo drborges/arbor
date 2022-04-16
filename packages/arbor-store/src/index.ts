@@ -13,7 +13,7 @@ import Arbor, {
   ArborConfig,
   ArborNode,
   Unsubscribe,
-  Subscription,
+  Subscriber,
   AttributesOf,
   Plugin,
 } from "./Arbor"
@@ -25,7 +25,7 @@ export type {
   ArborNode,
   Mutation,
   Unsubscribe,
-  Subscription,
+  Subscriber,
   AttributesOf,
   Plugin,
 }

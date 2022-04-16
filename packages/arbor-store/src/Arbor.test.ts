@@ -216,17 +216,17 @@ describe("Arbor", () => {
       const store = new Arbor(initialState)
 
       return new Promise((resolve) => {
-        store.subscribe((newState, oldState) => {
-          expect(initialState).toBe(oldState)
-          expect(oldState).toEqual({
+        store.subscribe(({ state }) => {
+          expect(initialState).toBe(state.previous)
+          expect(state.previous).toEqual({
             users: [{ name: "User 1" }],
           })
 
-          expect(newState).toEqual({
+          expect(state.current).toEqual({
             users: [{ name: "User 1" }, { name: "User 2" }],
           })
 
-          resolve(newState)
+          resolve(state.current)
         })
 
         store.root.users.push({ name: "User 2" })

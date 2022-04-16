@@ -78,14 +78,15 @@ export type ArborConfig = {
  */
 export type Unsubscribe = () => void
 
-/**
- * Subscription function used to notify subscribers about state updates.
- */
-export type Subscription<T extends object> = (
-  newState: INode<T>,
-  oldState: T,
+export type MutationEvent<T extends object> = {
+  state: { current: ArborNode<T>; previous: T }
   mutationPath: Path
-) => void
+}
+
+/**
+ * Subscriber function used to listen to mutation events triggered by the state tree.
+ */
+export type Subscriber<T extends object> = (event: MutationEvent<T>) => void
 
 /**
  * Describes an Arbor Plugin
@@ -134,7 +135,7 @@ export default class Arbor<T extends object> {
   /**
    * Holds all state change subscriptions.
    */
-  #subscriptions: Set<Subscription<T>> = new Set()
+  #subscribers: Set<Subscriber<T>> = new Set()
 
   /**
    * Create a new Arbor instance.
@@ -171,17 +172,17 @@ export default class Arbor<T extends object> {
     const node = isNode(pathOrNode)
       ? pathOrNode
       : (path.walk(this.#root) as INode<V>)
-    const oldRootValue = this.#root.$unwrap()
-    const newRoot = mutate(this.#root, path, mutation)
+    const previous = this.#root.$unwrap()
+    const current = mutate(this.#root, path, mutation)
 
-    if (newRoot) {
+    if (current) {
       if (this.mode === MutationMode.FORGIVEN) {
         mutation(node.$unwrap())
       }
 
-      this.#root = newRoot
+      this.#root = current
 
-      this.notify(newRoot, oldRootValue, path)
+      this.notify(current, previous, path)
     } else if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -239,27 +240,27 @@ export default class Arbor<T extends object> {
   /**
    * Subscribes to state tree updates.
    *
-   * @param subscription a function to be called whenever a state update occurs.
-   * @returns an unsubscribe function that can be used to cancel the subscription.
+   * @param subscriber a function to be called whenever a state update occurs.
+   * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
-  subscribe(subscription: Subscription<T>): Unsubscribe {
-    this.#subscriptions.add(subscription)
+  subscribe(subscriber: Subscriber<T>): Unsubscribe {
+    this.#subscribers.add(subscriber)
 
     return () => {
-      this.#subscriptions.delete(subscription)
+      this.#subscribers.delete(subscriber)
     }
   }
 
   /**
    * Notifies subscribers about state updates.
    *
-   * @param newState the new state tree root node.
-   * @param oldState the value of the previous state tree root node.
+   * @param current the new state tree root node.
+   * @param previous the value of the previous state tree root node.
    * @param mutationPath the path within the state tree that was the mutation target.
    */
-  notify(newState: INode<T>, oldState: T, mutationPath: Path) {
-    this.#subscriptions.forEach((subscription) => {
-      subscription(newState, oldState, mutationPath)
+  notify(current: INode<T>, previous: T, mutationPath: Path) {
+    this.#subscribers.forEach((subscriber) => {
+      subscriber({ state: { current, previous }, mutationPath })
     })
   }
 

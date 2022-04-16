@@ -24,9 +24,7 @@ export default function useArborNode<T extends object>(node: INode<T> | T) {
   useEffect(() => {
     update(state.$path)
 
-    return state.$tree.subscribe((_new, _old, mutationPath) =>
-      update(mutationPath)
-    )
+    return state.$tree.subscribe(({ mutationPath }) => update(mutationPath))
   }, [state, update])
 
   return state

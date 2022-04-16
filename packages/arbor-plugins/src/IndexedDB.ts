@@ -1,4 +1,4 @@
-import Arbor, { Plugin } from "@arborjs/store"
+import Arbor, { INode, Plugin } from "@arborjs/store"
 import { IDBPDatabase, openDB, OpenDBCallbacks } from "idb"
 
 export type Config<T extends object> = OpenDBCallbacks<T> & {
@@ -16,8 +16,9 @@ export default class IndexedDB<T extends object> implements Plugin<T> {
     const initialState = await this.config.load(db)
 
     store.setRoot(initialState)
-    store.subscribe((newState) => {
-      this.config.update(db, newState)
+    store.subscribe(({ state }) => {
+      const value = (state.current as INode<T>).$unwrap()
+      this.config.update(db, value)
     })
   }
 }
