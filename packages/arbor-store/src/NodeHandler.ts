@@ -29,9 +29,9 @@ export default class NodeHandler<T extends object, K extends object>
   implements ProxyHandler<T>
 {
   constructor(
-    public readonly $tree: Arbor<K>,
-    protected readonly $path: Path,
-    protected readonly $value: T,
+    readonly $tree: Arbor<K>,
+    readonly $path: Path,
+    readonly $value: T,
     readonly $children = new NodeCache()
   ) {}
 

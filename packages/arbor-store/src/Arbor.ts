@@ -5,6 +5,11 @@ import NodeHandler from "./NodeHandler"
 import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 
+export type Subscribable<T extends object> = {
+  $subscribe(subscriber: Subscriber<T>): Unsubscribe
+  $notify(event: MutationEvent<T>)
+}
+
 /**
  * Recursively describes the props of an Arbor state tree node.
  */
@@ -157,6 +162,8 @@ export default class Arbor<T extends object> {
    *
    * @example
    *
+   * Mutating a node referenced by a path:
+   *
    * ```ts
    * const store = new Arbor({ users: [] })
    * store.mutate(Path.parse("/users"), node => node.push({ name: "John Doe" }))
@@ -164,16 +171,25 @@ export default class Arbor<T extends object> {
    * => { users: [{ name: "John Doe" }]}
    * ```
    *
-   * @param path the path within the state tree affected by the mutation.
+   * Or using a node reference:
+   *
+   * ```ts
+   * const store = new Arbor({ users: [] })
+   * store.mutate(store.root.users, node => node.push({ name: "John Doe" }))
+   * store.root
+   * => { users: [{ name: "John Doe" }]}
+   * ```
+   *
+   * @param pathOrNode the path or the node within the state tree to be mutated.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
   mutate<V extends object>(pathOrNode: Path | INode<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
+    const current = mutate(this.#root, path, mutation)
+    const previous = this.#root.$unwrap()
     const node = isNode(pathOrNode)
       ? pathOrNode
       : (path.walk(this.#root) as INode<V>)
-    const previous = this.#root.$unwrap()
-    const current = mutate(this.#root, path, mutation)
 
     if (current) {
       if (this.mode === MutationMode.FORGIVEN) {
@@ -230,11 +246,11 @@ export default class Arbor<T extends object> {
    * @returns the root node.
    */
   setRoot(value: T): INode<T> {
-    const oldRoot = this.#root?.$unwrap()
-    const node = this.createNode(Path.root, value)
-    this.#root = node as INode<T>
-    this.notify(node, oldRoot, Path.root)
-    return node
+    const current = this.createNode(Path.root, value)
+    const previous = this.#root?.$unwrap()
+    this.#root = current
+    this.notify(current, previous, Path.root)
+    return current
   }
 
   /**
@@ -254,9 +270,9 @@ export default class Arbor<T extends object> {
   /**
    * Notifies subscribers about state updates.
    *
-   * @param current the new state tree root node.
+   * @param current the current root node of the state tree.
    * @param previous the value of the previous state tree root node.
-   * @param mutationPath the path within the state tree that was the mutation target.
+   * @param mutationPath the path within the state tree affected by the mutation.
    */
   notify(current: INode<T>, previous: T, mutationPath: Path) {
     this.#subscribers.forEach((subscriber) => {
@@ -264,6 +280,12 @@ export default class Arbor<T extends object> {
     })
   }
 
+  /**
+   * Register plugins to extend the store capabilities.
+   *
+   * @param plugin plugin to extend the store with.
+   * @returns a promise that gets resolved when the plugin completes its configuration steps.
+   */
   async use(plugin: Plugin<T>) {
     return plugin.configure(this)
   }
