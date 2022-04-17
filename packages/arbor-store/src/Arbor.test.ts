@@ -134,15 +134,21 @@ describe("Arbor", () => {
         users: [{ name: "User 1" }, { name: "User 2" }],
       }
 
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
       const store = new Arbor<{ users: IUser[] }>(initialState)
-      store.notify = jest.fn(store.notify)
+      store.subscribe(subscriber1)
+      store.subscribe(subscriber2)
+
       const newRoot = store.setRoot(newState)
 
-      expect(store.notify).toHaveBeenCalledWith(
-        newRoot,
-        initialState,
-        Path.root
-      )
+      expect(subscriber1).toHaveBeenCalledWith({
+        mutationPath: Path.root,
+        state: {
+          current: newRoot,
+          previous: initialState,
+        },
+      })
     })
   })
 
@@ -203,6 +209,28 @@ describe("Arbor", () => {
       expect(store.root.users[1]).toBe(initialUser1)
       expect(store.root).toEqual({
         users: [{ name: "Bob 2" }, { name: "Alice" }],
+      })
+    })
+
+    it("notifies subscribers with mutation metadata", () => {
+      const initialState = {
+        users: [{ name: "User 1" }],
+      }
+
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const store = new Arbor<{ users: { name: string }[] }>(initialState)
+      store.subscribe(subscriber1)
+      store.subscribe(subscriber2)
+
+      store.root.users[0].name = "User"
+
+      expect(subscriber1).toHaveBeenCalledWith({
+        mutationPath: Path.parse("/users/0"),
+        state: {
+          current: store.root,
+          previous: initialState,
+        },
       })
     })
   })

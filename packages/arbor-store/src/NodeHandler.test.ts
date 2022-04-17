@@ -238,29 +238,29 @@ describe("NodeHandler", () => {
       expect(node2.$path.toString()).toEqual("/users/1")
     })
 
-    it("skips mutations that do not change the target's value", () => {
+    it("does not notify subscribers when mutations do not change the target's value", () => {
+      const subscriber = jest.fn()
       const store = new Arbor({
         users: [{ name: "User 1" }],
       })
 
-      store.notify = jest.fn(store.notify)
-
+      store.subscribe(subscriber)
       store.root.users[0].name = "User 1"
 
-      expect(store.notify).not.toHaveBeenCalled()
+      expect(subscriber).not.toHaveBeenCalled()
     })
 
-    it("does not cause a mutation when the new value is the actual state tree node", () => {
+    it("does not notify subscribers when the new value is the actual state tree node", () => {
+      const subscriber = jest.fn()
       const store = new Arbor({
         users: [{ name: "User 1" }],
       })
 
-      store.notify = jest.fn(store.notify)
-
+      store.subscribe(subscriber)
       const user = store.root.users[0]
       store.root.users[0] = user
 
-      expect(store.notify).not.toHaveBeenCalled()
+      expect(subscriber).not.toHaveBeenCalled()
     })
 
     describe("mode = 'forgiven'", () => {

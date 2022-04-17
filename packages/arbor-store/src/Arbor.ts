@@ -2,13 +2,9 @@ import Path from "./Path"
 import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
+import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import mutate, { Mutation } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
-
-export type Subscribable<T extends object> = {
-  $subscribe(subscriber: Subscriber<T>): Unsubscribe
-  $notify(event: MutationEvent<T>)
-}
 
 /**
  * Recursively describes the props of an Arbor state tree node.
@@ -79,21 +75,6 @@ export type ArborConfig = {
 }
 
 /**
- * Describes a function used by users to cancel their state updates subscription.
- */
-export type Unsubscribe = () => void
-
-export type MutationEvent<T extends object> = {
-  state: { current: ArborNode<T>; previous: T }
-  mutationPath: Path
-}
-
-/**
- * Subscriber function used to listen to mutation events triggered by the state tree.
- */
-export type Subscriber<T extends object> = (event: MutationEvent<T>) => void
-
-/**
  * Describes an Arbor Plugin
  */
 export interface Plugin<T extends object> {
@@ -140,7 +121,7 @@ export default class Arbor<T extends object> {
   /**
    * Holds all state change subscriptions.
    */
-  #subscribers: Set<Subscriber<T>> = new Set()
+  #subscribers = new Subscribers<T>()
 
   /**
    * Create a new Arbor instance.
@@ -197,8 +178,10 @@ export default class Arbor<T extends object> {
       }
 
       this.#root = current
-
-      this.notify(current, previous, path)
+      this.#subscribers.notify({
+        state: { current, previous },
+        mutationPath: path,
+      })
     } else if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -249,7 +232,11 @@ export default class Arbor<T extends object> {
     const current = this.createNode(Path.root, value)
     const previous = this.#root?.$unwrap()
     this.#root = current
-    this.notify(current, previous, Path.root)
+    this.#subscribers.notify({
+      state: { current, previous },
+      mutationPath: Path.root,
+    })
+
     return current
   }
 
@@ -260,24 +247,7 @@ export default class Arbor<T extends object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    this.#subscribers.add(subscriber)
-
-    return () => {
-      this.#subscribers.delete(subscriber)
-    }
-  }
-
-  /**
-   * Notifies subscribers about state updates.
-   *
-   * @param current the current root node of the state tree.
-   * @param previous the value of the previous state tree root node.
-   * @param mutationPath the path within the state tree affected by the mutation.
-   */
-  notify(current: INode<T>, previous: T, mutationPath: Path) {
-    this.#subscribers.forEach((subscriber) => {
-      subscriber({ state: { current, previous }, mutationPath })
-    })
+    return this.#subscribers.subscribe(subscriber)
   }
 
   /**
