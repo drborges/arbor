@@ -2,9 +2,11 @@ import Path from "./Path"
 import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import mutate, { Mutation } from "./mutate"
+import { NotAnArborNodeError } from "./errors"
 import NodeArrayHandler from "./NodeArrayHandler"
+import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
+import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 
 /**
  * Recursively describes the props of an Arbor state tree node.
@@ -20,12 +22,13 @@ export type ArborNode<T extends object> = {
 /**
  * Represents an Arbor state tree node with all of its internal API exposed.
  */
-export type INode<T extends object = object> = T & {
+export type INode<T extends object = object, K extends object = T> = T & {
   $unwrap(): T
   $clone(): INode<T>
-  get $tree(): Arbor<T>
+  get $tree(): Arbor<K>
   get $path(): Path
   get $children(): NodeCache
+  get $subscribers(): Subscribers<T>
 }
 
 /**
@@ -119,11 +122,6 @@ export default class Arbor<T extends object> {
   #root: INode<T>
 
   /**
-   * Holds all state change subscriptions.
-   */
-  #subscribers = new Subscribers<T>()
-
-  /**
    * Create a new Arbor instance.
    *
    * @param initialState the initial state tree value
@@ -178,7 +176,8 @@ export default class Arbor<T extends object> {
       }
 
       this.#root = current
-      this.#subscribers.notify({
+
+      notifyAffectedSubscribers({
         state: { current, previous },
         mutationPath: path,
       })
@@ -203,11 +202,18 @@ export default class Arbor<T extends object> {
   createNode<V extends object>(
     path: Path,
     value: V,
+    subscribers = new Subscribers<V>(),
     children = new NodeCache()
   ): INode<V> {
     const handler = Array.isArray(value)
-      ? new NodeArrayHandler(this, path, value as V[], children)
-      : new NodeHandler(this, path, value, children)
+      ? new NodeArrayHandler(
+          this,
+          path,
+          value as V[],
+          children,
+          subscribers as Subscribers<V[]>
+        )
+      : new NodeHandler(this, path, value, children, subscribers)
 
     return new Proxy<V>(value, handler as ProxyHandler<V>) as INode<V>
   }
@@ -229,10 +235,16 @@ export default class Arbor<T extends object> {
    * @returns the root node.
    */
   setRoot(value: T): INode<T> {
-    const current = this.createNode(Path.root, value)
     const previous = this.#root?.$unwrap()
+    const current = this.createNode(
+      Path.root,
+      value,
+      this.#root?.$subscribers || new Subscribers<T>()
+    )
+
     this.#root = current
-    this.#subscribers.notify({
+
+    notifyAffectedSubscribers({
       state: { current, previous },
       mutationPath: Path.root,
     })
@@ -247,7 +259,23 @@ export default class Arbor<T extends object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    return this.#subscribers.subscribe(subscriber)
+    return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
+  }
+
+  /**
+   * Subscribes to mutations affecting the given Arbor node.
+   *
+   * @param node target node to subscribe to.
+   * @param subscriber a subscriber function to be called whenever a mutation affecting the given node takes place.
+   * @returns an unsubscribe function that when called cancels the related subscription.
+   */
+  subscribeTo<K extends object>(
+    node: ArborNode<K>,
+    subscriber: Subscriber<T>
+  ): Unsubscribe {
+    if (!isNode(node)) throw new NotAnArborNodeError()
+
+    return node.$subscribers.subscribe(subscriber)
   }
 
   /**

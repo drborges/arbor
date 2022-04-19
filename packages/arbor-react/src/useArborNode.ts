@@ -1,7 +1,7 @@
-import { isNode, INode, Path } from "@arborjs/store"
 import { useCallback, useEffect, useState } from "react"
+import { isNode, INode, Path, ArborNode } from "@arborjs/store"
 
-export default function useArborNode<T extends object>(node: INode<T> | T) {
+export default function useArborNode<T extends object>(node: ArborNode<T>) {
   if (!isNode(node)) {
     throw new Error("useArborNode must be initialized with an Arbor Node")
   }
@@ -24,8 +24,10 @@ export default function useArborNode<T extends object>(node: INode<T> | T) {
   useEffect(() => {
     update(state.$path)
 
-    return state.$tree.subscribe(({ mutationPath }) => update(mutationPath))
+    return state.$subscribers.subscribe(({ mutationPath }) => {
+      update(mutationPath)
+    })
   }, [state, update])
 
-  return state
+  return state as ArborNode<T>
 }

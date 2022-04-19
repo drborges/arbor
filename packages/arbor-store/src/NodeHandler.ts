@@ -1,9 +1,10 @@
 import Path from "./Path"
-import isNode from "./isNode"
 import clone from "./clone"
+import isNode from "./isNode"
 import proxiable from "./proxiable"
 import NodeCache from "./NodeCache"
 import Arbor, { INode } from "./Arbor"
+import Subscribers from "./Subscribers"
 
 function memoizedFunctionBoundToProxy<T extends object>(
   target: T,
@@ -32,7 +33,8 @@ export default class NodeHandler<T extends object, K extends object>
     readonly $tree: Arbor<K>,
     readonly $path: Path,
     readonly $value: T,
-    readonly $children = new NodeCache()
+    readonly $children = new NodeCache(),
+    readonly $subscribers = new Subscribers<T>()
   ) {}
 
   $unwrap(): T {
@@ -40,7 +42,12 @@ export default class NodeHandler<T extends object, K extends object>
   }
 
   $clone(): INode<T> {
-    return this.$tree.createNode(this.$path, clone(this.$value), this.$children)
+    return this.$tree.createNode(
+      this.$path,
+      clone(this.$value),
+      this.$subscribers,
+      this.$children
+    )
   }
 
   get(target: T, prop: string, proxy: INode<T>) {

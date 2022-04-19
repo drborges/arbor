@@ -1,5 +1,5 @@
 import isNode from "./isNode"
-import { INode } from "./Arbor"
+import { ArborNode, INode } from "./Arbor"
 import { ArborProxy } from "./proxiable"
 import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
@@ -24,7 +24,7 @@ export default class Collection<T extends Item> {
     return true
   }
 
-  addMany(...items: T[]): T[] {
+  addMany(...items: T[]): ArborNode<T>[] {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -48,11 +48,11 @@ export default class Collection<T extends Item> {
     )
   }
 
-  add(item: T): T {
+  add(item: T): ArborNode<T> {
     return this.addMany(item)[0]
   }
 
-  map<K>(transform: (item: T) => K): K[] {
+  map<K>(transform: (item: ArborNode<T>) => K): K[] {
     const mapped = []
 
     for (const item of this) {
@@ -62,13 +62,13 @@ export default class Collection<T extends Item> {
     return mapped
   }
 
-  forEach(cb: (item: T) => void) {
+  forEach(cb: (item: ArborNode<T>) => void) {
     for (const item of this) {
       cb(item)
     }
   }
 
-  filter(predicate: Predicate<T>): T[] {
+  filter(predicate: Predicate<ArborNode<T>>): ArborNode<T>[] {
     const collected = []
 
     for (const item of this) {
@@ -80,7 +80,7 @@ export default class Collection<T extends Item> {
     return collected
   }
 
-  find(predicate: Predicate<T>): T {
+  find(predicate: Predicate<ArborNode<T>>): ArborNode<T> {
     for (const item of this) {
       if (predicate(item)) return item
     }
@@ -88,11 +88,11 @@ export default class Collection<T extends Item> {
     return undefined
   }
 
-  merge(uuidOrItem: T | string, data: Partial<T>): T {
+  merge(uuidOrItem: T | string, data: Partial<T>): ArborNode<T> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    const item = this.fetch(uuidOrItem)
+    const item = this.fetch(uuidOrItem) as T
 
     if (item === undefined) {
       return undefined
@@ -113,7 +113,10 @@ export default class Collection<T extends Item> {
     return node.$tree.getNodeAt(node.$path.child(item.uuid))
   }
 
-  mergeBy(predicate: Predicate<T>, updateFn: (item: T) => Partial<T>): T[] {
+  mergeBy(
+    predicate: Predicate<ArborNode<T>>,
+    updateFn: (item: ArborNode<T>) => Partial<T>
+  ): ArborNode<T>[] {
     const node = this
     const updatedIds: string[] = []
     if (!isNode(node)) throw new NotAnArborNodeError()
@@ -140,7 +143,7 @@ export default class Collection<T extends Item> {
     )
   }
 
-  fetch(uuidOrItem: string | T): T | undefined {
+  fetch(uuidOrItem: string | T): ArborNode<T> | undefined {
     const uuid = extractUUIDFrom(uuidOrItem)
     const node = this
 
@@ -165,7 +168,7 @@ export default class Collection<T extends Item> {
     return false
   }
 
-  some(predicate: Predicate<T>): boolean {
+  some(predicate: Predicate<ArborNode<T>>): boolean {
     for (const item of this) {
       if (predicate(item)) return true
     }
@@ -173,7 +176,7 @@ export default class Collection<T extends Item> {
     return false
   }
 
-  every(predicate: (item: T) => boolean): boolean {
+  every(predicate: Predicate<ArborNode<T>>): boolean {
     for (const item of this) {
       if (!predicate(item)) return false
     }
@@ -181,11 +184,11 @@ export default class Collection<T extends Item> {
     return true
   }
 
-  sort(compare: (a: T, b: T) => number): T[] {
+  sort(compare: (a: T, b: T) => number): ArborNode<T>[] {
     return Object.values(this).sort(compare)
   }
 
-  slice(start: number, end: number): T[] {
+  slice(start: number, end: number): ArborNode<T>[] {
     let i = 0
     const slice = []
 
