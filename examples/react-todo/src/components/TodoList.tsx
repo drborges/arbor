@@ -11,11 +11,7 @@ export default memo(function TodoList() {
   return (
     <div className="todo-list">
       {filterTodos(todos, filter.value).map((todo) => (
-        <TodoView
-          key={todo.uuid}
-          id={todo.uuid}
-          onRemove={todos.onRemove}
-        />
+        <TodoView key={todo.uuid} id={todo.uuid} />
       ))}
     </div>
   )
