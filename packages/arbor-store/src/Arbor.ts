@@ -271,7 +271,7 @@ export default class Arbor<T extends object> {
    */
   subscribeTo<K extends object>(
     node: ArborNode<K>,
-    subscriber: Subscriber<T>
+    subscriber: Subscriber<K>
   ): Unsubscribe {
     if (!isNode(node)) throw new NotAnArborNodeError()
 

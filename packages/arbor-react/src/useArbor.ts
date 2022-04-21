@@ -1,5 +1,5 @@
-import Arbor, { ArborNode, proxiable } from "@arborjs/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import Arbor, { ArborNode, INode, isNode, proxiable } from "@arborjs/store"
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -35,41 +35,45 @@ import { useCallback, useEffect, useMemo, useState } from "react"
  *
  * In that case, make sure you add @arborjs/repository as a dependency.
  *
- * @param storeOrRepository either an instance of Arbor or Repository.
+ * @param target either an instance of Arbor or an ArborNode or a initial state object used to create a store.
  * @returns the current state of the Arbor state tree.
  */
 export default function useArbor<T extends object, S = T>(
-  storeOrState: Arbor<T> | T,
-  selector = (root: ArborNode<T>) => root as unknown as S
+  target: Arbor<T> | ArborNode<T> | T,
+  selector = (node: ArborNode<T>) => node as unknown as S
 ) {
-  if (!(storeOrState instanceof Arbor) && !proxiable(storeOrState)) {
+  if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
     throw new Error(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
   }
 
-  const store = useMemo(
-    () =>
-      storeOrState instanceof Arbor ? storeOrState : new Arbor(storeOrState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [] // Ensure the store is initialized only once in case the caller is providing an initial state value
-  )
+  const store = useMemo(() => {
+    if (target instanceof Arbor) return target
+    if (isNode(target)) return target.$tree
+    return new Arbor<T>(target as T)
+  // TODO: Revisit this decision on whether or not we'd like to recompute the
+  // store whenever the target memory reference changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const [state, setState] = useState(selector(store.root))
+  const targetPath = useMemo(() => isNode(target) ? target.$path : (store.root as INode).$path, [store, target])
+  const node = useMemo(() => store.getNodeAt(targetPath) as INode<T>, [store, targetPath])
+  const [state, setState] = useState(selector(node))
 
   const update = useCallback(() => {
-    const nextState = selector(store.root)
+    const nextState = selector(store.getNodeAt(targetPath))
 
     if (nextState !== state) {
       setState(nextState)
     }
-  }, [selector, state, store.root])
+  }, [selector, state, store, targetPath])
 
   useEffect(() => {
     update()
 
-    return store.subscribe(update)
-  }, [selector, store, update])
+    return store.subscribeTo(node as ArborNode<T>, update)
+  }, [node, store, target, targetPath, update])
 
   return state
 }
