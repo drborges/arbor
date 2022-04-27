@@ -134,15 +134,29 @@ describe("Arbor", () => {
         users: [{ name: "User 1" }, { name: "User 2" }],
       }
 
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
       const store = new Arbor<{ users: IUser[] }>(initialState)
-      store.notify = jest.fn(store.notify)
+      store.subscribe(subscriber1)
+      store.subscribe(subscriber2)
+
       const newRoot = store.setRoot(newState)
 
-      expect(store.notify).toHaveBeenCalledWith(
-        newRoot,
-        initialState,
-        Path.root
-      )
+      expect(subscriber1).toHaveBeenCalledWith({
+        mutationPath: Path.root,
+        state: {
+          current: newRoot,
+          previous: initialState,
+        },
+      })
+
+      expect(subscriber2).toHaveBeenCalledWith({
+        mutationPath: Path.root,
+        state: {
+          current: newRoot,
+          previous: initialState,
+        },
+      })
     })
   })
 
@@ -205,6 +219,36 @@ describe("Arbor", () => {
         users: [{ name: "Bob 2" }, { name: "Alice" }],
       })
     })
+
+    it("notifies subscribers with mutation metadata", () => {
+      const initialState = {
+        users: [{ name: "User 1" }],
+      }
+
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const store = new Arbor<{ users: { name: string }[] }>(initialState)
+      store.subscribe(subscriber1)
+      store.subscribe(subscriber2)
+
+      store.root.users[0].name = "User"
+
+      expect(subscriber1).toHaveBeenCalledWith({
+        mutationPath: Path.parse("/users/0"),
+        state: {
+          current: store.root,
+          previous: initialState,
+        },
+      })
+
+      expect(subscriber2).toHaveBeenCalledWith({
+        mutationPath: Path.parse("/users/0"),
+        state: {
+          current: store.root,
+          previous: initialState,
+        },
+      })
+    })
   })
 
   describe("State Change Subscriptions", () => {
@@ -245,6 +289,81 @@ describe("Arbor", () => {
 
       expect(store.root).toEqual({
         "1": { name: "Alice" },
+      })
+    })
+
+    it("only notifies subscribers affected by the mutation path", () => {
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const subscriber3 = jest.fn()
+      const initialState = {
+        users: [
+          {
+            name: "Alice",
+            posts: [{ content: "Post 1" }, { content: "Post 2" }],
+          },
+          {
+            name: "Bob",
+            posts: [{ content: "Post 3" }, { content: "Post 4" }],
+          },
+        ],
+      }
+
+      const firstUpdateExpectedState = {
+        users: [
+          {
+            name: "Alice",
+            posts: [{ content: "Post 1" }, { content: "Post 2 updated" }],
+          },
+          {
+            name: "Bob",
+            posts: [{ content: "Post 3" }, { content: "Post 4" }],
+          },
+        ],
+      }
+
+      const store = new Arbor(initialState)
+
+      store.subscribe(subscriber1)
+      store.subscribeTo(store.root.users[1], subscriber2)
+      store.subscribeTo(store.root.users[0].posts, subscriber3)
+
+      store.root.users[0].posts[1].content = "Post 2 updated"
+
+      expect(subscriber2).not.toHaveBeenCalled()
+      expect(subscriber1).toHaveBeenCalledWith({
+        mutationPath: Path.parse("/users/0/posts/1"),
+        state: {
+          previous: initialState,
+          current: store.root,
+        },
+      })
+
+      expect(subscriber3).toHaveBeenCalledWith({
+        mutationPath: Path.parse("/users/0/posts/1"),
+        state: {
+          previous: initialState,
+          current: store.root,
+        },
+      })
+
+      store.root.users[0].posts[1].content = "Post 2 updated again"
+
+      expect(subscriber2).not.toHaveBeenCalled()
+      expect(subscriber1).toHaveBeenCalledWith({
+        mutationPath: Path.parse("/users/0/posts/1"),
+        state: {
+          previous: firstUpdateExpectedState,
+          current: store.root,
+        },
+      })
+
+      expect(subscriber3).toHaveBeenCalledWith({
+        mutationPath: Path.parse("/users/0/posts/1"),
+        state: {
+          previous: firstUpdateExpectedState,
+          current: store.root,
+        },
       })
     })
   })

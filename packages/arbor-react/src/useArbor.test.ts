@@ -213,6 +213,44 @@ describe("useArbor", () => {
     expect(result.current.settings).toBe(originalState.settings)
   })
 
+  it("allows subscribing to specific subtrees of an existing state tree", () => {
+    const store = new Arbor({
+      users: [
+        { name: "Alice" },
+        { name: "Bob" },
+      ]
+    })
+
+    const { result } = renderHook(() => useArbor(store.root.users[0]))
+
+    expect(result.current).toBe(store.root.users[0])
+
+    act(() => {
+      result.current.name = "Alice Updated"
+    })
+
+    expect(store.root.users[0]).toEqual({ name: "Alice Updated" })
+  })
+
+  it("supports selectors when subscribing to subtrees of an existing state tree", () => {
+    const store = new Arbor({
+      users: [
+        { name: "Alice" },
+        { name: "Bob" },
+      ]
+    })
+
+    const { result } = renderHook(() => useArbor(store.root.users[0], alice => alice.name))
+
+    expect(result.current).toBe("Alice")
+
+    act(() => {
+      store.root.users[0].name = "Alice Updated"
+    })
+
+    expect(result.current).toEqual("Alice Updated")
+  })
+
   it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {
     expect(() => useArbor(new Date())).toThrowError(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"

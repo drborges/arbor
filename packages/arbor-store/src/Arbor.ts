@@ -3,7 +3,10 @@ import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import mutate, { Mutation } from "./mutate"
+import { NotAnArborNodeError } from "./errors"
 import NodeArrayHandler from "./NodeArrayHandler"
+import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
+import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 
 /**
  * Recursively describes the props of an Arbor state tree node.
@@ -19,12 +22,13 @@ export type ArborNode<T extends object> = {
 /**
  * Represents an Arbor state tree node with all of its internal API exposed.
  */
-export type INode<T extends object = object> = T & {
+export type INode<T extends object = object, K extends object = T> = T & {
   $unwrap(): T
   $clone(): INode<T>
-  get $tree(): Arbor<T>
+  get $tree(): Arbor<K>
   get $path(): Path
   get $children(): NodeCache
+  get $subscribers(): Subscribers<T>
 }
 
 /**
@@ -74,21 +78,6 @@ export type ArborConfig = {
 }
 
 /**
- * Describes a function used by users to cancel their state updates subscription.
- */
-export type Unsubscribe = () => void
-
-export type MutationEvent<T extends object> = {
-  state: { current: ArborNode<T>; previous: T }
-  mutationPath: Path
-}
-
-/**
- * Subscriber function used to listen to mutation events triggered by the state tree.
- */
-export type Subscriber<T extends object> = (event: MutationEvent<T>) => void
-
-/**
  * Describes an Arbor Plugin
  */
 export interface Plugin<T extends object> {
@@ -133,11 +122,6 @@ export default class Arbor<T extends object> {
   #root: INode<T>
 
   /**
-   * Holds all state change subscriptions.
-   */
-  #subscribers: Set<Subscriber<T>> = new Set()
-
-  /**
    * Create a new Arbor instance.
    *
    * @param initialState the initial state tree value
@@ -157,6 +141,8 @@ export default class Arbor<T extends object> {
    *
    * @example
    *
+   * Mutating a node referenced by a path:
+   *
    * ```ts
    * const store = new Arbor({ users: [] })
    * store.mutate(Path.parse("/users"), node => node.push({ name: "John Doe" }))
@@ -164,16 +150,25 @@ export default class Arbor<T extends object> {
    * => { users: [{ name: "John Doe" }]}
    * ```
    *
-   * @param path the path within the state tree affected by the mutation.
+   * Or using a node reference:
+   *
+   * ```ts
+   * const store = new Arbor({ users: [] })
+   * store.mutate(store.root.users, node => node.push({ name: "John Doe" }))
+   * store.root
+   * => { users: [{ name: "John Doe" }]}
+   * ```
+   *
+   * @param pathOrNode the path or the node within the state tree to be mutated.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
   mutate<V extends object>(pathOrNode: Path | INode<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
+    const current = mutate(this.#root, path, mutation)
+    const previous = this.#root.$unwrap()
     const node = isNode(pathOrNode)
       ? pathOrNode
       : (path.walk(this.#root) as INode<V>)
-    const previous = this.#root.$unwrap()
-    const current = mutate(this.#root, path, mutation)
 
     if (current) {
       if (this.mode === MutationMode.FORGIVEN) {
@@ -182,7 +177,10 @@ export default class Arbor<T extends object> {
 
       this.#root = current
 
-      this.notify(current, previous, path)
+      notifyAffectedSubscribers({
+        state: { current, previous },
+        mutationPath: path,
+      })
     } else if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(
@@ -204,11 +202,18 @@ export default class Arbor<T extends object> {
   createNode<V extends object>(
     path: Path,
     value: V,
+    subscribers = new Subscribers<V>(),
     children = new NodeCache()
   ): INode<V> {
     const handler = Array.isArray(value)
-      ? new NodeArrayHandler(this, path, value as V[], children)
-      : new NodeHandler(this, path, value, children)
+      ? new NodeArrayHandler(
+          this,
+          path,
+          value as V[],
+          children,
+          subscribers as Subscribers<V[]>
+        )
+      : new NodeHandler(this, path, value, children, subscribers)
 
     return new Proxy<V>(value, handler as ProxyHandler<V>) as INode<V>
   }
@@ -230,11 +235,21 @@ export default class Arbor<T extends object> {
    * @returns the root node.
    */
   setRoot(value: T): INode<T> {
-    const oldRoot = this.#root?.$unwrap()
-    const node = this.createNode(Path.root, value)
-    this.#root = node as INode<T>
-    this.notify(node, oldRoot, Path.root)
-    return node
+    const previous = this.#root?.$unwrap()
+    const current = this.createNode(
+      Path.root,
+      value,
+      this.#root?.$subscribers || new Subscribers<T>()
+    )
+
+    this.#root = current
+
+    notifyAffectedSubscribers({
+      state: { current, previous },
+      mutationPath: Path.root,
+    })
+
+    return current
   }
 
   /**
@@ -244,26 +259,31 @@ export default class Arbor<T extends object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    this.#subscribers.add(subscriber)
-
-    return () => {
-      this.#subscribers.delete(subscriber)
-    }
+    return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
   }
 
   /**
-   * Notifies subscribers about state updates.
+   * Subscribes to mutations affecting the given Arbor node.
    *
-   * @param current the new state tree root node.
-   * @param previous the value of the previous state tree root node.
-   * @param mutationPath the path within the state tree that was the mutation target.
+   * @param node target node to subscribe to.
+   * @param subscriber a subscriber function to be called whenever a mutation affecting the given node takes place.
+   * @returns an unsubscribe function that when called cancels the related subscription.
    */
-  notify(current: INode<T>, previous: T, mutationPath: Path) {
-    this.#subscribers.forEach((subscriber) => {
-      subscriber({ state: { current, previous }, mutationPath })
-    })
+  subscribeTo<K extends object>(
+    node: ArborNode<K>,
+    subscriber: Subscriber<K>
+  ): Unsubscribe {
+    if (!isNode(node)) throw new NotAnArborNodeError()
+
+    return node.$subscribers.subscribe(subscriber)
   }
 
+  /**
+   * Register plugins to extend the store capabilities.
+   *
+   * @param plugin plugin to extend the store with.
+   * @returns a promise that gets resolved when the plugin completes its configuration steps.
+   */
   async use(plugin: Plugin<T>) {
     return plugin.configure(this)
   }

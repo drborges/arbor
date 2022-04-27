@@ -8,7 +8,7 @@ describe("useArborNode", () => {
     const store = new Arbor({
       counter: {
         count: 0,
-      }
+      },
     })
 
     const { result } = renderHook(() => useArborNode(store.root.counter))
@@ -20,7 +20,7 @@ describe("useArborNode", () => {
     const store = new Arbor({
       counter: {
         count: 0,
-      }
+      },
     })
 
     const { result } = renderHook(() => useArborNode(store.root.counter))
@@ -50,9 +50,7 @@ describe("useArborNode", () => {
       },
     })
 
-    const { result } = renderHook(() =>
-      useArborNode(store.root.counter1)
-    )
+    const { result } = renderHook(() => useArborNode(store.root.counter1))
 
     expect(result.all.length).toBe(1)
     expect(result.current).toBe(store.root.counter1)
@@ -91,10 +89,12 @@ describe("useArborNode", () => {
     const store = new Arbor({
       counter: {
         count: 0,
-      }
+      },
     })
 
-    const { result, unmount } = renderHook(() => useArborNode(store.root.counter))
+    const { result, unmount } = renderHook(() =>
+      useArborNode(store.root.counter)
+    )
 
     const initialSstate = result.current
 
