@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Arbor, { ArborNode, INode, isNode, proxiable } from "@arborjs/store"
 
+export type Selector<T extends object, S = ArborNode<T>> = (
+  node: ArborNode<T>
+) => S
+
+const defaultSelector = <T extends object, S = ArborNode<T>>(
+  node: ArborNode<T>
+) => node as unknown as S
+
 /**
  * This hook binds a React component to a given Arbor store.
  *
@@ -38,9 +46,9 @@ import Arbor, { ArborNode, INode, isNode, proxiable } from "@arborjs/store"
  * @param target either an instance of Arbor or an ArborNode or a initial state object used to create a store.
  * @returns the current state of the Arbor state tree.
  */
-export default function useArbor<T extends object, S = T>(
+export default function useArbor<T extends object, S = ArborNode<T>>(
   target: Arbor<T> | ArborNode<T> | T,
-  selector = (node: ArborNode<T>) => node as unknown as S
+  selector: Selector<T, S> = defaultSelector
 ) {
   if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
     throw new Error(
@@ -52,14 +60,23 @@ export default function useArbor<T extends object, S = T>(
     if (target instanceof Arbor) return target
     if (isNode(target)) return target.$tree
     return new Arbor<T>(target as T)
-  // TODO: Revisit this decision on whether or not we'd like to recompute the
-  // store whenever the target memory reference changes.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // TODO: Revisit this decision on whether or not we'd like to recompute the
+    // store whenever the target memory reference changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const targetPath = useMemo(() => isNode(target) ? target.$path : (store.root as INode).$path, [store, target])
-  const node = useMemo(() => store.getNodeAt(targetPath) as INode<T>, [store, targetPath])
-  const [state, setState] = useState(selector(node))
+  const targetPath = useMemo(
+    () => (isNode(target) ? target.$path : (store.root as INode).$path),
+    [store, target]
+  )
+
+  const node = useMemo(
+    () => store.getNodeAt(targetPath) as INode<T>,
+    [store, targetPath]
+  )
+
+  const initialValue = useMemo(() => selector(node), [selector, node])
+  const [state, setState] = useState(initialValue)
 
   const update = useCallback(() => {
     const nextState = selector(store.getNodeAt(targetPath))

@@ -1,6 +1,6 @@
+import { v4 as uuid } from "uuid"
 import { LocalStorage } from "@arborjs/plugins"
 import Arbor, { BaseNode, Collection, useArbor } from "@arborjs/react"
-import { v4 as uuid } from "uuid"
 
 export type Status = "completed" | "incompleted"
 
@@ -8,10 +8,6 @@ export class Todo extends BaseNode<Todo> {
   uuid = uuid()
   text!: string
   status: Status = "incompleted"
-
-  static from(props: Partial<Todo>) {
-    return Object.assign(new Todo(), props)
-  }
 
   toggle() {
     this.status = this.completed ? "incompleted" : "completed"
@@ -39,7 +35,7 @@ const persistence = new LocalStorage<TodosCollection>({
   debounceBy: 300,
   deserialize: (todos) => {
     const items = Object.values(todos || {}) as Partial<Todo>[]
-    const todoItems = items.map((item) => Todo.from(item))
+    const todoItems = items.map(Todo.from)
     return new TodosCollection(...todoItems)
   },
 })
@@ -48,7 +44,7 @@ store.use(persistence)
 
 export const add = (text: string) => {
   store.root.add(
-    Todo.from({
+    Todo.from<Todo>({
       text,
       status: "incompleted",
     })
