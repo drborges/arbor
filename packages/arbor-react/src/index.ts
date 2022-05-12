@@ -7,12 +7,10 @@ import Arbor, {
 } from "@arborjs/store"
 
 import useArbor from "./useArbor"
-import useArborNode from "./useArborNode"
 
 export {
   Collection,
   useArbor,
-  useArborNode,
   Path,
   produce,
   MutationMode,
