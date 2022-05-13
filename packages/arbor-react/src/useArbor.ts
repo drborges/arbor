@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Arbor, { ArborNode, INode, isNode, MutationEvent, proxiable } from "@arborjs/store"
 
-export type Watcher<T extends object> = (target: ArborNode<T>) => (event: MutationEvent<T>) => boolean
+import { watchAnyMutations } from "./watchers/watchAnyMutations"
 
-const defaultWatcher = <T extends object>(target: ArborNode<T>) => (event: MutationEvent<T>) => event.mutationPath.affects(target)
+export type Watcher<T extends object> = (target: ArborNode<T>) => (event: MutationEvent<T>) => boolean
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -44,7 +44,7 @@ const defaultWatcher = <T extends object>(target: ArborNode<T>) => (event: Mutat
  */
 export default function useArbor<T extends object>(
   target: Arbor<T> | ArborNode<T> | T,
-  watcher: Watcher<T> = defaultWatcher,
+  watcher: Watcher<T> = watchAnyMutations(),
 ) {
   if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
     throw new Error(
