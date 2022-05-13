@@ -173,8 +173,7 @@ describe("useArbor", () => {
 
     // Only updates when changes are made to the state tree path: /users/1
     const watchSecondUser = (): Watcher<State> =>
-      (_node: ArborNode<State>) =>
-        ({ mutationPath }) => mutationPath.is(Path.parse("/users/1"))
+      (_node: ArborNode<State>, { mutationPath }) => mutationPath.is(Path.parse("/users/1"))
 
     const { result } = renderHook(() => useArbor(store, watchSecondUser()))
 

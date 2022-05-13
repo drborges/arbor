@@ -11,8 +11,7 @@ const parsePathPattern = (pattern: string) => {
 }
 
 export function watchPaths(...pathPatterns: string[]) {
-  return <T extends object>(node: ArborNode<T>) =>
-    (event: MutationEvent<T>) => {
+  return <T extends object>(node: ArborNode<T>, event: MutationEvent<T>) => {
       if (!isNode(node)) return false
       if (!event.mutationPath.affects(node)) return false
 

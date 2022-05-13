@@ -3,7 +3,7 @@ import Arbor, { ArborNode, INode, isNode, MutationEvent, proxiable } from "@arbo
 
 import { watchAnyMutations } from "./watchAnyMutations"
 
-export type Watcher<T extends object> = (target: ArborNode<T>) => (event: MutationEvent<T>) => boolean
+export type Watcher<T extends object> = (target: ArborNode<T>, event: MutationEvent<T>) => boolean
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -75,7 +75,7 @@ export default function useArbor<T extends object>(
   const update = useCallback((event: MutationEvent<T>) => {
     const nextState = store.getNodeAt(targetPath) as INode<T>
 
-    if (nextState !== state && watcher(state)(event)) {
+    if (nextState !== state && watcher(state, event)) {
       setState(nextState)
     }
   }, [state, store, targetPath, watcher])
