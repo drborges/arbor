@@ -1,7 +1,7 @@
 import Arbor from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
-import useArbor from "../useArbor"
+import useArbor from "./useArbor"
 import { watchAnyMutations } from "./watchAnyMutations"
 
 describe("watchAnyMutations", () => {

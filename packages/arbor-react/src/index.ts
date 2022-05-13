@@ -6,6 +6,11 @@ import Arbor, {
   MutationMode,
 } from "@arborjs/store"
 
+import { watchAnyMutations } from "./watchAnyMutations"
+import { watchChildrenProps } from "./watchChildrenProps"
+import { watchNode } from "./watchNode"
+import { watchNodeProps } from "./watchNodeProps"
+import { watchPaths } from "./watchPaths"
 import useArbor, { Watcher } from "./useArbor"
 
 export type {
@@ -20,4 +25,9 @@ export {
   MutationMode,
   BaseNode,
   Arbor as default,
+  watchAnyMutations,
+  watchChildrenProps,
+  watchNode,
+  watchNodeProps,
+  watchPaths,
 }

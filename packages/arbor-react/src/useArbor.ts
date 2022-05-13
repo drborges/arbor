@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Arbor, { ArborNode, INode, isNode, MutationEvent, proxiable } from "@arborjs/store"
 
-import { watchAnyMutations } from "./watchers/watchAnyMutations"
+import { watchAnyMutations } from "./watchAnyMutations"
 
 export type Watcher<T extends object> = (target: ArborNode<T>) => (event: MutationEvent<T>) => boolean
 
