@@ -7,7 +7,7 @@ import BaseNode from "./BaseNode"
 import Collection from "./Collection"
 import proxiable, { ArborProxy } from "./proxiable"
 import isClonable, { Clonable } from "./isClonable"
-import { Subscriber, Unsubscribe } from "./Subscribers"
+import { MutationEvent, Subscriber, Unsubscribe } from "./Subscribers"
 import Arbor, {
   INode,
   MutationMode,
@@ -23,6 +23,7 @@ export type {
   ArborConfig,
   ArborNode,
   Mutation,
+  MutationEvent,
   Unsubscribe,
   Subscriber,
   AttributesOf,

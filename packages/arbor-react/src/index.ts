@@ -6,18 +6,28 @@ import Arbor, {
   MutationMode,
 } from "@arborjs/store"
 
-import useArbor from "./useArbor"
-import useArborNode from "./useArborNode"
-import useArborValue from "./useArborValue"
+import { watchAnyMutations } from "./watchAnyMutations"
+import { watchChildrenProps } from "./watchChildrenProps"
+import { watchNode } from "./watchNode"
+import { watchNodeProps } from "./watchNodeProps"
+import { watchPaths } from "./watchPaths"
+import useArbor, { Watcher } from "./useArbor"
+
+export type {
+  Watcher
+}
 
 export {
   Collection,
   useArbor,
-  useArborNode,
-  useArborValue,
   Path,
   produce,
   MutationMode,
   BaseNode,
   Arbor as default,
+  watchAnyMutations,
+  watchChildrenProps,
+  watchNode,
+  watchNodeProps,
+  watchPaths,
 }

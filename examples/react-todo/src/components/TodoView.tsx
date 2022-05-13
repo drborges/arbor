@@ -1,8 +1,9 @@
 import classnames from "classnames"
-import { useArborNode } from "@arborjs/react"
 import React, { memo, useState } from "react"
+import { useArbor, watchNode } from "@arborjs/react"
 
-import { store } from "../store/useTodos"
+import { store, Todo } from "../store/useTodos"
+import { ArborNode } from "@arborjs/store"
 
 export interface TodoProps {
   id: string
@@ -10,7 +11,7 @@ export interface TodoProps {
 
 export default memo(function TodoView({ id }: TodoProps) {
   const [editing, setEditing] = useState(false)
-  const todo = useArborNode(store.root.fetch(id)!)
+  const todo = useArbor(store.root.fetch(id) as ArborNode<Todo>, watchNode())
 
   return (
     <div className={classnames("todo-view", { completed: todo.completed })}>
