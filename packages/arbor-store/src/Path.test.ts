@@ -1,4 +1,5 @@
 import Path from "./Path"
+import { ArborNode } from "./Arbor"
 
 describe("Path", () => {
   describe("#toString", () => {
@@ -87,6 +88,30 @@ describe("Path", () => {
       expect(Path.parse("/users").is(Path.root)).toBe(false)
       expect(new Path("users").is(Path.parse("/"))).toBe(false)
       expect(Path.parse("/users/123").is(Path.parse("/users"))).toBe(false)
+    })
+  })
+
+  describe("#affects", () => {
+    it("checks if a path affects a given node", () => {
+      const node1 = {
+        $unwrap() {},
+        $path: Path.parse("/users"),
+      } as ArborNode<any>
+
+      const node2 = {
+        $unwrap() {},
+        $path: Path.parse("/users/123"),
+      } as ArborNode<any>
+
+      expect(Path.parse("/users").affects(node1)).toBe(true)
+      expect(Path.parse("/users/321").affects(node1)).toBe(true)
+      expect(Path.parse("/users/123").affects(node1)).toBe(true)
+      expect(Path.parse("/users/123").affects(node2)).toBe(true)
+
+      expect(Path.parse("/posts").affects(node1)).toBe(false)
+      expect(Path.parse("/posts").affects(node2)).toBe(false)
+      expect(Path.parse("/users").affects(node2)).toBe(false)
+      expect(Path.parse("/users/321").affects(node2)).toBe(false)
     })
   })
 })
