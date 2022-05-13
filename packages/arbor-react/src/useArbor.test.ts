@@ -1,7 +1,7 @@
-import Arbor, { BaseNode, MutationMode } from "@arborjs/store"
+import Arbor, { ArborNode, BaseNode, MutationMode, Path } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
-import useArbor from "./useArbor"
+import useArbor, { Watcher } from "./useArbor"
 
 interface User {
   name: string
@@ -38,88 +38,6 @@ describe("useArbor", () => {
     })
 
     expect(result.current.count).toBe(5)
-  })
-
-  it("subscribes to changes to a specific tree node", () => {
-    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
-
-    const user1 = store.root[0]
-    const user2 = store.root[1]
-
-    const { result } = renderHook(() => useArbor(store, (users) => users[1]))
-
-    expect(result.current).toBe(user2)
-
-    act(() => {
-      user1.name = "Bob Updated"
-    })
-
-    expect(result.current).toBe(user2)
-
-    act(() => {
-      user2.name = "Alice Updated"
-    })
-
-    expect(result.current).not.toBe(user2)
-    expect(result.current).toEqual({ name: "Alice Updated" })
-  })
-
-  it("handles selector changes across re-renderings", () => {
-    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
-
-    const initialProps = {
-      store,
-      selector: (users: User[]) => users[2],
-    }
-
-    const { result, rerender } = renderHook(
-      (props) => useArbor(props.store, props.selector),
-      { initialProps }
-    )
-
-    expect(result.current).toBe(undefined)
-
-    rerender({
-      store,
-      selector: (users: User[]) => users[1],
-    })
-
-    expect(result.current).toBe(store.root[1])
-  })
-
-  it("does not trigger a state update when selected state is not changed", () => {
-    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
-
-    const { result } = renderHook(() =>
-      useArbor(store, (users: User[]) => users[1])
-    )
-
-    expect(result.all.length).toBe(1)
-    expect(result.current).toBe(store.root[1])
-
-    act(() => {
-      store.root[0].name = "Bobz"
-    })
-
-    expect(result.all.length).toBe(1)
-    expect(result.current).toBe(store.root[1])
-
-    act(() => {
-      store.root[1].name = "Alicez"
-    })
-
-    expect(result.all.length).toBe(2)
-    expect(result.current).toBe(store.root[1])
-  })
-
-  it("supports derived data", () => {
-    const store = new Arbor<User[]>([{ name: "Bob" }, { name: "Alice" }])
-
-    const { result } = renderHook(() =>
-      useArbor(store, (users) => users.length)
-    )
-
-    expect(result.current).toBe(2)
   })
 
   it("when running forgiven mutation mode, subsequent mutations to the same path can be triggered off the same node reference", () => {
@@ -223,16 +141,29 @@ describe("useArbor", () => {
 
     const { result } = renderHook(() => useArbor(store.root.users[0]))
 
+    expect(result.all.length).toBe(1)
     expect(result.current).toBe(store.root.users[0])
 
     act(() => {
       result.current.name = "Alice Updated"
     })
 
+    expect(result.all.length).toBe(2)
+
+    act(() => {
+      store.root.users.push({ name: "Carol" })
+    })
+
+    expect(result.all.length).toBe(2)
+
     expect(store.root.users[0]).toEqual({ name: "Alice Updated" })
   })
 
-  it("supports selectors when subscribing to subtrees of an existing state tree", () => {
+  it("allows overriding the state tree watching logic", () => {
+    interface State {
+      users: User[]
+    }
+
     const store = new Arbor({
       users: [
         { name: "Alice" },
@@ -240,15 +171,28 @@ describe("useArbor", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], alice => alice.name))
+    // Only updates when changes are made to the state tree path: /users/1
+    const watchSecondUser = (): Watcher<State> =>
+      (_node: ArborNode<State>) =>
+        ({ mutationPath }) => mutationPath.is(Path.parse("/users/1"))
 
-    expect(result.current).toBe("Alice")
+    const { result } = renderHook(() => useArbor(store, watchSecondUser()))
+
+    expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Alice Updated"
+      store.root.users[0].name = "Carol"
     })
 
-    expect(result.current).toEqual("Alice Updated")
+    expect(store.root.users[0].name).toBe("Carol")
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root.users[1].name = "John"
+    })
+
+    expect(store.root.users[1].name).toBe("John")
+    expect(result.all.length).toBe(2)
   })
 
   it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {

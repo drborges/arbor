@@ -6,7 +6,11 @@ import Arbor, {
   MutationMode,
 } from "@arborjs/store"
 
-import useArbor from "./useArbor"
+import useArbor, { Watcher } from "./useArbor"
+
+export type {
+  Watcher
+}
 
 export {
   Collection,

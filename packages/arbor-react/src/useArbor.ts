@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import Arbor, { ArborNode, INode, isNode, proxiable } from "@arborjs/store"
+import Arbor, { ArborNode, INode, isNode, MutationEvent, proxiable } from "@arborjs/store"
 
-export type Selector<T extends object, S = ArborNode<T>> = (
-  node: ArborNode<T>
-) => S
+export type Watcher<T extends object> = (target: ArborNode<T>) => (event: MutationEvent<T>) => boolean
 
-const defaultSelector = <T extends object, S = ArborNode<T>>(
-  node: ArborNode<T>
-) => node as unknown as S
+const defaultWatcher = <T extends object>(target: ArborNode<T>) => (event: MutationEvent<T>) => event.mutationPath.affects(target)
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -46,16 +42,15 @@ const defaultSelector = <T extends object, S = ArborNode<T>>(
  * @param target either an instance of Arbor or an ArborNode or a initial state object used to create a store.
  * @returns the current state of the Arbor state tree.
  */
-export default function useArbor<T extends object, S = ArborNode<T>>(
+export default function useArbor<T extends object>(
   target: Arbor<T> | ArborNode<T> | T,
-  selector: Selector<T, S> = defaultSelector
+  watcher: Watcher<T> = defaultWatcher,
 ) {
   if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
     throw new Error(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
   }
-
   const store = useMemo(() => {
     if (target instanceof Arbor) return target
     if (isNode(target)) return target.$tree
@@ -75,22 +70,27 @@ export default function useArbor<T extends object, S = ArborNode<T>>(
     [store, targetPath]
   )
 
-  const initialValue = useMemo(() => selector(node), [selector, node])
-  const [state, setState] = useState(initialValue)
+  const [state, setState] = useState(node)
 
-  const update = useCallback(() => {
-    const nextState = selector(store.getNodeAt(targetPath))
+  const update = useCallback((event: MutationEvent<T>) => {
+    const nextState = store.getNodeAt(targetPath) as INode<T>
 
-    if (nextState !== state) {
+    if (nextState !== state && watcher(state)(event)) {
       setState(nextState)
     }
-  }, [selector, state, store, targetPath])
+  }, [state, store, targetPath, watcher])
 
   useEffect(() => {
-    update()
+    update({
+      mutationPath: state.$path,
+      state: {
+        current: state,
+        previous: state,
+      }
+    })
 
-    return store.subscribeTo(node as ArborNode<T>, update)
-  }, [node, store, target, targetPath, update])
+    return store.subscribeTo(state as ArborNode<T>, update)
+  }, [state, store, target, targetPath, update])
 
-  return state
+  return state as ArborNode<T>
 }
