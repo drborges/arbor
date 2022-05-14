@@ -1,5 +1,6 @@
 import React from "react"
-import Arbor, { useArbor } from "@arborjs/react"
+import Arbor from "@arborjs/store"
+import useArbor from "@arborjs/react"
 
 const store = new Arbor({
   count: 0,

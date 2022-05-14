@@ -1,6 +1,6 @@
 import classnames from "classnames"
 import React, { memo, useState } from "react"
-import { useArbor, watchNode } from "@arborjs/react"
+import useArbor, { watchNode } from "@arborjs/react"
 
 import { store, Todo } from "../store/useTodos"
 import { ArborNode } from "@arborjs/store"

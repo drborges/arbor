@@ -1,5 +1,5 @@
 import React, { memo } from "react"
-import { useArbor, watchChildrenProps } from "@arborjs/react"
+import useArbor, { watchChildrenProps } from "@arborjs/react"
 
 import { store, Todo } from "../store/useTodos"
 
