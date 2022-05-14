@@ -1,6 +1,6 @@
 import isNode from "./isNode"
 import { ArborNode } from "./Arbor"
-import { NotAnArborNodeError } from "./errors"
+import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
 
 /**
  * Represent a path within the state tree.
@@ -110,8 +110,18 @@ export default class Path {
    * @param path a path to compare to
    * @returns true if both paths have the same value, false otherwise
    */
-  is(path: Path) {
-    return this.toString() === path.toString()
+  targets(pathOrNode: Path | ArborNode<any>) {
+    if (pathOrNode instanceof Path) {
+      return this.toString() === pathOrNode.toString()
+    }
+
+    if (isNode(pathOrNode)) {
+      return this.toString() === pathOrNode.$path.toString()
+    }
+
+    throw new InvalidArgumentError(
+      "Argument must be either an instance of Path or an ArborNode"
+    )
   }
 
   /**
@@ -120,7 +130,7 @@ export default class Path {
    * @param node the ArborNode to check for
    * @returns true if mutations to this path affects the given node, false otherwise
    */
-   affects(node: ArborNode<any>): boolean {
+  affects(node: ArborNode<any>): boolean {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     return this.toString().startsWith(node.$path.toString())

@@ -133,10 +133,7 @@ describe("useArbor", () => {
 
   it("allows subscribing to specific subtrees of an existing state tree", () => {
     const store = new Arbor({
-      users: [
-        { name: "Alice" },
-        { name: "Bob" },
-      ]
+      users: [{ name: "Alice" }, { name: "Bob" }],
     })
 
     const { result } = renderHook(() => useArbor(store.root.users[0]))
@@ -165,15 +162,14 @@ describe("useArbor", () => {
     }
 
     const store = new Arbor({
-      users: [
-        { name: "Alice" },
-        { name: "Bob" },
-      ]
+      users: [{ name: "Alice" }, { name: "Bob" }],
     })
 
     // Only updates when changes are made to the state tree path: /users/1
-    const watchSecondUser = (): Watcher<State> =>
-      (_node: ArborNode<State>, { mutationPath }) => mutationPath.is(Path.parse("/users/1"))
+    const watchSecondUser =
+      (): Watcher<State> =>
+      (_node: ArborNode<State>, { mutationPath }) =>
+        mutationPath.targets(Path.parse("/users/1"))
 
     const { result } = renderHook(() => useArbor(store, watchSecondUser()))
 

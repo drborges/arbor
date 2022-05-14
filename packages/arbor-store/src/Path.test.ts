@@ -1,5 +1,6 @@
 import Path from "./Path"
 import { ArborNode } from "./Arbor"
+import { InvalidArgumentError } from "./errors"
 
 describe("Path", () => {
   describe("#toString", () => {
@@ -78,16 +79,41 @@ describe("Path", () => {
     })
   })
 
-  describe("#is", () => {
-    it("compares two paths by value", () => {
-      expect(Path.root.is(Path.root)).toBe(true)
-      expect(Path.parse("/").is(Path.root)).toBe(true)
-      expect(new Path("users").is(Path.parse("/users"))).toBe(true)
-      expect(Path.parse("/users").is(Path.parse("/users"))).toBe(true)
+  describe("#targets", () => {
+    it("checks if a path targets another given path", () => {
+      expect(Path.root.targets(Path.root)).toBe(true)
+      expect(Path.parse("/").targets(Path.root)).toBe(true)
+      expect(new Path("users").targets(Path.parse("/users"))).toBe(true)
+      expect(Path.parse("/users").targets(Path.parse("/users"))).toBe(true)
 
-      expect(Path.parse("/users").is(Path.root)).toBe(false)
-      expect(new Path("users").is(Path.parse("/"))).toBe(false)
-      expect(Path.parse("/users/123").is(Path.parse("/users"))).toBe(false)
+      expect(Path.parse("/users").targets(Path.root)).toBe(false)
+      expect(new Path("users").targets(Path.parse("/"))).toBe(false)
+      expect(Path.parse("/users/123").targets(Path.parse("/users"))).toBe(false)
+    })
+
+    it("checks if a path targets a given ArborNode", () => {
+      const node1 = {
+        $unwrap() {},
+        $path: Path.parse("/users"),
+      } as ArborNode<any>
+
+      const node2 = {
+        $unwrap() {},
+        $path: Path.parse("/users/123"),
+      } as ArborNode<any>
+
+      expect(Path.parse("/").targets(node1)).toBe(false)
+      expect(Path.parse("/").targets(node2)).toBe(false)
+      expect(Path.parse("/users").targets(node1)).toBe(true)
+      expect(Path.parse("/users").targets(node2)).toBe(false)
+      expect(Path.parse("/users/123").targets(node1)).toBe(false)
+      expect(Path.parse("/users/123").targets(node2)).toBe(true)
+    })
+
+    it("throws an error if the argument passed in is not a Path nor an ArborNode", () => {
+      expect(() =>
+        Path.parse(".").targets("Not a path nor node" as unknown as Path)
+      ).toThrowError(InvalidArgumentError)
     })
   })
 

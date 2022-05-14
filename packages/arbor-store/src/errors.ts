@@ -6,6 +6,9 @@ export class MissingUUIDError extends ArborError {
     super("Collection items must have a string 'uuid'")
   }
 }
+
+export class InvalidArgumentError extends ArborError {}
+
 export class NotAnArborNodeError extends ArborError {
   constructor() {
     super("Object not bound to an Arbor store")
