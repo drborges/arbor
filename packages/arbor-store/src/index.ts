@@ -1,45 +1,20 @@
-import Path from "./Path"
-import clone from "./clone"
-import isNode from "./isNode"
-import produce from "./produce"
-import { Mutation } from "./mutate"
-import BaseNode from "./BaseNode"
-import Collection from "./Collection"
-import proxiable, { ArborProxy } from "./proxiable"
-import isClonable, { Clonable } from "./isClonable"
-import { MutationEvent, Subscriber, Unsubscribe } from "./Subscribers"
-import Arbor, {
-  INode,
-  MutationMode,
+export { default, MutationMode } from "./Arbor"
+export { default as Path } from "./Path"
+export { default as clone } from "./clone"
+export { default as isNode } from "./isNode"
+export { default as BaseNode } from "./BaseNode"
+export { default as Collection } from "./Collection"
+export { default as isClonable } from "./isClonable"
+export { default as proxiable, ArborProxy } from "./proxiable"
+export { NotAnArborNodeError, MissingUUIDError } from "./errors"
+
+export type { Mutation } from "./mutate"
+export type { Clonable } from "./isClonable"
+export type { MutationEvent, Subscriber, Unsubscribe } from "./Subscribers"
+export type {
   ArborConfig,
   ArborNode,
   AttributesOf,
+  INode,
   Plugin,
 } from "./Arbor"
-
-export type {
-  INode,
-  Clonable,
-  ArborConfig,
-  ArborNode,
-  Mutation,
-  MutationEvent,
-  Unsubscribe,
-  Subscriber,
-  AttributesOf,
-  Plugin,
-}
-
-export {
-  clone,
-  isClonable,
-  proxiable,
-  Collection,
-  BaseNode,
-  ArborProxy,
-  Path,
-  produce,
-  MutationMode,
-  isNode,
-  Arbor as default,
-}

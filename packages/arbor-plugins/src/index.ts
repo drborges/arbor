@@ -1,4 +1,2 @@
-import IndexedDB from "./IndexedDB"
-import LocalStorage from "./LocalStorage"
-
-export { LocalStorage, IndexedDB }
+export { default as IndexedDB } from "./IndexedDB"
+export { default as LocalStorage } from "./LocalStorage"
