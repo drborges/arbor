@@ -1,7 +1,7 @@
 import * as Immer from "immer"
 import { performance } from "perf_hooks"
 
-import Arbor, { produce as arborProduce } from "../dist/index.mjs"
+import Arbor from "../dist/index.mjs"
 import {
   createDeeplyNestedState,
   defaultDepth,
@@ -21,23 +21,6 @@ export function produceNextStateViaArbor() {
   performance.mark("finish")
   performance.measure(
     `Producing the next state tree via Arbor mutation (depth = ${defaultDepth})`,
-    "start",
-    "finish"
-  )
-}
-
-export function produceNextStateViaArborProducer() {
-  global.gc()
-  const state = createDeeplyNestedState()
-
-  performance.mark("start")
-  arborProduce(state, (root) => {
-    const target = reduceRecursevly(root)
-    target.newProp = "mutating leaf node..."
-  })
-  performance.mark("finish")
-  performance.measure(
-    `Producing the next state tree via Arbor producer (depth = ${defaultDepth})`,
     "start",
     "finish"
   )
