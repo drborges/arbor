@@ -1,7 +1,8 @@
 import { v4 as uuid } from "uuid"
 import { LocalStorage } from "@arborjs/plugins"
-import Arbor, { BaseNode, Collection } from "@arborjs/store"
-import useArbor, { watchChildrenProps } from "@arborjs/react"
+import Arbor, { BaseNode, Collection, isNode } from "@arborjs/store"
+import useArbor, { watchChildrenProps, watchNode } from "@arborjs/react"
+import { store as storeFilter } from "./useTodosFilter"
 
 export type Status = "completed" | "incompleted"
 
@@ -53,5 +54,14 @@ export const add = (text: string) => {
 }
 
 export default function useTodos() {
-  return useArbor(store.root, watchChildrenProps<Todo>("status"))
+  return useArbor(store.root, (target, event) => {
+    if (!isNode(target)) return false
+
+    const isTodoFilterAll = storeFilter.root.value === "all"
+    const isMutationTargettingNode = !event.mutationPath.is(target.$path)
+
+    if (isTodoFilterAll && isMutationTargettingNode) return false
+
+    return watchChildrenProps<Todo>("status")(target, event)
+  })
 }
