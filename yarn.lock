@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 4
+  version: 6
   cacheKey: 8
 
 "@arborjs/plugins@workspace:packages/arbor-plugins":
@@ -97,7 +97,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:7.14.8, @babel/core@npm:^7.1.0, @babel/core@npm:^7.7.5":
+"@babel/core@npm:^7.1.0, @babel/core@npm:^7.7.5":
   version: 7.14.8
   resolution: "@babel/core@npm:7.14.8"
   dependencies:
@@ -120,7 +120,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:7.15.5, @babel/core@npm:^7.14.8":
+"@babel/core@npm:^7.14.8":
   version: 7.15.5
   resolution: "@babel/core@npm:7.15.5"
   dependencies:
@@ -3856,15 +3856,16 @@ __metadata:
   dependencies:
     node-gyp: latest
   checksum: 97ade64e75091afee5265e6956cb72ba34db7819b4c3e94c431d4be2b19b8bb7a2d4116da417950c3425f17c8fe693d25e20212cac583ac1521ad066b77ae31f
+  conditions: os=darwin
   languageName: node
   linkType: hard
 
 "fsevents@patch:fsevents@^2.1.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=1cc4b2"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
   dependencies:
     node-gyp: latest
-  checksum: 78db9daf1f6526a49cefee3917cc988f62dc7f25b5dd80ad6de4ffc4af7f0cab7491ac737626ff53e482a111bc53aac9e411fe3602458eca36f6a003ecf69c16
+  conditions: os=darwin
   languageName: node
   linkType: hard
 
@@ -5285,7 +5286,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-resolve@npm:26.6.2, jest-resolve@npm:^26.6.2":
+"jest-resolve@npm:^26.6.2":
   version: 26.6.2
   resolution: "jest-resolve@npm:26.6.2"
   dependencies:
@@ -5770,7 +5771,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"listr@npm:0.14.3, listr@npm:^0.14.3":
+"listr@npm:^0.14.3":
   version: 0.14.3
   resolution: "listr@npm:0.14.3"
   dependencies:
@@ -7613,21 +7614,21 @@ resolve@^2.0.0-next.3:
 
 "resolve@patch:resolve@^1.10.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.13.1#~builtin<compat/resolve>, resolve@patch:resolve@^1.18.1#~builtin<compat/resolve>, resolve@patch:resolve@^1.20.0#~builtin<compat/resolve>":
   version: 1.20.0
-  resolution: "resolve@patch:resolve@npm%3A1.20.0#~builtin<compat/resolve>::version=1.20.0&hash=00b1ff"
+  resolution: "resolve@patch:resolve@npm%3A1.20.0#~builtin<compat/resolve>::version=1.20.0&hash=07638b"
   dependencies:
     is-core-module: ^2.2.0
     path-parse: ^1.0.6
-  checksum: bed00be983cd20a8af0e7840664f655c4b269786dbd9595c5f156cd9d8a0050e65cdbbbdafc30ee9b6245b230c78a2c8ab6447a52545b582f476c29adb188cc5
+  checksum: a0dd7d16a8e47af23afa9386df2dff10e3e0debb2c7299a42e581d9d9b04d7ad5d2c53f24f1e043f7b3c250cbdc71150063e53d0b6559683d37f790b7c8c3cd5
   languageName: node
   linkType: hard
 
 "resolve@patch:resolve@^2.0.0-next.3#~builtin<compat/resolve>":
   version: 2.0.0-next.3
-  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.3#~builtin<compat/resolve>::version=2.0.0-next.3&hash=00b1ff"
+  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.3#~builtin<compat/resolve>::version=2.0.0-next.3&hash=07638b"
   dependencies:
     is-core-module: ^2.2.0
     path-parse: ^1.0.6
-  checksum: eb88c5e53843bc022215744307a5f5664446c0fdb8f43c33456dce98d5ee6b3162d0cd0a177bb6f1c3d5c8bf01391ac7ab2de0e936e35318725fb40ba7efdaf6
+  checksum: 21684b4d99a4877337cdbd5484311c811b3e8910edb5d868eec85c6e6550b0f570d911f9a384f9e176172d6713f2715bd0b0887fa512cb8c6aeece018de6a9f8
   languageName: node
   linkType: hard
 
@@ -8660,84 +8661,84 @@ resolve@^2.0.0-next.3:
 "turbo-darwin-64@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-darwin-64@npm:1.0.23"
-  checksum: cfb7e04cf9f02b5d4159ba71e39b403b5c60c7af967468c5b83b891597a17c37187bba818e1f4b78717e469b853c73fcb915e43713a8ce94dcaad2116762a687
+  conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
 "turbo-darwin-arm64@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-darwin-arm64@npm:1.0.23"
-  checksum: 32fbcd095ba6766eddc03cf169ba7844347b8ab8a6b922aa53508839f0ffd56dfb27a3155e626d8080ab45b8a416b3432a220cfa7d6f4cc456d7923537b896aa
+  conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
 "turbo-freebsd-64@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-freebsd-64@npm:1.0.23"
-  checksum: 80a33d6b4b29404d0bcae2039d7d79884d2d54d78d8d758b74e75f2af79c07780f6dbf5de7502ee76000bc6b931f17d98c120a6b768a896a42c10a184baec08f
+  conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
 "turbo-freebsd-arm64@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-freebsd-arm64@npm:1.0.23"
-  checksum: 52abd6b34accc3e496a9ca22db22265ede88df0bac053a06f7c5cf19007e0ffb17246c1c9972433a994ff565d21440be736c82c3efb0ca237d5f0838c2d551da
+  conditions: os=freebsd & cpu=arm64
   languageName: node
   linkType: hard
 
 "turbo-linux-32@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-linux-32@npm:1.0.23"
-  checksum: 68c74b9f0035baa07515d4e0c64ae63b878e21bf153e43237b5ccfcb0ecc43ad9c4aa54c2d1e2869f7f7e7a47d692e18d1853025b8799ad87b5f312a145378bc
+  conditions: os=linux & cpu=ia32
   languageName: node
   linkType: hard
 
 "turbo-linux-64@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-linux-64@npm:1.0.23"
-  checksum: eed65b4ba9ac6ece5e49882a5235de479afafebfe284e172522ad6eca3f786da4597071bbcd87830bc5121ad681268fe054f970241f9668dd8d84b2def9c26fb
+  conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
 "turbo-linux-arm64@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-linux-arm64@npm:1.0.23"
-  checksum: f1d05d01a2df8bc6fed998abc84a72c7af0e0869cb2846904d980f6e10629cc177eb578009f54b3729ff27c523f8354bcb1fe8aa614df00ea83b78b748b56f44
+  conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
 "turbo-linux-arm@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-linux-arm@npm:1.0.23"
-  checksum: 21e531b83a0aa8b5ba58beb45b1f3f83ee72aaff3c74d39b122be320f9e2a74126a9d8d7c37eb862077a0d70219fbea5946acb6c5b5cd7c35cfe6f768473e3fa
+  conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
 "turbo-linux-mips64le@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-linux-mips64le@npm:1.0.23"
-  checksum: b15ec3d0d3667cbbd69546b25dbcdc38800296fe152304b8bb0f63282b0d9a27a9d3722eb40515d1df099c2a8222a8b22cd50a982d7020eb75e958eebfbc0b64
+  conditions: os=linux & cpu=mips64el
   languageName: node
   linkType: hard
 
 "turbo-linux-ppc64le@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-linux-ppc64le@npm:1.0.23"
-  checksum: 638da192372f4f9138fa7837cb700ade4a172dd19c0e1be7566e11baa269c782b5089e479940019adfcba9c912b408fe97c95b12ed32f0721c5fa56da3825882
+  conditions: os=linux & cpu=ppc64
   languageName: node
   linkType: hard
 
 "turbo-windows-32@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-windows-32@npm:1.0.23"
-  checksum: a5f8389322d5023446ea31d143ee3cd33ade85ddfd704ceefa2b970710d3b784a4532be5f4820057dea3ac4debfd541a4bdb144deb1177dc3fdc3c3eb1257bbe
+  conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
 "turbo-windows-64@npm:1.0.23":
   version: 1.0.23
   resolution: "turbo-windows-64@npm:1.0.23"
-  checksum: 5eacd87cec9df6523f2e186b1e6007ef704475347b2897f44f8841dfef0645d7ce60999f80e891415c5374de16b695318ea628fe8598e4133c54cb81bae9a705
+  conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
@@ -8893,21 +8894,21 @@ typescript@^4.3.2:
 
 "typescript@patch:typescript@^4.2.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.3.5#~builtin<compat/typescript>":
   version: 4.3.5
-  resolution: "typescript@patch:typescript@npm%3A4.3.5#~builtin<compat/typescript>::version=4.3.5&hash=d8b4e7"
+  resolution: "typescript@patch:typescript@npm%3A4.3.5#~builtin<compat/typescript>::version=4.3.5&hash=7ad353"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: bc2c4fdf0f1557fdafe4ef74848c72ebd9c8c60829568248f869121aea2bb20e16649a252431d0acb185ec118143be22bed73d08f64379557810d82756afedde
+  checksum: 365df18cf979c971ef9543b2acaa8694377a803f98e1804c41d0ede0b09d7046cb0cd98f2eaf3884b0fe923c01a60af1f653841bd8805c9715d5479c09a4ebe4
   languageName: node
   linkType: hard
 
 "typescript@patch:typescript@^4.3.2#~builtin<compat/typescript>":
   version: 4.4.3
-  resolution: "typescript@patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=d8b4e7"
+  resolution: "typescript@patch:typescript@npm%3A4.4.3#~builtin<compat/typescript>::version=4.4.3&hash=7ad353"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 215a59742afb7e0c3668e2c50ca19813deb24b3cc0d16ac3591990e033728050aaa99e159a72b54cb43653f16c778a5cf9dfeed1f51c3b105710ae082c064af7
+  checksum: 33a916819907e819430802c50405f18c187448d678696a81545f494a7ec16207f8c15340c945df62109bd1d951091a9f15f3d2eb931a3c889f962c8509017697
   languageName: node
   linkType: hard
 
