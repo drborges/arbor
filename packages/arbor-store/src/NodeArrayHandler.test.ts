@@ -13,7 +13,7 @@ interface User {
 }
 
 describe("NodeArrayHandler", () => {
-  it("holds wraps array valus", () => {
+  it("holds wraps array values", () => {
     const state = [{ name: "User 1", address: { street: "Street 1" } }]
     const tree = new Arbor<User[]>(state)
     const node = new Proxy(
@@ -171,6 +171,29 @@ describe("NodeArrayHandler", () => {
       expect(unwrap(tree.root[1].address)).toBe(state[2].address)
     })
 
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
+      ]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      delete tree.root[1]
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "delete",
+          props: ["1"],
+        },
+      })
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = [
@@ -283,6 +306,33 @@ describe("NodeArrayHandler", () => {
       expect(unwrap(tree.root[1].address)).not.toBe(state[2].address)
     })
 
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
+        { name: "User 3", address: { street: "Street 2" } },
+      ]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.splice(1, 2, {
+        name: "User 4",
+        address: { street: "Street 4" },
+      })
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "splice",
+          props: ["1", "2"],
+        },
+      })
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = [
@@ -373,6 +423,26 @@ describe("NodeArrayHandler", () => {
       expect(unwrap(tree.root)).not.toBe(state)
       expect(unwrap(tree.root[0])).toBe(state[0])
       expect(unwrap(tree.root[0].address)).toBe(state[0].address)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [{ name: "User 1", address: { street: "Street 1" } }]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.push({ name: "User 2", address: { street: "Street 2" } })
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "push",
+          props: ["1"],
+        },
+      })
     })
 
     describe("mode = 'forgiven'", () => {
@@ -518,6 +588,29 @@ describe("NodeArrayHandler", () => {
       expect(unwrap(tree.root[2].address)).toBe(state[0].address)
     })
 
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
+      ]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.reverse()
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "reverse",
+          props: [],
+        },
+      })
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = [
@@ -646,6 +739,29 @@ describe("NodeArrayHandler", () => {
       expect(tree.root[1]).toBe(user2)
     })
 
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
+      ]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.pop()
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "pop",
+          props: ["1"],
+        },
+      })
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = [
@@ -750,6 +866,29 @@ describe("NodeArrayHandler", () => {
       expect(unwrap(tree.root[0].address)).toBe(state[1].address)
       expect(unwrap(tree.root[1])).toBe(state[2])
       expect(unwrap(tree.root[1].address)).toBe(state[2].address)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
+      ]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.shift()
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "shift",
+          props: [],
+        },
+      })
     })
 
     describe("mode = 'forgiven'", () => {
@@ -871,6 +1010,29 @@ describe("NodeArrayHandler", () => {
       expect(unwrap(tree.root[2].address)).toBe(state[1].address)
     })
 
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
+      ]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.sort()
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "sort",
+          props: [],
+        },
+      })
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = [
@@ -907,7 +1069,7 @@ describe("NodeArrayHandler", () => {
     })
   })
 
-  describe("FOCUS #unshift", () => {
+  describe("#unshift", () => {
     it("generates a new state tree root node", () => {
       const state = [{ name: "User 3", address: { street: "Street 3" } }]
 
@@ -966,6 +1128,32 @@ describe("NodeArrayHandler", () => {
       expect(unwrap(tree.root)).not.toBe(state)
       expect(unwrap(tree.root[2])).toBe(state[0])
       expect(unwrap(tree.root[2].address)).toBe(state[0].address)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = [
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
+      ]
+
+      const tree = new Arbor<User[]>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.unshift(
+        { name: "User 3", address: { street: "Street 1" } },
+        { name: "User 4", address: { street: "Street 2" } }
+      )
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/"),
+        metadata: {
+          operation: "unshift",
+          props: ["0", "1"],
+        },
+      })
     })
 
     describe("mode = 'forgiven'", () => {

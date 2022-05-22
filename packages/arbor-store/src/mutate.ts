@@ -1,10 +1,15 @@
 import Path from "./Path"
 import type { INode } from "./Arbor"
 
+export type MutationMetadata = {
+  operation?: string
+  props: string[]
+}
+
 /**
  * A mutation function used to update an Arbor tree node.
  */
-export type Mutation<T extends object> = (arg0: T) => void
+export type Mutation<T extends object> = (arg0: T) => void | MutationMetadata
 
 /**
  * Mutates a given node by traversing the given path and applying the
@@ -19,7 +24,7 @@ export default function mutate<T extends object, K extends object>(
   node: INode<T>,
   path: Path,
   mutation: Mutation<K>
-): INode<T> {
+) {
   try {
     const root = node.$clone()
 
@@ -39,9 +44,12 @@ export default function mutate<T extends object, K extends object>(
       return childNodeCopy
     }, root)
 
-    mutation(targetNode.$unwrap() as unknown as K)
+    const metadata = mutation(targetNode.$unwrap() as unknown as K)
 
-    return root
+    return {
+      root,
+      metadata,
+    }
   } catch (e) {
     return undefined
   }

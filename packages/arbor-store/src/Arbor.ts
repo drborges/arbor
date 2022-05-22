@@ -2,7 +2,7 @@ import Path from "./Path"
 import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import mutate, { Mutation } from "./mutate"
+import mutate, { Mutation, MutationMetadata } from "./mutate"
 import { NotAnArborNodeError } from "./errors"
 import NodeArrayHandler from "./NodeArrayHandler"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
@@ -164,21 +164,22 @@ export default class Arbor<T extends object> {
    */
   mutate<V extends object>(pathOrNode: Path | INode<V>, mutation: Mutation<V>) {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    const current = mutate(this.#root, path, mutation)
+    const result = mutate(this.#root, path, mutation)
     const previous = this.#root.$unwrap()
     const node = isNode(pathOrNode)
       ? pathOrNode
       : (path.walk(this.#root) as INode<V>)
 
-    if (current) {
+    if (result?.root) {
       if (this.mode === MutationMode.FORGIVEN) {
         mutation(node.$unwrap())
       }
 
-      this.#root = current
+      this.#root = result?.root
 
       notifyAffectedSubscribers({
-        state: { current, previous },
+        state: { current: result?.root, previous },
+        metadata: result.metadata as MutationMetadata,
         mutationPath: path,
       })
     } else if (global.DEBUG) {
@@ -247,6 +248,10 @@ export default class Arbor<T extends object> {
     notifyAffectedSubscribers({
       state: { current, previous },
       mutationPath: Path.root,
+      metadata: {
+        operation: "set",
+        props: [],
+      },
     })
 
     return current

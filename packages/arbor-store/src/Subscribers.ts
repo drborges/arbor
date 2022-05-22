@@ -1,3 +1,4 @@
+import { MutationMetadata } from "mutate"
 import Path from "./Path"
 
 /**
@@ -11,6 +12,7 @@ export type Unsubscribe = () => void
 export type MutationEvent<T> = {
   state: { current?: T; previous?: T }
   mutationPath: Path
+  metadata: MutationMetadata
 }
 
 /**

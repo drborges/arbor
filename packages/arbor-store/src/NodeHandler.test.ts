@@ -299,6 +299,28 @@ describe("NodeHandler", () => {
         })
       })
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = {
+        users: [{ name: "User 1", address: { street: "Street 1" } }],
+      }
+
+      const tree = new Arbor<State>(state)
+
+      tree.subscribe(subscriber)
+
+      tree.root.users[0].name = "User Updated"
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/users/0"),
+        metadata: {
+          operation: "set",
+          props: ["name"],
+        },
+      })
+    })
   })
 
   describe("delete trap", () => {
@@ -395,6 +417,31 @@ describe("NodeHandler", () => {
       const nodeChildren = children(tree.root.users[0])
 
       expect(nodeChildren.has(state.users[0].address)).toBe(false)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const subscriber = jest.fn()
+      const state = {
+        users: [
+          { name: "User 1", address: { street: "Street 1" } },
+          { name: "User 2", address: { street: "Street 2" } },
+        ],
+      }
+
+      const tree = new Arbor<State>(state)
+
+      tree.subscribe(subscriber)
+
+      delete tree.root.users[0].name
+
+      expect(subscriber).toHaveBeenCalledWith({
+        state: { current: tree.root, previous: state },
+        mutationPath: Path.parse("/users/0"),
+        metadata: {
+          operation: "delete",
+          props: ["name"],
+        },
+      })
     })
 
     describe("mode = 'forgiven'", () => {
