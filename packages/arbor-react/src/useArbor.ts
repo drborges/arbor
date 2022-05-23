@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import Arbor, { ArborNode, INode, isNode, MutationEvent, proxiable } from "@arborjs/store"
+import Arbor, {
+  ArborNode,
+  INode,
+  isNode,
+  MutationEvent,
+  proxiable,
+} from "@arborjs/store"
 
 import { watchAnyMutations } from "./watchAnyMutations"
 
-export type Watcher<T extends object> = (target: ArborNode<T>, event: MutationEvent<T>) => boolean
+export type Watcher<T extends object> = (
+  target: ArborNode<T>,
+  event: MutationEvent<T>
+) => boolean
 
 /**
  * This hook binds a React component to a given Arbor store.
@@ -44,7 +53,7 @@ export type Watcher<T extends object> = (target: ArborNode<T>, event: MutationEv
  */
 export default function useArbor<T extends object>(
   target: Arbor<T> | ArborNode<T> | T,
-  watcher: Watcher<T> = watchAnyMutations(),
+  watcher: Watcher<T> = watchAnyMutations()
 ) {
   if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
     throw new Error(
@@ -72,21 +81,28 @@ export default function useArbor<T extends object>(
 
   const [state, setState] = useState(node)
 
-  const update = useCallback((event: MutationEvent<T>) => {
-    const nextState = store.getNodeAt(targetPath) as INode<T>
+  const update = useCallback(
+    (event: MutationEvent<T>) => {
+      const nextState = store.getNodeAt(targetPath) as INode<T>
 
-    if (nextState !== state && watcher(state, event)) {
-      setState(nextState)
-    }
-  }, [state, store, targetPath, watcher])
+      if (nextState !== state && watcher(state, event)) {
+        setState(nextState)
+      }
+    },
+    [state, store, targetPath, watcher]
+  )
 
   useEffect(() => {
     update({
       mutationPath: state.$path,
+      metadata: {
+        operation: "set",
+        props: [],
+      },
       state: {
         current: state,
         previous: state,
-      }
+      },
     })
 
     return store.subscribeTo(state as ArborNode<T>, update)

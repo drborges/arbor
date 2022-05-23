@@ -8,6 +8,7 @@ describe("Subscribers", () => {
     const subscribers = new Subscribers()
     const mutationEvent = {
       mutationPath: Path.root,
+      metadata: { operation: "", props: [] },
       state: { previous: { count: 1 }, current: { count: 2 } },
     }
 
@@ -26,6 +27,7 @@ describe("Subscribers", () => {
     const subscribers = new Subscribers()
     const mutationEvent = {
       mutationPath: Path.root,
+      metadata: { operation: "", props: [] },
       state: { previous: { count: 1 }, current: { count: 2 } },
     }
 

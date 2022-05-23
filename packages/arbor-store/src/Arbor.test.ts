@@ -144,6 +144,10 @@ describe("Arbor", () => {
 
       expect(subscriber1).toHaveBeenCalledWith({
         mutationPath: Path.root,
+        metadata: {
+          operation: "set",
+          props: [],
+        },
         state: {
           current: newRoot,
           previous: initialState,
@@ -152,6 +156,10 @@ describe("Arbor", () => {
 
       expect(subscriber2).toHaveBeenCalledWith({
         mutationPath: Path.root,
+        metadata: {
+          operation: "set",
+          props: [],
+        },
         state: {
           current: newRoot,
           previous: initialState,
@@ -235,6 +243,10 @@ describe("Arbor", () => {
 
       expect(subscriber1).toHaveBeenCalledWith({
         mutationPath: Path.parse("/users/0"),
+        metadata: {
+          operation: "set",
+          props: ["name"],
+        },
         state: {
           current: store.root,
           previous: initialState,
@@ -243,6 +255,10 @@ describe("Arbor", () => {
 
       expect(subscriber2).toHaveBeenCalledWith({
         mutationPath: Path.parse("/users/0"),
+        metadata: {
+          operation: "set",
+          props: ["name"],
+        },
         state: {
           current: store.root,
           previous: initialState,
@@ -333,6 +349,10 @@ describe("Arbor", () => {
       expect(subscriber2).not.toHaveBeenCalled()
       expect(subscriber1).toHaveBeenCalledWith({
         mutationPath: Path.parse("/users/0/posts/1"),
+        metadata: {
+          operation: "set",
+          props: ["content"],
+        },
         state: {
           previous: initialState,
           current: store.root,
@@ -341,6 +361,10 @@ describe("Arbor", () => {
 
       expect(subscriber3).toHaveBeenCalledWith({
         mutationPath: Path.parse("/users/0/posts/1"),
+        metadata: {
+          operation: "set",
+          props: ["content"],
+        },
         state: {
           previous: initialState,
           current: store.root,
@@ -352,6 +376,10 @@ describe("Arbor", () => {
       expect(subscriber2).not.toHaveBeenCalled()
       expect(subscriber1).toHaveBeenCalledWith({
         mutationPath: Path.parse("/users/0/posts/1"),
+        metadata: {
+          operation: "set",
+          props: ["content"],
+        },
         state: {
           previous: firstUpdateExpectedState,
           current: store.root,
@@ -360,6 +388,10 @@ describe("Arbor", () => {
 
       expect(subscriber3).toHaveBeenCalledWith({
         mutationPath: Path.parse("/users/0/posts/1"),
+        metadata: {
+          operation: "set",
+          props: ["content"],
+        },
         state: {
           previous: firstUpdateExpectedState,
           current: store.root,

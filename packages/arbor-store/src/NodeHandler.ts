@@ -88,6 +88,11 @@ export default class NodeHandler<T extends object, K extends object>
 
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
+
+      return {
+        operation: "set",
+        props: [prop],
+      }
     })
 
     return true
@@ -99,6 +104,11 @@ export default class NodeHandler<T extends object, K extends object>
     if (prop in target) {
       this.$tree.mutate(this as unknown as INode<T>, (t: T) => {
         delete t[prop]
+
+        return {
+          operation: "delete",
+          props: [prop],
+        }
       })
 
       this.$children.delete(childValue)

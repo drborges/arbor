@@ -36,7 +36,7 @@ describe("mutate", () => {
     const book = node.author.books[0]
 
     const path = Path.parse("/author/address")
-    const copy = mutate<State, Address>(node, path, (a) => {
+    const { root: copy } = mutate<State, Address>(node, path, (a) => {
       a.street = "Some other street"
     })
 
