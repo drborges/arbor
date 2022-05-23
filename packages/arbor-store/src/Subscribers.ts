@@ -1,4 +1,4 @@
-import { MutationMetadata } from "mutate"
+import { MutationMetadata } from "./mutate"
 import Path from "./Path"
 
 /**
