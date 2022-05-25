@@ -6,7 +6,7 @@ export { default as BaseNode } from "./BaseNode"
 export { default as Collection } from "./Collection"
 export { default as isClonable } from "./isClonable"
 export { default as proxiable, ArborProxy } from "./proxiable"
-export { NotAnArborNodeError, MissingUUIDError } from "./errors"
+export { ArborError, NotAnArborNodeError, MissingUUIDError } from "./errors"
 
 export type { Mutation } from "./mutate"
 export type { Clonable } from "./isClonable"

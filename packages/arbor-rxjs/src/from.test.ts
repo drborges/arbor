@@ -1,5 +1,5 @@
 import { filter } from "rxjs/operators"
-import Arbor, { MutationEvent } from "@arborjs/store"
+import Arbor, { ArborError, MutationEvent } from "@arborjs/store"
 import { from } from "./from"
 
 interface User {
@@ -78,5 +78,11 @@ describe("from", () => {
     store.root.users[0].name = "Alice Updated"
 
     expect(mutations.length).toBe(0)
+  })
+
+  it("throws an error when observable target is not an Arbor instance nor an ArborNode", () => {
+    expect(() => from(123)).toThrow(ArborError)
+    expect(() => from("invalid target")).toThrow(ArborError)
+    expect(() => from({ invalid: "target" })).toThrow(ArborError)
   })
 })
