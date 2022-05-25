@@ -63,7 +63,7 @@ __metadata:
     typescript: ^4.2.4
   peerDependencies:
     "@arborjs/store": 0.0.1-alpha.30
-    rxjs: latest
+    rxjs: "*"
   languageName: unknown
   linkType: soft
 

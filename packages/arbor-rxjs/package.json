@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "@arborjs/store": "0.0.1-alpha.30",
-    "rxjs": "latest"
+    "rxjs": "*"
   },
   "scripts": {
     "clean": "rm -rf dist",
