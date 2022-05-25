@@ -50,6 +50,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@arborjs/rxjs@workspace:packages/arbor-rxjs":
+  version: 0.0.0-use.local
+  resolution: "@arborjs/rxjs@workspace:packages/arbor-rxjs"
+  dependencies:
+    "@types/jest": ^26.0.23
+    esbuild: ^0.12.12
+    eslint: ^7.32.0
+    jest: ^26.6.3
+    np: ^7.5.0
+    ts-jest: ^26.5.6
+    typescript: ^4.2.4
+  peerDependencies:
+    "@arborjs/store": 0.0.1-alpha.30
+    rxjs: "*"
+  languageName: unknown
+  linkType: soft
+
 "@arborjs/store@0.0.1-alpha.30, @arborjs/store@workspace:packages/arbor-store":
   version: 0.0.0-use.local
   resolution: "@arborjs/store@workspace:packages/arbor-store"
