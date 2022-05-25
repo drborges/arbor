@@ -17,20 +17,20 @@ describe("from", () => {
     })
 
     const observable = from(store)
-    const mutations: MutationEvent<{ users: User[] }>[] = []
+    const mutationEvents: MutationEvent<{ users: User[] }>[] = []
 
     observable
-      .pipe(filter((mutation) => mutation.metadata.props.includes("name")))
-      .forEach((mutation) => {
-        mutations.push(mutation)
+      .pipe(filter((event) => event.metadata.props.includes("name")))
+      .forEach((event) => {
+        mutationEvents.push(event)
       })
 
     store.root.users[0].name = "Alice Updated"
     store.root.users[0].age++
 
-    expect(mutations.length).toBe(1)
-    expect(mutations[0].metadata.props).toContain("name")
-    expect(mutations[0].mutationPath.toString()).toBe("/users/0")
+    expect(mutationEvents.length).toBe(1)
+    expect(mutationEvents[0].metadata.props).toContain("name")
+    expect(mutationEvents[0].mutationPath.toString()).toBe("/users/0")
   })
 
   it("creates an observable from an ArborNode", () => {
@@ -42,20 +42,20 @@ describe("from", () => {
     })
 
     const observable = from(store.root.users[0])
-    const mutations: MutationEvent<User>[] = []
+    const mutationEvents: MutationEvent<User>[] = []
 
     observable
-      .pipe(filter((mutation) => mutation.metadata.props.includes("name")))
-      .forEach((mutation) => {
-        mutations.push(mutation)
+      .pipe(filter((event) => event.metadata.props.includes("name")))
+      .forEach((event) => {
+        mutationEvents.push(event)
       })
 
     store.root.users[0].name = "Alice Updated"
     store.root.users[0].age++
 
-    expect(mutations.length).toBe(1)
-    expect(mutations[0].metadata.props).toContain("name")
-    expect(mutations[0].mutationPath.toString()).toBe("/users/0")
+    expect(mutationEvents.length).toBe(1)
+    expect(mutationEvents[0].metadata.props).toContain("name")
+    expect(mutationEvents[0].mutationPath.toString()).toBe("/users/0")
   })
 
   it("cancels a subscription", () => {
