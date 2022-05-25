@@ -1,0 +1,62 @@
+{
+  "name": "@arborjs/rxjs",
+  "version": "0.0.1-alpha.30",
+  "description": "rxjs binding for @arborjs/store",
+  "keywords": [
+    "arbor",
+    "react",
+    "state",
+    "store",
+    "typescript",
+    "tree",
+    "rxjs"
+  ],
+  "repository": {
+    "url": "https://github.com/drborges/arbor",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/drborges/arbor/issues",
+    "email": "drborges.cic@gmail.com"
+  },
+  "author": {
+    "email": "drborges.cic@gmail.com",
+    "name": "Diego Borges",
+    "url": "https://github.com/drborges"
+  },
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "license": "MIT",
+  "files": [
+    "./dist",
+    "./README",
+    "../../LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "esbuild": "^0.12.12",
+    "eslint": "^7.32.0",
+    "jest": "^26.6.3",
+    "np": "^7.5.0",
+    "ts-jest": "^26.5.6",
+    "typescript": "^4.2.4"
+  },
+  "peerDependencies": {
+    "@arborjs/store": "0.0.1-alpha.30",
+    "rxjs": "latest"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "jest --passWithNoTests",
+    "dev": "jest --watch",
+    "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
+    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc",
+    "prepublish": "yarn build",
+    "publish": "np"
+  }
+}
