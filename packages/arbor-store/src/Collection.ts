@@ -94,7 +94,10 @@ export default class Collection<T extends Item> {
     return undefined
   }
 
-  merge(uuidOrItem: T | string, data: Partial<T>): ArborNode<T> {
+  merge(uuid: string, data: Partial<T>): ArborNode<T>
+  merge(item: T, data: Partial<T>): ArborNode<T>
+  merge(uuidOrItem: T | string, data: Partial<T>): ArborNode<T>
+  merge(uuidOrItem: any, data: Partial<T>): ArborNode<T> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
