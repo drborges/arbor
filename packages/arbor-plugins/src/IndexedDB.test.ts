@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto"
-import { IDBPDatabase, openDB } from "idb"
+import { openDB } from "idb"
 import Arbor, { BaseNode, Collection } from "@arborjs/store"
 
 import IndexedDB, { Config } from "./IndexedDB"
@@ -25,7 +25,7 @@ const createConfig = (name = "app-state-1", version = 1) =>
     name,
     version,
 
-    upgrade(db: IDBPDatabase) {
+    upgrade(db) {
       if (Array.from(db.objectStoreNames).includes("todos")) {
         return
       }
@@ -34,10 +34,7 @@ const createConfig = (name = "app-state-1", version = 1) =>
         keyPath: "uuid",
       })
     },
-    async update(
-      db: IDBPDatabase<Collection<Todo>>,
-      todos: Collection<Todo>
-    ): Promise<void> {
+    async update(db, todos) {
       const transaction = db.transaction(["todos"], "readwrite")
       const todoStore = transaction.objectStore("todos")
       await todoStore.clear()
@@ -46,7 +43,7 @@ const createConfig = (name = "app-state-1", version = 1) =>
         todoStore.put({ ...todo })
       }
     },
-    async load(db: IDBPDatabase<Collection<Todo>>): Promise<Collection<Todo>> {
+    async load(db) {
       const transaction = db.transaction(["todos"], "readwrite")
       const todosData: Todo[] = await transaction.objectStore("todos").getAll()
       const todos = todosData.map((data) => Object.assign(new Todo(), data))
