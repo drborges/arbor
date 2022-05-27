@@ -24,7 +24,9 @@ export default class Collection<T extends Item> {
     return true
   }
 
-  addMany(...items: T[]): ArborNode<T>[] {
+  push(item: T): ArborNode<T>
+  push(...items: T[]): ArborNode<T>[]
+  push(...items: any): any {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -43,13 +45,13 @@ export default class Collection<T extends Item> {
       }
     )
 
-    return items.map((item) =>
-      node.$tree.getNodeAt(node.$path.child(item.uuid))
-    )
-  }
+    if (items.length > 1) {
+      return items.map((item) =>
+        node.$tree.getNodeAt(node.$path.child(item.uuid))
+      )
+    }
 
-  add(item: T): ArborNode<T> {
-    return this.addMany(item)[0]
+    return node.$tree.getNodeAt(node.$path.child(items[0].uuid))
   }
 
   map<K>(transform: (item: ArborNode<T>) => K): K[] {
