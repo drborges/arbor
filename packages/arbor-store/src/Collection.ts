@@ -215,7 +215,9 @@ export default class Collection<T extends Item> {
     return slice
   }
 
-  delete(uuidOrItem: string | T) {
+  delete(item: T): T
+  delete(uuid: string): T
+  delete(uuidOrItem: any): T {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
