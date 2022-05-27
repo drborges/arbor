@@ -149,7 +149,9 @@ export default class Collection<T extends Item> {
     )
   }
 
-  fetch(uuidOrItem: string | T): ArborNode<T> | undefined {
+  fetch(item: T): ArborNode<T> | undefined
+  fetch(uuid: string): ArborNode<T> | undefined
+  fetch(uuidOrItem: any): ArborNode<T> | undefined {
     const uuid = extractUUIDFrom(uuidOrItem)
     const node = this
 
