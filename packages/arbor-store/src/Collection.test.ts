@@ -11,33 +11,13 @@ interface User {
 }
 
 describe("Collection", () => {
-  describe("#get", () => {
-    it("retrieves an item", () => {
-      const user1 = { uuid: "abc", name: "Bob" }
-      const user2 = { uuid: "bcd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const node = store.root.fetch("bcd") as INode<User>
-
-      expect(node.$unwrap()).toBe(user2)
-    })
-
-    it("returns undefined when no item is found", () => {
-      const store = new Arbor(new Collection<User>())
-
-      const node = store.root.fetch("bcd") as INode<User>
-
-      expect(node).toBeUndefined()
-    })
-  })
-
-  describe("#add", () => {
-    it("add a new item into the collection", () => {
+  describe("#push", () => {
+    it("pushes a new item into the collection", () => {
       const user1 = { uuid: "abc", name: "Bob" }
       const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>(user1))
 
-      const newUser = store.root.add(user2) as INode<User>
+      const newUser = store.root.push(user2) as INode<User>
       const userById = store.root.fetch("bcd")
 
       expect(newUser).toBe(userById)
@@ -48,7 +28,7 @@ describe("Collection", () => {
       const store = new Arbor(new Collection<User>())
 
       expect(() =>
-        store.root.add({ uuid: undefined, name: "Bob" })
+        store.root.push({ uuid: undefined, name: "Bob" })
       ).toThrowError(MissingUUIDError)
     })
 
@@ -56,18 +36,16 @@ describe("Collection", () => {
       const collection = new Collection<User>()
 
       expect(() =>
-        collection.add({ uuid: undefined, name: "Bob" })
+        collection.push({ uuid: undefined, name: "Bob" })
       ).toThrowError(NotAnArborNodeError)
     })
-  })
 
-  describe("#addMany", () => {
-    it("add many items into the collection", () => {
+    it("pushes many items into the collection", () => {
       const user1 = { uuid: "abc", name: "Bob" }
       const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>())
 
-      const newUsers = store.root.addMany(user1, user2)
+      const newUsers = store.root.push(user1, user2)
       const user1ById = store.root.fetch("abc")
       const user2ById = store.root.fetch("bcd")
       const newUser1 = newUsers[0] as INode<User>
@@ -79,24 +57,17 @@ describe("Collection", () => {
       expect(newUser2.$unwrap()).toBe(user2)
     })
 
-    it("throws an error when adding a new item without an id", () => {
+    it("publishes mutation metadata to subscribers", () => {
       const user1 = { uuid: "abc", name: "Bob" }
-      const user2 = { uuid: undefined, name: "Alice" }
+      const user2 = { uuid: "bcd", name: "Alice" }
       const store = new Arbor(new Collection<User>())
 
-      expect(() => store.root.addMany(user1, user2)).toThrowError(
-        MissingUUIDError
-      )
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("push")
+        expect(event.metadata.props).toEqual(["abc", "bcd"])
+      })
 
-      expect(store.root.length).toBe(0)
-    })
-
-    it("throws an error when used on an instance not bound to an Arbor store", () => {
-      const collection = new Collection<User>()
-
-      expect(() =>
-        collection.addMany({ uuid: undefined, name: "Bob" })
-      ).toThrowError(NotAnArborNodeError)
+      store.root.push(user1, user2)
     })
   })
 
@@ -159,6 +130,21 @@ describe("Collection", () => {
       expect(() =>
         collection.merge({ uuid: undefined, name: "Bob" }, {})
       ).toThrowError(NotAnArborNodeError)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("merge")
+        expect(event.metadata.props).toEqual(["abc"])
+      })
+
+      store.root.merge(user1, {
+        name: "Updated Bob",
+      })
     })
   })
 
@@ -234,6 +220,22 @@ describe("Collection", () => {
         )
       ).toThrowError(NotAnArborNodeError)
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("mergeBy")
+        expect(event.metadata.props).toEqual(["abc", "bcd"])
+      })
+
+      store.root.mergeBy(
+        () => true,
+        (user) => ({ name: `${user.name} Updated` })
+      )
+    })
   })
 
   describe("#map", () => {
@@ -246,6 +248,14 @@ describe("Collection", () => {
       const ids = store.root.map((user) => user.uuid)
 
       expect(ids).toEqual(["abc", "abd", "abe"])
+    })
+
+    it("generates an empty array when there are no items in the collection", () => {
+      const store = new Arbor(new Collection<User>())
+
+      const ids = store.root.map((user) => user.uuid)
+
+      expect(ids).toEqual([])
     })
   })
 
@@ -282,6 +292,17 @@ describe("Collection", () => {
       expect(users[0]).toBe(bob)
       expect(users[1]).toBe(barbara)
     })
+
+    it("returns an empty array if no item matches the filter predicate", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+
+      const users = store.root.filter((user) => user.name.startsWith("C"))
+
+      expect(users.length).toBe(0)
+    })
   })
 
   describe("#find", () => {
@@ -294,6 +315,17 @@ describe("Collection", () => {
       const user = store.root.find((u) => u.name.startsWith("B")) as INode<User>
 
       expect(user.$unwrap()).toBe(user1)
+    })
+
+    it("returns undefined if no item is found", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+
+      const user = store.root.find((u) => u.name.startsWith("C")) as INode<User>
+
+      expect(user).toBe(undefined)
     })
   })
 
@@ -499,6 +531,19 @@ describe("Collection", () => {
         NotAnArborNodeError
       )
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("delete")
+        expect(event.metadata.props).toEqual(["abc"])
+      })
+
+      store.root.delete("abc")
+    })
   })
 
   describe("#deleteBy", () => {
@@ -524,6 +569,19 @@ describe("Collection", () => {
         NotAnArborNodeError
       )
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("deleteBy")
+        expect(event.metadata.props).toEqual(["abc"])
+      })
+
+      store.root.deleteBy((user) => user.name.startsWith("B"))
+    })
   })
 
   describe("#clear", () => {
@@ -542,6 +600,19 @@ describe("Collection", () => {
       const collection = new Collection<User>()
 
       expect(() => collection.clear()).toThrowError(NotAnArborNodeError)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("clear")
+        expect(event.metadata.props).toEqual([])
+      })
+
+      store.root.clear()
     })
   })
 

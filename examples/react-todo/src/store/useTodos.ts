@@ -45,7 +45,7 @@ const persistence = new LocalStorage<TodosCollection>({
 store.use(persistence)
 
 export const add = (text: string) => {
-  store.root.add(
+  store.root.push(
     Todo.from<Todo>({
       text,
       status: "incompleted",

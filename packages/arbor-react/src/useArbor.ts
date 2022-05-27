@@ -14,6 +14,21 @@ export type Watcher<T extends object> = (
   event: MutationEvent<T>
 ) => boolean
 
+function useArbor<T extends object>(
+  store: Arbor<T>,
+  watcher?: Watcher<T>
+): ArborNode<T>
+
+function useArbor<T extends object>(
+  node: ArborNode<T>,
+  watcher?: Watcher<T>
+): ArborNode<T>
+
+function useArbor<T extends object>(
+  state: T,
+  watcher?: Watcher<T>
+): ArborNode<T>
+
 /**
  * This hook binds a React component to a given Arbor store.
  *
@@ -30,7 +45,7 @@ export type Watcher<T extends object> = (
  * import Arbor, { useArbor } from "@arborjs/react"
  *
  * const store = new Arbor({
- *   count: 0
+ *    count: 0
  * })
  *
  * export default function CounterApp() {
@@ -49,12 +64,13 @@ export type Watcher<T extends object> = (
  * In that case, make sure you add @arborjs/repository as a dependency.
  *
  * @param target either an instance of Arbor or an ArborNode or a initial state object used to create a store.
+ * @param watcher a watcher implementation that tells Arbor when to react to a given mutation event.
  * @returns the current state of the Arbor state tree.
  */
-export default function useArbor<T extends object>(
+function useArbor<T extends object>(
   target: Arbor<T> | ArborNode<T> | T,
   watcher: Watcher<T> = watchAnyMutations()
-) {
+): ArborNode<T> {
   if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
     throw new Error(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"
@@ -110,3 +126,5 @@ export default function useArbor<T extends object>(
 
   return state as ArborNode<T>
 }
+
+export default useArbor

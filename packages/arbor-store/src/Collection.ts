@@ -1,16 +1,20 @@
 import isNode from "./isNode"
 import { ArborNode, INode } from "./Arbor"
 import { ArborProxy } from "./proxiable"
-import { MissingUUIDError, NotAnArborNodeError } from "./errors"
+import { ArborError, MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 export type Predicate<T> = (item: T) => boolean
 export interface Item {
   uuid: string
 }
 
-function extractUUIDFrom(value: string | Item): string {
+function extractUUIDFrom(value?: string | Item): string {
   if (typeof value === "string") return value
-  return value?.uuid
+  if (value?.uuid != null) return value.uuid
+
+  throw new ArborError(
+    "Expected either a UUID or an object that implements the collection Item interface"
+  )
 }
 
 export default class Collection<T extends Item> {
@@ -24,7 +28,9 @@ export default class Collection<T extends Item> {
     return true
   }
 
-  addMany(...items: T[]): ArborNode<T>[] {
+  push(...item: T[]): ArborNode<T>
+  push(...items: T[]): ArborNode<T>[]
+  push(...items: T[]): any {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -40,16 +46,21 @@ export default class Collection<T extends Item> {
         items.forEach((item) => {
           collection[item.uuid] = item
         })
+
+        return {
+          operation: "push",
+          props: items.map((item) => item.uuid),
+        }
       }
     )
 
-    return items.map((item) =>
-      node.$tree.getNodeAt(node.$path.child(item.uuid))
-    )
-  }
+    if (items.length > 1) {
+      return items.map((item) =>
+        node.$tree.getNodeAt(node.$path.child(item.uuid))
+      )
+    }
 
-  add(item: T): ArborNode<T> {
-    return this.addMany(item)[0]
+    return node.$tree.getNodeAt(node.$path.child(items[0].uuid))
   }
 
   map<K>(transform: (item: ArborNode<T>) => K): K[] {
@@ -88,7 +99,10 @@ export default class Collection<T extends Item> {
     return undefined
   }
 
-  merge(uuidOrItem: T | string, data: Partial<T>): ArborNode<T> {
+  merge(uuid: string, data: Partial<T>): ArborNode<T>
+  merge(item: T, data: Partial<T>): ArborNode<T>
+  merge(uuidOrItem: T | string, data: Partial<T>): ArborNode<T>
+  merge(uuidOrItem: any, data: Partial<T>): ArborNode<T> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -107,6 +121,11 @@ export default class Collection<T extends Item> {
           ...item,
           ...data,
         }
+
+        return {
+          operation: "merge",
+          props: [item.uuid],
+        }
       }
     )
 
@@ -118,7 +137,7 @@ export default class Collection<T extends Item> {
     updateFn: (item: ArborNode<T>) => Partial<T>
   ): ArborNode<T>[] {
     const node = this
-    const updatedIds: string[] = []
+    const affectedUUIDs: string[] = []
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     node.$tree.mutate<Collection<T>>(
@@ -132,18 +151,26 @@ export default class Collection<T extends Item> {
             }
 
             collection[value.uuid] = newValue
-            updatedIds.push(value.uuid)
+            affectedUUIDs.push(value.uuid)
           }
         })
+
+        return {
+          operation: "mergeBy",
+          props: affectedUUIDs,
+        }
       }
     )
 
-    return updatedIds.map((uuid) =>
+    return affectedUUIDs.map((uuid) =>
       node.$tree.getNodeAt(node.$path.child(uuid))
     )
   }
 
-  fetch(uuidOrItem: string | T): ArborNode<T> | undefined {
+  fetch(item: T): ArborNode<T> | undefined
+  fetch(uuid: string): ArborNode<T> | undefined
+  fetch(uuidOrItem: string | T): ArborNode<T> | undefined
+  fetch(uuidOrItem: any): ArborNode<T> | undefined {
     const uuid = extractUUIDFrom(uuidOrItem)
     const node = this
 
@@ -156,7 +183,10 @@ export default class Collection<T extends Item> {
     return Object.keys(this).length
   }
 
-  includes(uuidOrItem: string | T): boolean {
+  includes(uuid: string): boolean
+  includes(item: T): boolean
+  includes(uuidOrItem: string | T): boolean
+  includes(uuidOrItem: any): boolean {
     const id = extractUUIDFrom(uuidOrItem)
 
     if (id === undefined) return false
@@ -207,7 +237,10 @@ export default class Collection<T extends Item> {
     return slice
   }
 
-  delete(uuidOrItem: string | T) {
+  delete(item: T): T
+  delete(uuid: string): T
+  delete(uuidOrItem: string | T): T
+  delete(uuidOrItem: any): T {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -220,6 +253,11 @@ export default class Collection<T extends Item> {
         (collection) => {
           deleted = collection[uuid]
           delete collection[uuid]
+
+          return {
+            operation: "delete",
+            props: [uuid],
+          }
         }
       )
     }
@@ -241,6 +279,11 @@ export default class Collection<T extends Item> {
             deleted.push(value)
           }
         })
+
+        return {
+          operation: "deleteBy",
+          props: deleted.map((item) => item.uuid),
+        }
       }
     )
 
@@ -255,6 +298,11 @@ export default class Collection<T extends Item> {
       Object.keys(collection).forEach((key) => {
         delete collection[key]
       })
+
+      return {
+        operation: "clear",
+        props: [],
+      }
     })
   }
 

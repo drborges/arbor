@@ -162,7 +162,12 @@ export default class Arbor<T extends object> {
    * @param pathOrNode the path or the node within the state tree to be mutated.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
-  mutate<V extends object>(pathOrNode: Path | INode<V>, mutation: Mutation<V>) {
+  mutate<V extends object>(path: Path, mutation: Mutation<V>): void
+  mutate<V extends object>(node: INode<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(
+    pathOrNode: Path | INode<V>,
+    mutation: Mutation<V>
+  ): void {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
     const result = mutate(this.#root, path, mutation)
     const previous = this.#root.$unwrap()

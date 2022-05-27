@@ -6,7 +6,21 @@ import Arbor, {
   MutationEvent,
 } from "@arborjs/store"
 
-export function from<T extends object>(storeOrNode: Arbor<T> | ArborNode<T>) {
+export function from<T extends object>(
+  node: ArborNode<T>
+): Observable<MutationEvent<T>>
+
+export function from<T extends object>(
+  store: Arbor<T>
+): Observable<MutationEvent<T>>
+
+export function from<T extends object>(
+  storeOrNode: Arbor<T> | ArborNode<T>
+): Observable<MutationEvent<T>>
+
+export function from<T extends object>(
+  storeOrNode: any
+): Observable<MutationEvent<T>> {
   if (!isNode(storeOrNode) && !(storeOrNode instanceof Arbor))
     throw new ArborError(
       "Observable target must be either an Arbor instance or an ArborNode"
