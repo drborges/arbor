@@ -1,16 +1,20 @@
 import isNode from "./isNode"
 import { ArborNode, INode } from "./Arbor"
 import { ArborProxy } from "./proxiable"
-import { MissingUUIDError, NotAnArborNodeError } from "./errors"
+import { ArborError, MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 export type Predicate<T> = (item: T) => boolean
 export interface Item {
   uuid: string
 }
 
-function extractUUIDFrom(value: string | Item): string {
+function extractUUIDFrom(value: any): string {
   if (typeof value === "string") return value
-  return value?.uuid
+  if (value?.uuid != null) return value.uuid
+
+  throw new ArborError(
+    "Expected either a UUID or an object that implements the collection Item interface"
+  )
 }
 
 export default class Collection<T extends Item> {
@@ -158,7 +162,9 @@ export default class Collection<T extends Item> {
     return Object.keys(this).length
   }
 
-  includes(uuidOrItem: string | T): boolean {
+  includes(uuid: string): boolean
+  includes(item: T): boolean
+  includes(uuidOrItem: any): boolean {
     const id = extractUUIDFrom(uuidOrItem)
 
     if (id === undefined) return false
