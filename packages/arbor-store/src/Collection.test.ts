@@ -225,6 +225,14 @@ describe("Collection", () => {
 
       expect(ids).toEqual(["abc", "abd", "abe"])
     })
+
+    it("generates an empty array when there are no items in the collection", () => {
+      const store = new Arbor(new Collection<User>())
+
+      const ids = store.root.map((user) => user.uuid)
+
+      expect(ids).toEqual([])
+    })
   })
 
   describe("#forEach", () => {
@@ -260,6 +268,17 @@ describe("Collection", () => {
       expect(users[0]).toBe(bob)
       expect(users[1]).toBe(barbara)
     })
+
+    it("returns an empty array if no item matches the filter predicate", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+
+      const users = store.root.filter((user) => user.name.startsWith("C"))
+
+      expect(users.length).toBe(0)
+    })
   })
 
   describe("#find", () => {
@@ -272,6 +291,17 @@ describe("Collection", () => {
       const user = store.root.find((u) => u.name.startsWith("B")) as INode<User>
 
       expect(user.$unwrap()).toBe(user1)
+    })
+
+    it("returns undefined if no item is found", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "abd", name: "Alice" }
+      const user3 = { uuid: "abe", name: "Barbara" }
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+
+      const user = store.root.find((u) => u.name.startsWith("C")) as INode<User>
+
+      expect(user).toBe(undefined)
     })
   })
 
