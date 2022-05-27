@@ -8,7 +8,7 @@ export interface Item {
   uuid: string
 }
 
-function extractUUIDFrom(value: any): string {
+function extractUUIDFrom(value?: string | Item): string {
   if (typeof value === "string") return value
   if (value?.uuid != null) return value.uuid
 
@@ -151,6 +151,7 @@ export default class Collection<T extends Item> {
 
   fetch(item: T): ArborNode<T> | undefined
   fetch(uuid: string): ArborNode<T> | undefined
+  fetch(uuidOrItem: string | T): ArborNode<T> | undefined
   fetch(uuidOrItem: any): ArborNode<T> | undefined {
     const uuid = extractUUIDFrom(uuidOrItem)
     const node = this
@@ -166,6 +167,7 @@ export default class Collection<T extends Item> {
 
   includes(uuid: string): boolean
   includes(item: T): boolean
+  includes(uuidOrItem: string | T): boolean
   includes(uuidOrItem: any): boolean {
     const id = extractUUIDFrom(uuidOrItem)
 
@@ -219,6 +221,7 @@ export default class Collection<T extends Item> {
 
   delete(item: T): T
   delete(uuid: string): T
+  delete(uuidOrItem: string | T): T
   delete(uuidOrItem: any): T {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
