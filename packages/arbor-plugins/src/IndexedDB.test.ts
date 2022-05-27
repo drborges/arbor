@@ -99,7 +99,7 @@ describe("IndexedDB", () => {
       })
     })
 
-    store.root.add(Todo.from<Todo>({ text: "Do the dishes" }))
+    store.root.push(Todo.from<Todo>({ text: "Do the dishes" }))
 
     return updatePromise
   })
