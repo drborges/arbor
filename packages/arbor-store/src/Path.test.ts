@@ -26,6 +26,14 @@ describe("Path", () => {
     })
   })
 
+  describe("#isRoot", () => {
+    it("checks if a path points to the root of a state tree", () => {
+      expect(Path.parse("").isRoot()).toBe(true)
+      expect(Path.parse("/").isRoot()).toBe(true)
+      expect(Path.parse("/users").isRoot()).toBe(false)
+    })
+  })
+
   describe("#parent", () => {
     it("returns the parent path", () => {
       const path = new Path("users", "0")

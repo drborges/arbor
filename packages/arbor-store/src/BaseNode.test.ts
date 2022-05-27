@@ -1,7 +1,7 @@
 import Arbor from "./Arbor"
 import BaseNode from "./BaseNode"
 import Collection from "./Collection"
-import { NotAnArborNodeError } from "./errors"
+import { ArborError, NotAnArborNodeError } from "./errors"
 
 describe("BaseNode", () => {
   class Todo extends BaseNode<Todo> {
@@ -39,6 +39,18 @@ describe("BaseNode", () => {
       const todo = new Todo()
 
       expect(() => todo.detach()).toThrowError(NotAnArborNodeError)
+    })
+
+    it("throws an error when trying to detach root node", () => {
+      const todo = Todo.from<Todo>({
+        uuid: "abc",
+        text: "Do the dishes",
+        completed: false,
+      })
+
+      const store = new Arbor(todo)
+
+      expect(() => store.root.detach()).toThrowError(ArborError)
     })
 
     it("publishes mutation metadata to subscribers", () => {
