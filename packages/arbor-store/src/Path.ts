@@ -153,6 +153,15 @@ export default class Path {
     return `/${this.props.join("/")}`
   }
 
+  /**
+   * Checks if the path points to the root of a state tree.
+   *
+   * @returns true if the path points to the root of a state tree, false otherwise.
+   */
+  isRoot() {
+    return this.props.length === 0
+  }
+
   get [Symbol.toStringTag]() {
     return this.toString()
   }

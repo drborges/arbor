@@ -1,6 +1,6 @@
 import isNode from "./isNode"
 import { ArborProxy } from "./proxiable"
-import { NotAnArborNodeError } from "./errors"
+import { ArborError, NotAnArborNodeError } from "./errors"
 
 import type { AttributesOf, INode } from "./Arbor"
 
@@ -29,6 +29,8 @@ export default class BaseNode<T extends object> {
   detach() {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
+    if (node.$path.isRoot())
+      throw new ArborError("Cannot detach store's root node")
 
     const id = node.$path.props[node.$path.props.length - 1]
     delete this.parent()[id]
@@ -42,6 +44,10 @@ export default class BaseNode<T extends object> {
     const id = node.$path.props[node.$path.props.length - 1]
     node.$tree.mutate(parentPath, (parent) => {
       parent[id] = node.$unwrap()
+      return {
+        operation: "attach",
+        props: [id],
+      }
     })
 
     return node.$tree.getNodeAt(node.$path)
@@ -52,6 +58,10 @@ export default class BaseNode<T extends object> {
 
     this.$tree.mutate(this, (value) => {
       Object.assign(value, attributes)
+      return {
+        operation: "merge",
+        props: Object.keys(attributes),
+      }
     })
 
     return this.$tree.getNodeAt(this.$path)
