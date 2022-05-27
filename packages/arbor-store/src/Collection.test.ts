@@ -11,26 +11,6 @@ interface User {
 }
 
 describe("Collection", () => {
-  describe("#get", () => {
-    it("retrieves an item", () => {
-      const user1 = { uuid: "abc", name: "Bob" }
-      const user2 = { uuid: "bcd", name: "Alice" }
-      const store = new Arbor(new Collection<User>(user1, user2))
-
-      const node = store.root.fetch("bcd") as INode<User>
-
-      expect(node.$unwrap()).toBe(user2)
-    })
-
-    it("returns undefined when no item is found", () => {
-      const store = new Arbor(new Collection<User>())
-
-      const node = store.root.fetch("bcd") as INode<User>
-
-      expect(node).toBeUndefined()
-    })
-  })
-
   describe("#push", () => {
     it("pushes a new item into the collection", () => {
       const user1 = { uuid: "abc", name: "Bob" }
@@ -75,6 +55,19 @@ describe("Collection", () => {
       expect(newUser2).toBe(user2ById)
       expect(newUser1.$unwrap()).toBe(user1)
       expect(newUser2.$unwrap()).toBe(user2)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>())
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("push")
+        expect(event.metadata.props).toEqual(["abc", "bcd"])
+      })
+
+      store.root.push(user1, user2)
     })
   })
 
@@ -137,6 +130,21 @@ describe("Collection", () => {
       expect(() =>
         collection.merge({ uuid: undefined, name: "Bob" }, {})
       ).toThrowError(NotAnArborNodeError)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("merge")
+        expect(event.metadata.props).toEqual(["abc"])
+      })
+
+      store.root.merge(user1, {
+        name: "Updated Bob",
+      })
     })
   })
 
@@ -211,6 +219,22 @@ describe("Collection", () => {
           () => ({})
         )
       ).toThrowError(NotAnArborNodeError)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("mergeBy")
+        expect(event.metadata.props).toEqual(["abc", "bcd"])
+      })
+
+      store.root.mergeBy(
+        () => true,
+        (user) => ({ name: `${user.name} Updated` })
+      )
     })
   })
 
@@ -507,6 +531,19 @@ describe("Collection", () => {
         NotAnArborNodeError
       )
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("delete")
+        expect(event.metadata.props).toEqual(["abc"])
+      })
+
+      store.root.delete("abc")
+    })
   })
 
   describe("#deleteBy", () => {
@@ -532,6 +569,19 @@ describe("Collection", () => {
         NotAnArborNodeError
       )
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("deleteBy")
+        expect(event.metadata.props).toEqual(["abc"])
+      })
+
+      store.root.deleteBy((user) => user.name.startsWith("B"))
+    })
   })
 
   describe("#clear", () => {
@@ -550,6 +600,19 @@ describe("Collection", () => {
       const collection = new Collection<User>()
 
       expect(() => collection.clear()).toThrowError(NotAnArborNodeError)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const user1 = { uuid: "abc", name: "Bob" }
+      const user2 = { uuid: "bcd", name: "Alice" }
+      const store = new Arbor(new Collection<User>(user1, user2))
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("clear")
+        expect(event.metadata.props).toEqual([])
+      })
+
+      store.root.clear()
     })
   })
 

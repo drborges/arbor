@@ -28,9 +28,9 @@ export default class Collection<T extends Item> {
     return true
   }
 
-  push(item: T): ArborNode<T>
+  push(...item: T[]): ArborNode<T>
   push(...items: T[]): ArborNode<T>[]
-  push(...items: any): any {
+  push(...items: T[]): any {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -46,6 +46,11 @@ export default class Collection<T extends Item> {
         items.forEach((item) => {
           collection[item.uuid] = item
         })
+
+        return {
+          operation: "push",
+          props: items.map((item) => item.uuid),
+        }
       }
     )
 
@@ -116,6 +121,11 @@ export default class Collection<T extends Item> {
           ...item,
           ...data,
         }
+
+        return {
+          operation: "merge",
+          props: [item.uuid],
+        }
       }
     )
 
@@ -127,7 +137,7 @@ export default class Collection<T extends Item> {
     updateFn: (item: ArborNode<T>) => Partial<T>
   ): ArborNode<T>[] {
     const node = this
-    const updatedIds: string[] = []
+    const affectedUUIDs: string[] = []
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     node.$tree.mutate<Collection<T>>(
@@ -141,13 +151,18 @@ export default class Collection<T extends Item> {
             }
 
             collection[value.uuid] = newValue
-            updatedIds.push(value.uuid)
+            affectedUUIDs.push(value.uuid)
           }
         })
+
+        return {
+          operation: "mergeBy",
+          props: affectedUUIDs,
+        }
       }
     )
 
-    return updatedIds.map((uuid) =>
+    return affectedUUIDs.map((uuid) =>
       node.$tree.getNodeAt(node.$path.child(uuid))
     )
   }
@@ -238,6 +253,11 @@ export default class Collection<T extends Item> {
         (collection) => {
           deleted = collection[uuid]
           delete collection[uuid]
+
+          return {
+            operation: "delete",
+            props: [uuid],
+          }
         }
       )
     }
@@ -259,6 +279,11 @@ export default class Collection<T extends Item> {
             deleted.push(value)
           }
         })
+
+        return {
+          operation: "deleteBy",
+          props: deleted.map((item) => item.uuid),
+        }
       }
     )
 
@@ -273,6 +298,11 @@ export default class Collection<T extends Item> {
       Object.keys(collection).forEach((key) => {
         delete collection[key]
       })
+
+      return {
+        operation: "clear",
+        props: [],
+      }
     })
   }
 
