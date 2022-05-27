@@ -40,6 +40,25 @@ describe("BaseNode", () => {
 
       expect(() => todo.detach()).toThrowError(NotAnArborNodeError)
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const todo = Todo.from<Todo>({
+        uuid: "abc",
+        text: "Do the dishes",
+        completed: false,
+      })
+
+      const store = new Arbor({
+        todoId: todo,
+      })
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("delete")
+        expect(event.metadata.props).toEqual(["todoId"])
+      })
+
+      store.root.todoId.detach()
+    })
   })
 
   describe("#parent", () => {
@@ -116,6 +135,28 @@ describe("BaseNode", () => {
 
       expect(() => todo.attach()).toThrowError(NotAnArborNodeError)
     })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const todo = Todo.from<Todo>({
+        uuid: "abc",
+        text: "Do the dishes",
+        completed: false,
+      })
+
+      const store = new Arbor({
+        todoId: todo,
+      })
+
+      const node = store.root.todoId
+      node.detach()
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("attach")
+        expect(event.metadata.props).toEqual(["todoId"])
+      })
+
+      node.attach()
+    })
   })
 
   describe("#merge", () => {
@@ -157,6 +198,28 @@ describe("BaseNode", () => {
       const todo = new Todo()
 
       expect(() => todo.merge({})).toThrowError(NotAnArborNodeError)
+    })
+
+    it("publishes mutation metadata to subscribers", () => {
+      const todo = Todo.from<Todo>({
+        uuid: "abc",
+        text: "Do the dishes",
+        completed: false,
+      })
+
+      const store = new Arbor({
+        todoId: todo,
+      })
+
+      store.subscribe((event) => {
+        expect(event.metadata.operation).toBe("merge")
+        expect(event.metadata.props).toEqual(["text", "completed"])
+      })
+
+      store.root.todoId.merge({
+        text: "New Todo",
+        completed: true,
+      })
     })
   })
 

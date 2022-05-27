@@ -42,6 +42,10 @@ export default class BaseNode<T extends object> {
     const id = node.$path.props[node.$path.props.length - 1]
     node.$tree.mutate(parentPath, (parent) => {
       parent[id] = node.$unwrap()
+      return {
+        operation: "attach",
+        props: [id],
+      }
     })
 
     return node.$tree.getNodeAt(node.$path)
@@ -52,6 +56,10 @@ export default class BaseNode<T extends object> {
 
     this.$tree.mutate(this, (value) => {
       Object.assign(value, attributes)
+      return {
+        operation: "merge",
+        props: Object.keys(attributes),
+      }
     })
 
     return this.$tree.getNodeAt(this.$path)
