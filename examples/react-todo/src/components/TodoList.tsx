@@ -1,8 +1,8 @@
-import React, { memo, useCallback } from "react"
+import React, { memo } from "react"
 
-import TodoView from "./TodoView"
 import useTodos from "../store/useTodos"
 import useTodosFilter, { filterTodos } from "../store/useTodosFilter"
+import TodoView from "./TodoView"
 
 export default memo(function TodoList() {
   const todos = useTodos()

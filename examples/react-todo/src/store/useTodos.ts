@@ -1,18 +1,18 @@
-import { LocalStorage } from "@arborjs/plugins"
+import { Logger, LocalStorage } from "@arborjs/plugins"
 import useArbor, { watchChildrenProps } from "@arborjs/react"
 import Arbor, { BaseNode, Collection } from "@arborjs/store"
 import { v4 as uuid } from "uuid"
 import { store as storeFilter } from "./useTodosFilter"
 
-export type Status = "completed" | "incompleted"
+export type Status = "completed" | "active"
 
 export class Todo extends BaseNode<Todo> {
   uuid = uuid()
   text!: string
-  status: Status = "incompleted"
+  status: Status = "active"
 
   toggle() {
-    this.status = this.completed ? "incompleted" : "completed"
+    this.status = this.completed ? "active" : "completed"
   }
 
   get completed() {
@@ -42,13 +42,14 @@ const persistence = new LocalStorage<TodosCollection>({
   },
 })
 
+store.use(new Logger("[Todos]"))
 store.use(persistence)
 
 export const add = (text: string) => {
   store.root.push(
     Todo.from<Todo>({
       text,
-      status: "incompleted",
+      status: "active",
     })
   )
 }

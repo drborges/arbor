@@ -1,10 +1,10 @@
 import useArbor from "@arborjs/react"
-import { LocalStorage } from "@arborjs/plugins"
+import { Logger, LocalStorage } from "@arborjs/plugins"
 import Arbor, { Collection } from "@arborjs/store"
 
 import { Todo } from "./useTodos"
 
-export type FilterValue = "all" | "completed" | "incompleted"
+export type FilterValue = "all" | "completed" | "active"
 
 export interface TodosFilter {
   value: FilterValue
@@ -14,6 +14,7 @@ export const store = new Arbor<TodosFilter>({
   value: "all",
 })
 
+store.use(new Logger("[TodosFilter]"))
 store.use(
   new LocalStorage<TodosFilter>({
     key: "TodoApp.filter",
@@ -21,7 +22,7 @@ store.use(
   })
 )
 
-export const activate = () => (store.root.value = "incompleted")
+export const activate = () => (store.root.value = "active")
 export const complete = () => (store.root.value = "completed")
 export const select = (filter: FilterValue) => (store.root.value = filter)
 

@@ -21,8 +21,8 @@ export default memo(function Filters() {
       <Filter
         label="Active"
         onChange={handleChange}
-        selected={filter.value === "incompleted"}
-        value="incompleted"
+        selected={filter.value === "active"}
+        value="active"
       />
 
       <Filter
