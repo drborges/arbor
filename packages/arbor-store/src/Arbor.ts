@@ -25,10 +25,10 @@ export type ArborNode<T extends object> = {
 export type INode<T extends object = object, K extends object = T> = T & {
   $unwrap(): T
   $clone(): INode<T>
-  get $tree(): Arbor<K>
-  get $path(): Path
-  get $children(): NodeCache
-  get $subscribers(): Subscribers<T>
+  readonly $tree: Arbor<K>
+  readonly $path: Path
+  readonly $children: NodeCache
+  readonly $subscribers: Subscribers<T>
 }
 
 /**
