@@ -1,4 +1,5 @@
-import { Logger, LocalStorage } from "@arborjs/plugins"
+import Logger from "@arborjs/plugins/Logger"
+import LocalStorage from "@arborjs/plugins/LocalStorage"
 import useArbor, { watchChildrenProps } from "@arborjs/react"
 import Arbor, { BaseNode, Collection } from "@arborjs/store"
 import { v4 as uuid } from "uuid"

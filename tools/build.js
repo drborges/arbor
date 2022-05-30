@@ -11,10 +11,15 @@ const {
   peerDependencies = {},
 } = require(`${cwd}/package.json`)
 
+const entrypoints = (process.env.ENTRYPOINTS || "index.ts")
+  .split(",")
+  .map((fileName) => `${src}/${fileName}`)
+
 const config = {
-  entryPoints: [`${src}/index.ts`],
+  entryPoints: entrypoints,
   bundle: true,
   minify: isProduction,
+  outdir: dist,
   external: Object.keys(dependencies).concat(Object.keys(peerDependencies)),
   define: {
     "global.DEBUG": !isProduction,
@@ -24,17 +29,20 @@ const config = {
 build({
   ...config,
   format: "cjs",
-  outfile: `${dist}/index.cjs.js`,
+  outbase: src,
+  entryNames: "[dir]/[name].cjs",
 })
 
 build({
   ...config,
-  outfile: `${dist}/index.esm.js`,
   format: "esm",
+  outbase: src,
+  entryNames: "[dir]/[name].esm",
 })
 
 build({
   ...config,
-  outfile: `${dist}/index.mjs`,
   format: "esm",
+  outbase: src,
+  entryNames: "[dir]/[name].mjs",
 })

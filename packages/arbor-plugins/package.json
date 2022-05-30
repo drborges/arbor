@@ -63,9 +63,26 @@
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest --passWithNoTests",
     "dev": "jest --watch",
-    "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
-    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc",
+    "build": "yarn clean && NODE_ENV=production ENTRYPOINTS=IndexedDB.ts,LocalStorage.ts,Logger.ts node ../../tools/build.js && yarn tsc",
+    "build:dev": "yarn clean && NODE_ENV=development ENTRYPOINTS=IndexedDB.ts,LocalStorage.ts,Logger.ts node ../../tools/build.js && yarn tsc",
     "prepublish": "yarn build",
     "publish": "np"
+  },
+  "exports": {
+    "./Logger": {
+      "import": "./dist/Logger.esm.js",
+      "require": "./dist/Logger.cjs.js",
+      "default": "./dist/Logger.mjs"
+    },
+    "./LocalStorage": {
+      "import": "./dist/LocalStorage.esm.js",
+      "require": "./dist/LocalStorage.cjs.js",
+      "default": "./dist/LocalStorage.mjs"
+    },
+    "./idb": {
+      "import": "./dist/IndexedDB.esm.js",
+      "require": "./dist/IndexedDB.cjs.js",
+      "default": "./dist/IndexedDB.mjs"
+    }
   }
 }
