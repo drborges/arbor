@@ -1,6 +1,7 @@
 {
   "name": "@arborjs/rxjs",
   "version": "0.0.1-alpha.33",
+  "sideEffects": false,
   "description": "rxjs binding for @arborjs/store",
   "keywords": [
     "arbor",

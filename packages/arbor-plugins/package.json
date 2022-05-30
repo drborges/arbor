@@ -1,6 +1,7 @@
 {
   "name": "@arborjs/plugins",
   "version": "0.0.1-alpha.33",
+  "sideEffects": false,
   "description": "Community driven plugins for @arborjs/store.",
   "keywords": [
     "arbor",
