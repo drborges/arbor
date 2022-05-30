@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/plugins",
-  "version": "0.0.1-alpha.32",
+  "version": "0.0.1-alpha.33",
   "description": "Community driven plugins for @arborjs/store.",
   "keywords": [
     "arbor",
@@ -37,7 +37,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@arborjs/store": "0.0.1-alpha.32",
+    "@arborjs/store": "0.0.1-alpha.33",
     "@types/jest": "^26.0.23",
     "esbuild": "^0.12.12",
     "eslint": "^7.32.0",
@@ -49,7 +49,7 @@
     "typescript": "^4.2.4"
   },
   "peerDependencies": {
-    "@arborjs/store": "0.0.1-alpha.32",
+    "@arborjs/store": "0.0.1-alpha.33",
     "idb": "*"
   },
   "peerDependenciesMeta": {
