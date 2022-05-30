@@ -52,6 +52,11 @@
     "@arborjs/store": "0.0.1-alpha.32",
     "idb": "*"
   },
+  "peerDependenciesMeta": {
+    "idb": {
+      "optional": true
+    }
+  },
   "scripts": {
     "clean": "rm -rf dist",
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
