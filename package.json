@@ -8,6 +8,11 @@
           "^build"
         ]
       },
+      "build:dev": {
+        "dependsOn": [
+          "^build:dev"
+        ]
+      },
       "test": {
         "dependsOn": [
           "^build"
@@ -28,7 +33,8 @@
   ],
   "scripts": {
     "clean": "yarn workspaces foreach run clean",
-    "build": "npx turbo run lint build test"
+    "build": "npx turbo run lint build test",
+    "build:dev": "npx turbo run lint build:dev test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.1",
