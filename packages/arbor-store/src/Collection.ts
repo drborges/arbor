@@ -122,10 +122,9 @@ export default class Collection<T extends Item> {
     node.$tree.mutate<Collection<T>>(
       node as INode<Collection<T>>,
       (collection) => {
-        collection[item.uuid] = {
-          ...item,
+        collection[item.uuid] = clone(item, {
           ...data,
-        }
+        })
 
         return {
           operation: "merge",
@@ -150,12 +149,10 @@ export default class Collection<T extends Item> {
       (collection) => {
         Object.values(collection).forEach((value) => {
           if (predicate(value)) {
-            const newValue = {
-              ...value,
-              ...updateFn(value),
-            }
+            collection[value.uuid] = clone(value, {
+              ...updateFn(value)
+            })
 
-            collection[value.uuid] = newValue
             affectedUUIDs.push(value.uuid)
           }
         })
