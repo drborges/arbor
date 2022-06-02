@@ -1,6 +1,7 @@
+import clone from "./clone"
 import isNode from "./isNode"
-import { ArborNode, INode } from "./Arbor"
 import { ArborProxy } from "./proxiable"
+import { ArborNode, INode } from "./Arbor"
 import { ArborError, MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 export type Predicate<T> = (item: T) => boolean
@@ -34,25 +35,29 @@ export default class Collection<T extends Item> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    items.forEach((item) => {
+    const newItems = items.filter((item) => {
       if (item.uuid == null) {
         throw new MissingUUIDError()
       }
+
+      return !this.includes(item)
     })
 
-    node.$tree.mutate<Collection<T>>(
-      node as INode<Collection<T>>,
-      (collection) => {
-        items.forEach((item) => {
-          collection[item.uuid] = item
-        })
+    if (newItems.length > 0) {
+      node.$tree.mutate<Collection<T>>(
+        node as INode<Collection<T>>,
+        (collection) => {
+          newItems.forEach((item) => {
+            collection[item.uuid] = item
+          })
 
-        return {
-          operation: "push",
-          props: items.map((item) => item.uuid),
+          return {
+            operation: "push",
+            props: newItems.map((item) => item.uuid),
+          }
         }
-      }
-    )
+      )
+    }
 
     if (items.length > 1) {
       return items.map((item) =>

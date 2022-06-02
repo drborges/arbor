@@ -40,6 +40,15 @@ describe("Collection", () => {
       ).toThrowError(NotAnArborNodeError)
     })
 
+    it("skips items whose UUID already exists in the collection", () => {
+      const store = new Arbor(new Collection<User>({ uuid: "abc", name: "Bob" }))
+      const bob = store.root.fetch("abc")
+
+      const result = store.root.push({ uuid: "abc", name: "Bob is already in the collection" })
+
+      expect(result).toBe(bob)
+    })
+
     it("pushes many items into the collection", () => {
       const user1 = { uuid: "abc", name: "Bob" }
       const user2 = { uuid: "bcd", name: "Alice" }
