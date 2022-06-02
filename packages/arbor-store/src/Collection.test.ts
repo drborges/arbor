@@ -1,9 +1,11 @@
+/* eslint-disable max-classes-per-file */
 import Arbor, { ArborNode } from "./Arbor"
 import Collection from "./Collection"
 import { MissingUUIDError, NotAnArborNodeError } from "./errors"
 
 import type { INode } from "./Arbor"
 import { toINode } from "./test.helpers"
+import BaseNode from "./BaseNode"
 
 interface User {
   uuid: string
@@ -38,6 +40,15 @@ describe("Collection", () => {
       expect(() =>
         collection.push({ uuid: undefined, name: "Bob" })
       ).toThrowError(NotAnArborNodeError)
+    })
+
+    it("skips items whose UUID already exists in the collection", () => {
+      const store = new Arbor(new Collection<User>({ uuid: "abc", name: "Bob" }))
+      const bob = store.root.fetch("abc")
+
+      const result = store.root.push({ uuid: "abc", name: "Bob is already in the collection" })
+
+      expect(result).toBe(bob)
     })
 
     it("pushes many items into the collection", () => {
@@ -146,6 +157,20 @@ describe("Collection", () => {
         name: "Updated Bob",
       })
     })
+
+    it("preserves item's prototype", () => {
+      class User extends BaseNode<User> {
+        uuid: string
+        name: string
+      }
+
+      const user1 = User.from<User>({ uuid: "abc", name: "Alice" })
+      const store = new Arbor(new Collection<User>(user1))
+
+      const alice = store.root.merge("abc", { name: "Alice Doe" })
+
+      expect(alice).toBeInstanceOf(User)
+    })
   })
 
   describe("#mergeBy", () => {
@@ -235,6 +260,26 @@ describe("Collection", () => {
         () => true,
         (user) => ({ name: `${user.name} Updated` })
       )
+    })
+
+    it("preserves item's prototype", () => {
+      class User extends BaseNode<User> {
+        uuid: string
+        name: string
+      }
+
+      const user1 = User.from<User>({ uuid: "abc", name: "Alice" })
+      const user2 = User.from<User>({ uuid: "bcd", name: "Bob" })
+      const user3 = User.from<User>({ uuid: "efg", name: "Aline" })
+      const store = new Arbor(new Collection<User>(user1, user2, user3))
+
+      const users = store.root.mergeBy(
+        user => user.name.startsWith("Ali"),
+        user => ({ name: `${user.name} Updated` })
+      )
+
+      expect(users[0]).toBeInstanceOf(User)
+      expect(users[1]).toBeInstanceOf(User)
     })
   })
 
