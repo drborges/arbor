@@ -12,7 +12,7 @@ import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
  * Describes a factory capable of creating new instances of a particular NodeHandler
  * strategy used by Arbor for creating proxies for nodes within the state tree.
  */
-interface NodeHandlerFactory {
+export interface NodeHandlerFactory {
   /**
    * Creates a new instance of the node handling strategy.
    */
