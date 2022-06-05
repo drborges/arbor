@@ -20,7 +20,7 @@ export type MutationEvent<T> = {
  */
 export type Subscriber<T> = (event: MutationEvent<T>) => void
 
-export default class Subscribers<T extends object> {
+export default class Subscribers<T extends object = object> {
   constructor(private readonly subscribers: Set<Subscriber<T>> = new Set()) {}
 
   subscribe(subscriber: Subscriber<T>): Unsubscribe {

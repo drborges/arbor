@@ -26,8 +26,10 @@ function memoizedFunctionBoundToProxy<T extends object>(
   return Reflect.get(target, boundPropName, proxy)
 }
 
-export default class NodeHandler<T extends object, K extends object>
-  implements ProxyHandler<T>
+export default class NodeHandler<
+  T extends object = object,
+  K extends object = object
+> implements ProxyHandler<T>
 {
   constructor(
     readonly $tree: Arbor<K>,
@@ -36,6 +38,10 @@ export default class NodeHandler<T extends object, K extends object>
     readonly $children = new NodeCache(),
     readonly $subscribers = new Subscribers<T>()
   ) {}
+
+  static accepts(_value: any) {
+    return true
+  }
 
   $unwrap(): T {
     return this.$value
@@ -117,7 +123,10 @@ export default class NodeHandler<T extends object, K extends object>
     return true
   }
 
-  private $createChildNode<V extends object>(prop: string, value: V): INode<V> {
+  protected $createChildNode<V extends object>(
+    prop: string,
+    value: V
+  ): INode<V> {
     const childPath = this.$path.child(prop)
     const childNode = this.$tree.createNode(childPath, value)
     return this.$children.set(value, childNode)
