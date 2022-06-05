@@ -17,12 +17,12 @@ interface NodeHandlerFactory {
    * Creates a new instance of the node handling strategy.
    */
   new (
-    $tree: Arbor,
+    $tree: Arbor<any>,
     $path: Path,
     $value: any,
     $children: NodeCache,
-    $subscribers: Subscribers
-  ): NodeHandler
+    $subscribers: Subscribers<any>
+  ): NodeHandler<any, any>
 
   /**
    * Checks if the strategy can handle the given value.
@@ -315,6 +315,15 @@ export default class Arbor<T extends object = object> {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     return node.$subscribers.subscribe(subscriber)
+  }
+
+  /**
+   * Allow extending Arbor's proxying behavior with new node handler implementations.
+   *
+   * @param Factory a list of NodeHandler implementations to register in the store.
+   */
+  with(...Factory: NodeHandlerFactory[]) {
+    this.#factories = [...Factory, ...this.#factories]
   }
 
   /**
