@@ -94,6 +94,45 @@ describe("Arbor", () => {
     })
   })
 
+  it("allows passing custom node handler factories to the store via configuration", () => {
+    interface Todo {
+      text: string
+    }
+
+    class MyArrayHandler extends NodeArrayHandler {
+      $ids = new Map<number, string>()
+
+      $idFor(index: number) {
+        return this.$ids.get(index)
+      }
+
+      get(target: object[], prop: string, receiver: INode<object[], object[]>) {
+        const index = parseInt(prop, 10)
+
+        if (!Number.isNaN(index) && !this.$ids.has(index)) {
+          this.$ids.set(index, `random-id-${index}`)
+        }
+
+        return super.get(target, prop, receiver)
+      }
+    }
+
+    const store = new Arbor<Todo[]>(
+      [{ text: "Walk the dogs" }, { text: "Document Arbor" }],
+      { factories: [MyArrayHandler] }
+    )
+
+    // traverses the tree forcing Arbor to proxy and
+    // cache store.root and store.root[1] nodes
+    store.root[1].text
+    const todos = store.root as any
+
+    // Arbor lazily proxies nodes in the state tree, since store.root[0]
+    // was never proxied no custom $id was generated for that node.
+    expect(todos.$idFor(0)).toBeUndefined()
+    expect(todos.$idFor(1)).toEqual("random-id-1")
+  })
+
   describe("#root", () => {
     it("retrieves the root node", () => {
       const initialState = {
@@ -548,7 +587,11 @@ describe("Arbor", () => {
             return this.$ids.get(index)
           }
 
-          get(target: object[], prop: string, receiver: INode<object[], object[]>) {
+          get(
+            target: object[],
+            prop: string,
+            receiver: INode<object[], object[]>
+          ) {
             const index = parseInt(prop, 10)
 
             if (!Number.isNaN(index) && !this.$ids.has(index)) {

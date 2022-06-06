@@ -99,6 +99,7 @@ export enum MutationMode {
 
 export type ArborConfig = {
   mode?: MutationMode
+  factories?: NodeHandlerFactory[]
 }
 
 /**
@@ -164,10 +165,10 @@ export default class Arbor<T extends object = object> {
    */
   constructor(
     initialState = {} as T,
-    { mode = MutationMode.STRICT }: ArborConfig = {}
+    { mode = MutationMode.STRICT, factories = [] }: ArborConfig = {}
   ) {
     this.mode = mode
-    this.#factories = [NodeArrayHandler, NodeHandler]
+    this.#factories = [...factories, NodeArrayHandler, NodeHandler]
     this.setRoot(initialState)
   }
 
