@@ -9,6 +9,30 @@ import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 
 /**
+ * Describes a factory capable of creating new instances of a particular NodeHandler
+ * strategy used by Arbor for creating proxies for nodes within the state tree.
+ */
+export interface NodeHandlerFactory {
+  /**
+   * Creates a new instance of the node handling strategy.
+   */
+  new (
+    $tree: Arbor<any>,
+    $path: Path,
+    $value: any,
+    $children: NodeCache,
+    $subscribers: Subscribers<any>
+  ): NodeHandler<any, any>
+
+  /**
+   * Checks if the strategy can handle the given value.
+   *
+   * @param value a potential node in the state tree.
+   */
+  accepts(value: any): boolean
+}
+
+/**
  * Recursively describes the props of an Arbor state tree node.
  */
 export type ArborNode<T extends object> = {
@@ -75,6 +99,7 @@ export enum MutationMode {
 
 export type ArborConfig = {
   mode?: MutationMode
+  factories?: NodeHandlerFactory[]
 }
 
 /**
@@ -107,7 +132,7 @@ export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
  * ```
  *
  */
-export default class Arbor<T extends object> {
+export default class Arbor<T extends object = object> {
   /**
    * Controls whether or not Arbor should propagate mutation side-effects
    * to the original node underlying value.
@@ -115,6 +140,18 @@ export default class Arbor<T extends object> {
    * @see {@link MutationMode}
    */
   readonly mode: MutationMode
+
+  /**
+   * List of NodeHandler factories used to determine at Runtime which
+   * handling strategy to use for proxying a given node within the state tree.
+   *
+   * By default Arbor will use the NodeArrayHandler implementation to handle array values
+   * and NodeHandler for all other proxiable values.
+   *
+   * Users can extend this list with new strategies allowing them to customize the proxying
+   * behavior of Arbor.
+   */
+  #factories: NodeHandlerFactory[]
 
   /**
    * Tracks the current state tree root node.
@@ -128,9 +165,10 @@ export default class Arbor<T extends object> {
    */
   constructor(
     initialState = {} as T,
-    { mode = MutationMode.STRICT }: ArborConfig = {}
+    { mode = MutationMode.STRICT, factories = [] }: ArborConfig = {}
   ) {
     this.mode = mode
+    this.#factories = [...factories, NodeArrayHandler, NodeHandler]
     this.setRoot(initialState)
   }
 
@@ -211,17 +249,9 @@ export default class Arbor<T extends object> {
     subscribers = new Subscribers<V>(),
     children = new NodeCache()
   ): INode<V> {
-    const handler = Array.isArray(value)
-      ? new NodeArrayHandler(
-          this,
-          path,
-          value as V[],
-          children,
-          subscribers as Subscribers<V[]>
-        )
-      : new NodeHandler(this, path, value, children, subscribers)
-
-    return new Proxy<V>(value, handler as ProxyHandler<V>) as INode<V>
+    const Factory = this.#factories.find((F) => F.accepts(value))
+    const handler = new Factory(this, path, value, children, subscribers)
+    return new Proxy<V>(value, handler) as INode<V>
   }
 
   /**
@@ -286,6 +316,15 @@ export default class Arbor<T extends object> {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     return node.$subscribers.subscribe(subscriber)
+  }
+
+  /**
+   * Allow extending Arbor's proxying behavior with new node handler implementations.
+   *
+   * @param Factory a list of NodeHandler implementations to register in the store.
+   */
+  with(...Factory: NodeHandlerFactory[]) {
+    this.#factories = [...Factory, ...this.#factories]
   }
 
   /**

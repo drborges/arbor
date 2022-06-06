@@ -2,9 +2,13 @@ import { INode } from "./Arbor"
 import NodeHandler from "./NodeHandler"
 
 export default class NodeArrayHandler<
-  T extends object,
-  K extends object
+  T extends object = object,
+  K extends object = object
 > extends NodeHandler<T[], K> {
+  static accepts(value: any) {
+    return Array.isArray(value)
+  }
+
   deleteProperty(_target: T[], prop: string): boolean {
     this.$tree.mutate(this as unknown as INode<T[]>, (node: T[]) => {
       node.splice(parseInt(prop, 10), 1)
