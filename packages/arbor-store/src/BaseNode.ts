@@ -1,5 +1,5 @@
 import isNode from "./isNode"
-import { ArborProxy } from "./proxiable"
+import { ArborProxiable } from "./proxiable"
 import { ArborError, NotAnArborNodeError } from "./errors"
 
 import type { AttributesOf, INode } from "./Arbor"
@@ -9,7 +9,7 @@ export default class BaseNode<T extends object> {
     return Object.assign(new this(), data) as unknown as K
   }
 
-  get [ArborProxy]() {
+  get [ArborProxiable]() {
     return true
   }
 
