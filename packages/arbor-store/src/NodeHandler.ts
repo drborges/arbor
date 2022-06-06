@@ -6,31 +6,21 @@ import NodeCache from "./NodeCache"
 import Arbor, { INode } from "./Arbor"
 import Subscribers from "./Subscribers"
 
-function memoizedFunctionBoundToProxy<T extends object>(
-  target: T,
-  prop: string,
-  value: Function,
-  proxy: INode<T>
-) {
-  const boundPropName = `bound_${prop.toString()}`
-  const boundFn = Reflect.get(target, boundPropName, proxy)
-
-  if (!boundFn) {
-    Object.defineProperty(target, boundPropName, {
-      enumerable: false,
-      configurable: false,
-      value: value.bind(proxy),
-    })
-  }
-
-  return Reflect.get(target, boundPropName, proxy)
-}
+const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
 export default class NodeHandler<
   T extends object = object,
   K extends object = object
 > implements ProxyHandler<T>
 {
+  /**
+   * Caches all method / function props in the proxied object while
+   * binding them to the proxy instance itself so that all logic
+   * implemented in these methods can run within the context of the
+   * proxy.
+   */
+  protected $bindings = new WeakMap()
+
   constructor(
     readonly $tree: Arbor<K>,
     readonly $path: Path,
@@ -62,7 +52,7 @@ export default class NodeHandler<
 
     // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
     // without conflicting with the ProxyHandler API.
-    if (handlerApiAccess && !["get", "set", "deleteProperty"].includes(prop)) {
+    if (handlerApiAccess && !PROXY_HANDLER_API.includes(prop)) {
       return handlerApiAccess
     }
 
@@ -72,8 +62,16 @@ export default class NodeHandler<
       childValue = childValue.$unwrap()
     }
 
+    // Method and function props are all bound to the proxy and cached internally
+    // so that accessing these props on the same proxy instance always returns the
+    // same value, keeping memory reference integrity (real useful in libs such as
+    // React).
     if (typeof childValue === "function") {
-      return memoizedFunctionBoundToProxy<T>(target, prop, childValue, proxy)
+      if (!this.$bindings.has(childValue)) {
+        this.$bindings.set(childValue, childValue.bind(proxy))
+      }
+
+      return this.$bindings.get(childValue)
     }
 
     if (!proxiable(childValue)) {
