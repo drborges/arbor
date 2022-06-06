@@ -1,6 +1,6 @@
 import clone from "./clone"
 import isNode from "./isNode"
-import { ArborProxy } from "./proxiable"
+import { ArborProxiable } from "./proxiable"
 import { ArborNode, INode } from "./Arbor"
 import { ArborError, MissingUUIDError, NotAnArborNodeError } from "./errors"
 
@@ -25,7 +25,7 @@ export default class Collection<T extends Item> {
     })
   }
 
-  get [ArborProxy]() {
+  get [ArborProxiable]() {
     return true
   }
 
@@ -150,7 +150,7 @@ export default class Collection<T extends Item> {
         Object.values(collection).forEach((value) => {
           if (predicate(value)) {
             collection[value.uuid] = clone(value, {
-              ...updateFn(value)
+              ...updateFn(value),
             })
 
             affectedUUIDs.push(value.uuid)

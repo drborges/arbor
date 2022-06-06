@@ -2,11 +2,11 @@
 /* eslint-disable no-new-wrappers */
 import BaseNode from "./BaseNode"
 import { Clonable } from "./isClonable"
-import proxiable, { ArborProxy } from "./proxiable"
+import proxiable, { ArborProxiable } from "./proxiable"
 
 class NotProxiable {}
 class Proxiable {
-  get [ArborProxy]() {
+  get [ArborProxiable]() {
     return true
   }
 }
@@ -40,11 +40,11 @@ describe("proxiable", () => {
     expect(proxiable(new UserSet())).toBe(true)
   })
 
-  it("considers proxiable user-defined types implementing the 'ArborProxy' prop", () => {
+  it("considers proxiable user-defined types implementing the 'ArborProxiable' prop", () => {
     expect(proxiable(new Proxiable())).toBe(true)
   })
 
-  it("does not consider proxiable user-defined types missing the 'ArborProxy' prop", () => {
+  it("does not consider proxiable user-defined types missing the 'ArborProxiable' prop", () => {
     expect(proxiable(new NotProxiable())).toBe(false)
   })
 
