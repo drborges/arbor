@@ -58,6 +58,10 @@ export default class NodeHandler<
 
     let childValue = Reflect.get(target, prop, proxy)
 
+    // Automatically unwrap proxied values that may have been used to initialize the store
+    // either via new Arbor(...) or store.setRoot(...).
+    // This is done for consistency at the moment to ensure that node values are not proxies
+    // but the actual proxied value. This decision can be revisited if needed.
     if (isNode(childValue)) {
       childValue = childValue.$unwrap()
     }
@@ -87,8 +91,12 @@ export default class NodeHandler<
     // Ignores the mutation if new value is the current value
     if (proxy[prop] === newValue || target[prop] === newValue) return true
 
-    const unwrapped = isNode(newValue) ? newValue.$unwrap() : newValue
-    const value = proxiable(unwrapped) ? clone(unwrapped) : unwrapped
+    // Since Arbor automatically computes the path of nodes within the state tree
+    // based on the reference of their value, assignment operations must automatically
+    // clone assigned values to force Arbor to recompute that new value's path, otherwise
+    // different nodes pointing to the same value would have the same path, and paths must
+    // always be unique within the state tree.
+    const value = proxiable(newValue) ? clone(newValue) : newValue
 
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
@@ -106,7 +114,7 @@ export default class NodeHandler<
     const childValue = Reflect.get(target, prop)
 
     if (prop in target) {
-      this.$tree.mutate(this as unknown as INode<T>, (t: T) => {
+      this.$tree.mutate(this, (t: T) => {
         delete t[prop]
 
         return {

@@ -1,4 +1,5 @@
 import Path from "./Path"
+import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import Arbor, { MutationMode, INode } from "./Arbor"
@@ -122,6 +123,21 @@ describe("NodeHandler", () => {
       tree.root.deleteProperty()
       expect(tree.root.get()).toBe("")
     })
+
+    it("automatically unwraps values when possible", () => {
+      const store = new Arbor({
+        user: { name: "Alice" },
+      })
+
+      store.setRoot({
+        user: store.root.user,
+      })
+
+      const node = store.root.user as INode<User>
+
+      expect(isNode(node)).toBe(true)
+      expect(isNode(node.$unwrap())).toBe(false)
+    })
   })
 
   describe("set trap", () => {
@@ -223,7 +239,7 @@ describe("NodeHandler", () => {
       expect(unwrap(tree.root.users[1].address)).toBe(state.users[1].address)
     })
 
-    it("handles assignment of state tree nodes", () => {
+    it("automatically clones assigned values when possible", () => {
       const store = new Arbor({
         users: [{ name: "User 1" }, { name: "User 2" }],
       })
@@ -233,9 +249,53 @@ describe("NodeHandler", () => {
       const node1 = store.root.users[0] as INode<User>
       const node2 = store.root.users[1] as INode<User>
 
-      expect(store.root.users).toEqual([{ name: "User 2" }, { name: "User 2" }])
+      expect(node1).not.toBe(node2)
+      expect(node1.$unwrap()).not.toBe(node2.$unwrap())
       expect(node1.$path.toString()).toEqual("/users/0")
       expect(node2.$path.toString()).toEqual("/users/1")
+      expect(store.root.users).toEqual([{ name: "User 2" }, { name: "User 2" }])
+    })
+
+    it("skips mutation if assigned value is the node itself", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor({
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      })
+
+      store.subscribe(subscriber)
+
+      // eslint-disable-next-line no-self-assign
+      store.root.users[0] = store.root.users[0]
+
+      expect(subscriber).not.toHaveBeenCalled()
+    })
+
+    it("skips mutation if assigned value is the node's current value", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor({
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      })
+
+      const node = store.root.users[0] as INode<User>
+
+      store.subscribe(subscriber)
+
+      store.root.users[0] = node.$unwrap()
+
+      expect(subscriber).not.toHaveBeenCalled()
+    })
+
+    it("automatically unwraps assigned values when possible", () => {
+      const store = new Arbor({
+        users: [{ name: "User 1" }, { name: "User 2" }],
+      })
+
+      store.root.users[0] = store.root.users[1]
+
+      const node = store.root.users[0] as INode<User>
+
+      expect(isNode(node)).toBe(true)
+      expect(isNode(node.$unwrap())).toBe(false)
     })
 
     it("does not notify subscribers when mutations do not change the target's value", () => {

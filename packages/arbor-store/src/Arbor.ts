@@ -202,6 +202,7 @@ export default class Arbor<T extends object = object> {
    */
   mutate<V extends object>(path: Path, mutation: Mutation<V>): void
   mutate<V extends object>(node: INode<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(arborNode: NodeHandler<V>, mutation: Mutation<V>): void
   mutate<V extends object>(
     pathOrNode: Path | INode<V>,
     mutation: Mutation<V>
