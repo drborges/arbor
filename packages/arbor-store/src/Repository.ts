@@ -1,4 +1,3 @@
-import { ArborNode } from "./Arbor"
 import { ArborProxiable } from "./proxiable"
 
 export type Record = {
@@ -6,7 +5,7 @@ export type Record = {
 }
 
 export default class Repository<T extends Record> {
-  [uuid: string]: ArborNode<T>
+  [uuid: string]: T
 
   constructor(...items: T[]) {
     items.forEach(item => {
@@ -19,7 +18,7 @@ export default class Repository<T extends Record> {
   }
 
   *[Symbol.iterator]() {
-    for (const item of Object.values<ArborNode<T>>(this)) {
+    for (const item of Object.values<T>(this)) {
       yield item
     }
   }

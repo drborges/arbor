@@ -643,13 +643,19 @@ describe("Arbor", () => {
           )
         )
 
-        const firstItem = store.root.fetch("abc")
-        const lastItem = store.root.fetch("bcd")
+        const firstItem = store.root.fetch("abc")! as INode<Todo>
+        const lastItem = store.root.fetch("bcd")! as INode<Todo>
+
         store.root.delete(firstItem)
+
+        const lastItem2 = store.root.fetch("bcd")! as INode<Todo>
+
+        expect(lastItem).toBe(lastItem2)
+
         // does not trigger any mutations since the node is no longer in the state tree
         firstItem.completed = true
 
-        expect(store.root[firstItem.uuid]).toBeUndefined()
+        expect(store.root.items[firstItem.uuid]).toBeUndefined()
         expect(store.root.fetch("bcd")).toBe(lastItem)
       })
     })

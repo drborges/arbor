@@ -9,7 +9,7 @@ class User extends BaseNode<User> {
 }
 
 describe("Repository", () => {
-  it("allows adding new items to the repository", () => {
+  it("adds a new item to the repository", () => {
     const store = new Arbor(new Repository<User>())
     const user = User.from<User>({ uuid: "123", name: "Alice", age: 22 })
 
@@ -24,7 +24,7 @@ describe("Repository", () => {
   it("initializes the repository with items", () => {
     const user1 = User.from<User>({ uuid: "1", name: "Alice", age: 22 })
     const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
-    const store = new Arbor(new Repository<User>(user1, user2))
+    const store = new Arbor(new Repository(user1, user2))
 
     expect(store.root).toEqual({
       "1": user1,
@@ -32,10 +32,10 @@ describe("Repository", () => {
     })
   })
 
-  it("allows deleting items from the repository", () => {
+  it("deletes an item from the repository", () => {
     const user1 = User.from<User>({ uuid: "1", name: "Alice", age: 22 })
     const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
-    const store = new Arbor(new Repository<User>(user1, user2))
+    const store = new Arbor(new Repository(user1, user2))
 
     delete store.root[user1.uuid]
 
@@ -48,7 +48,7 @@ describe("Repository", () => {
     const items: ArborNode<User>[] = []
     const user1 = User.from<User>({ uuid: "1", name: "Alice", age: 22 })
     const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
-    const store = new Arbor(new Repository<User>(user1, user2))
+    const store = new Arbor(new Repository(user1, user2))
 
     for (const item of store.root) {
       items.push(item)

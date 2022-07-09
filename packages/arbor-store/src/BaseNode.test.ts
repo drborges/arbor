@@ -29,10 +29,10 @@ describe("BaseNode", () => {
 
       const todo1 = store.root.fetch("abc")
 
-      todo1.detach()
+      todo1?.detach()
 
       expect(store.root.fetch("abc")).toBeUndefined()
-      expect(todo1.isAttached()).toBe(false)
+      expect(todo1?.isAttached()).toBe(false)
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
@@ -90,11 +90,11 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo = store.root.fetch("abc")
+      const todo = store.root.fetch("abc")!
 
       const todos = todo.parent()
 
-      expect(todos).toBe(store.root)
+      expect(todos).toBe(store.root.items)
     })
 
     it("returns undefined if parent node does not exist", () => {
@@ -321,7 +321,7 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo = store.root.fetch("abc")
+      const todo = store.root.fetch("abc")!
 
       expect(todo.isStale()).toBe(false)
       todo.text = "Walk the dogs"
@@ -354,7 +354,7 @@ describe("BaseNode", () => {
 
       const todo = store.root.todos.fetch("abc")
 
-      expect(todo.path).toBe("/todos/abc")
+      expect(todo.path).toBe("/todos/items/abc")
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {

@@ -1,17 +1,15 @@
 import Path from "./Path"
 import clone from "./clone"
 import isNode from "./isNode"
+import Repository, { Record } from "./Repository"
 import { ArborProxiable } from "./proxiable"
 import { ArborNode, INode } from "./Arbor"
 import { ArborError, MissingUUIDError, NotAnArborNodeError } from "./errors"
 import type { Mutation } from "./mutate"
 
 export type Predicate<T> = (item: T) => boolean
-export interface Item {
-  uuid: string
-}
 
-function extractUUIDFrom(value?: string | Item): string {
+function extractUUIDFrom(value?: string | Record): string {
   if (typeof value === "string") return value
   if (value?.uuid != null) return value.uuid
 
@@ -20,10 +18,12 @@ function extractUUIDFrom(value?: string | Item): string {
   )
 }
 
-export default class Collection<T extends Item> {
+export default class Collection<T extends Record> {
+  items = new Repository<T>()
+
   constructor(...items: T[]) {
     items.forEach((item) => {
-      this[item.uuid] = item
+      this.items[item.uuid] = item
     })
   }
 
@@ -34,7 +34,7 @@ export default class Collection<T extends Item> {
   push(...item: T[]): ArborNode<T>
   push(...items: T[]): ArborNode<T>[]
   push(...items: T[]): any {
-    const node = this
+    const node = this.items
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     const newItems = items.filter((item) => {
@@ -46,9 +46,9 @@ export default class Collection<T extends Item> {
     })
 
     if (newItems.length > 0) {
-      this.mutate(node, (collection) => {
+      this.mutate(node, (repository) => {
         newItems.forEach((item) => {
-          collection[item.uuid] = item
+          repository[item.uuid] = item
         })
 
         return {
@@ -107,7 +107,7 @@ export default class Collection<T extends Item> {
   merge(item: T, data: Partial<T>): ArborNode<T>
   merge(uuidOrItem: T | string, data: Partial<T>): ArborNode<T>
   merge(uuidOrItem: any, data: Partial<T>): ArborNode<T> {
-    const node = this
+    const node = this.items
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     const item = this.fetch(uuidOrItem) as T
@@ -118,8 +118,8 @@ export default class Collection<T extends Item> {
 
     delete data.uuid
 
-    this.mutate(node, (collection) => {
-      collection[item.uuid] = clone(item, {
+    this.mutate(node, (repository) => {
+      repository[item.uuid] = clone(item, {
         ...data,
       })
 
@@ -136,20 +136,22 @@ export default class Collection<T extends Item> {
     predicate: Predicate<ArborNode<T>>,
     updateFn: (item: ArborNode<T>) => Partial<T>
   ): ArborNode<T>[] {
-    const node = this
+    const node = this.items
     const affectedUUIDs: string[] = []
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    this.mutate(node, (collection) => {
-      Object.values(collection).forEach((value) => {
+    this.mutate(node, (repository) => {
+      for (const value of this) {
+        const uuid = value.uuid as string
+
         if (predicate(value)) {
-          collection[value.uuid] = clone(value, {
+          repository[uuid] = clone(value, {
             ...updateFn(value)
           })
 
-          affectedUUIDs.push(value.uuid)
+          affectedUUIDs.push(uuid)
         }
-      })
+      }
 
       return {
         operation: "mergeBy",
@@ -167,15 +169,15 @@ export default class Collection<T extends Item> {
   fetch(uuidOrItem: string | T): ArborNode<T> | undefined
   fetch(uuidOrItem: any): ArborNode<T> | undefined {
     const uuid = extractUUIDFrom(uuidOrItem)
-    const node = this
+    const node = this.items
 
-    if (!isNode(node)) return this[uuid]
+    if (!isNode(node)) return node[uuid]
 
     return uuid ? node.$tree.getNodeAt(node.$path.child(uuid)) : undefined
   }
 
   get length(): number {
-    return Object.keys(this).length
+    return Object.keys(this.items).length
   }
 
   includes(uuid: string): boolean
@@ -210,7 +212,7 @@ export default class Collection<T extends Item> {
   }
 
   sort(compare: (a: T, b: T) => number): ArborNode<T>[] {
-    return Object.values(this).sort(compare)
+    return Object.values(this.items).sort(compare)
   }
 
   slice(start: number, end: number): ArborNode<T>[] {
@@ -240,9 +242,9 @@ export default class Collection<T extends Item> {
     const uuid = extractUUIDFrom(uuidOrItem)
 
     if (uuid) {
-      this.mutate(this, (collection) => {
-        deleted = collection[uuid]
-        delete collection[uuid]
+      this.mutate(this.items, (repository) => {
+        deleted = repository[uuid] as T
+        delete repository[uuid]
 
         return {
           operation: "delete",
@@ -257,13 +259,13 @@ export default class Collection<T extends Item> {
   deleteBy(predicate: Predicate<T>): T[] {
     const deleted: T[] = []
 
-    this.mutate(this, (collection) => {
-      Object.values(collection).forEach((value: T) => {
+    this.mutate(this.items, (repository) => {
+      for (const value of repository) {
         if (predicate(value)) {
-          delete collection[value.uuid]
+          delete repository[value.uuid]
           deleted.push(value)
         }
-      })
+      }
 
       return {
         operation: "deleteBy",
@@ -275,9 +277,9 @@ export default class Collection<T extends Item> {
   }
 
   clear() {
-    this.mutate(this, (collection) => {
-      Object.keys(collection).forEach((key) => {
-        delete collection[key]
+    this.mutate(this.items, (repository) => {
+      Object.keys(repository).forEach((key) => {
+        delete repository[key]
       })
 
       return {
@@ -287,13 +289,13 @@ export default class Collection<T extends Item> {
     })
   }
 
-  *[Symbol.iterator](): Generator<T, any, undefined> {
-    for (const key of Object.keys(this)) {
-      yield this[key]
+  *[Symbol.iterator]() {
+    for (const value of this.items) {
+      yield value
     }
   }
 
-  protected mutate(node: ArborNode<T> | this, mutation: Mutation<T>) {
+  protected mutate<K extends object>(node: ArborNode<K> | this, mutation: Mutation<K>) {
     if (!isNode(node)) throw new NotAnArborNodeError()
     node.$tree.mutate(node, mutation)
   }

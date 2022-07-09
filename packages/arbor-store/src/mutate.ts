@@ -31,15 +31,11 @@ export default function mutate<T extends object, K extends object>(
     const targetNode = path.props.reduce<INode<T>>((parent, prop) => {
       const childNode = parent[prop] as INode<T>
       const childNodeCopy = childNode.$clone()
+      const childNodeValue = childNodeCopy.$unwrap()
 
-      parent.$unwrap()[prop] = childNodeCopy.$unwrap()
-
-      // Preemptively remove previous value from parent's children cache
-      // to free up memory.
-      parent.$children.delete(childNode.$unwrap())
-
+      parent.$unwrap()[prop] = childNodeValue
       // Preemptively warms up the parent's children cache
-      parent.$children.set(childNodeCopy.$unwrap(), childNodeCopy)
+      parent.$children.set(childNodeValue, childNodeCopy)
 
       return childNodeCopy
     }, root)
