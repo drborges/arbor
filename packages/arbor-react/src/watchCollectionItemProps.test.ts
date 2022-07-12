@@ -15,10 +15,6 @@ interface User {
   posts: Post[]
 }
 
-interface State {
-  users: User[]
-}
-
 describe("watchCollectionItemProps", () => {
   it("triggers an update when mutation targets the collection node itself", () => {
     const store = new Arbor(new Collection(

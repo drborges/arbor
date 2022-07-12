@@ -1,9 +1,11 @@
+import { v4 as uuid } from "uuid"
 import Logger from "@arborjs/plugins/Logger"
 import LocalStorage from "@arborjs/plugins/LocalStorage"
-import useArbor, { watchChildrenProps, watchCollectionItemProps, watchNode } from "@arborjs/react"
 import Arbor, { BaseNode, Collection } from "@arborjs/store"
-import { v4 as uuid } from "uuid"
+import useArbor from "@arborjs/react"
+
 import { store as storeFilter } from "./useTodosFilter"
+import { watchTodosFilteredBy } from "./watchers/watchTodosFilteredBy"
 
 export type Status = "completed" | "active"
 
@@ -56,11 +58,5 @@ export const add = (text: string) => {
 }
 
 export default function useTodos() {
-  return useArbor(store.root, (target, event) => {
-    const isTodoFilterAll = storeFilter.root.value === "all"
-
-    return event.mutationPath.targets(target) ||
-      event.mutationPath.targets(target.items) ||
-      (!isTodoFilterAll && watchCollectionItemProps<Todo>("status")(target, event))
-  })
+  return useArbor(store.root, watchTodosFilteredBy(storeFilter.root.value))
 }
