@@ -198,7 +198,7 @@ describe("Collection", () => {
       expect(bob).not.toBe(originalBob)
       expect(barbara).not.toBe(originalBarbara)
       expect(alice).toBe(originalAlice)
-      expect(store.root).toEqual({
+      expect(store.root.items).toEqual({
         abc: {
           uuid: "abc",
           name: "Bob Updated",

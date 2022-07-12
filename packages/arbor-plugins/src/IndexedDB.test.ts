@@ -69,7 +69,7 @@ describe("IndexedDB", () => {
     const store = new Arbor(new Collection<Todo>())
     await store.use(createIndexedDB(config))
 
-    expect(store.root).toEqual({
+    expect(store.root.items).toEqual({
       "uuid-0": Todo.from<Todo>({
         uuid: "uuid-0",
         text: "Do the dishes",
@@ -84,7 +84,7 @@ describe("IndexedDB", () => {
 
     const updatePromise = new Promise((resolve) => {
       store.subscribe(() => {
-        expect(store.root).toEqual({
+        expect(store.root.items).toEqual({
           "uuid-0": Todo.from<Todo>({
             uuid: "uuid-0",
             text: "Do the dishes",
