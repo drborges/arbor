@@ -3,7 +3,7 @@
 import Path from "./Path"
 import Arbor, { MutationMode, INode } from "./Arbor"
 import BaseNode from "./BaseNode"
-import Collection from "./Collection"
+import Repository from "./Repository"
 import { warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
 
@@ -629,7 +629,7 @@ describe("Arbor", () => {
     describe("Collection", () => {
       it("allows managing collections of items", () => {
         const store = new Arbor(
-          new Collection(
+          new Repository(
             Todo.from<Todo>({
               uuid: "abc",
               text: "Do the dishes",
@@ -643,20 +643,20 @@ describe("Arbor", () => {
           )
         )
 
-        const firstItem = store.root.fetch("abc")! as INode<Todo>
-        const lastItem = store.root.fetch("bcd")! as INode<Todo>
+        const firstItem = store.root.abc as INode<Todo>
+        const lastItem = store.root.bcd as INode<Todo>
 
-        store.root.delete(firstItem)
+        delete store.root.abc
 
-        const lastItem2 = store.root.fetch("bcd")! as INode<Todo>
+        const lastItem2 = store.root.bcd as INode<Todo>
 
         expect(lastItem).toBe(lastItem2)
 
         // does not trigger any mutations since the node is no longer in the state tree
         firstItem.completed = true
 
-        expect(store.root.items[firstItem.uuid]).toBeUndefined()
-        expect(store.root.fetch("bcd")).toBe(lastItem)
+        expect(store.root[firstItem.uuid]).toBeUndefined()
+        expect(store.root.bcd).toBe(lastItem)
       })
     })
   })
