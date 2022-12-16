@@ -1,10 +1,10 @@
-import { watchCollectionItemProps, Watcher } from "@arborjs/react";
-import { TodosCollection, Todo } from "../useTodos";
+import { watchChildrenProps, Watcher } from "@arborjs/react";
+import { Repository } from "@arborjs/store";
+import { Todo } from "../useTodos";
 
-export const watchTodosFilteredBy = (filter: string): Watcher<TodosCollection> => (target, event) => {
+export const watchTodosFilteredBy = (filter: string): Watcher<Repository<Todo>> => (target, event) => {
   const isTodoFilterAll = filter === "all";
 
   return event.mutationPath.targets(target) ||
-    event.mutationPath.targets(target.items) ||
-    (!isTodoFilterAll && watchCollectionItemProps<Todo>("status")(target, event));
+    (!isTodoFilterAll && watchChildrenProps<Todo>("status")(target, event));
 };
