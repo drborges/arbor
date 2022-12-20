@@ -30,6 +30,7 @@ export default memo(function TodoView({ id }: TodoProps) {
         />
       )}
       {!editing && <label htmlFor={todo.id}>{todo.text}</label>}
+      <span>Likes: {todo.likes}</span>
       <button
         className="edit-btn"
         type="button"
@@ -40,6 +41,7 @@ export default memo(function TodoView({ id }: TodoProps) {
       <button type="button" onClick={todo.detach}>
         ❌
       </button>
+      <button onClick={todo.like}>👍🏼</button>
     </div>
   )
 })

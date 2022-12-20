@@ -11,11 +11,18 @@ export type Status = "completed" | "active"
 
 export class Todo extends BaseNode<Todo> {
   uuid = uuid()
+  likes = 0
   text!: string
   status: Status = "active"
 
   toggle() {
     this.status = this.completed ? "active" : "completed"
+  }
+
+  like() {
+    this.likes++
+    this.likes++
+    this.likes++
   }
 
   get completed() {
@@ -39,7 +46,7 @@ const persistence = new LocalStorage<Repository<Todo>>({
   },
 })
 
-store.use(new Logger("[Todos]"))
+// store.use(new Logger("[Todos]"))
 store.use(persistence)
 
 export const add = (text: string) => {
