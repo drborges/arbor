@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid"
 import Logger from "@arborjs/plugins/Logger"
 import LocalStorage from "@arborjs/plugins/LocalStorage"
-import Arbor, { BaseNode, Collection } from "@arborjs/store"
+import Arbor, { BaseNode, Repository } from "@arborjs/store"
 import useArbor from "@arborjs/react"
 
 import { store as storeFilter } from "./useTodosFilter"
@@ -27,21 +27,15 @@ export class Todo extends BaseNode<Todo> {
   }
 }
 
-export class TodosCollection extends Collection<Todo> {
-  onRemove(todo: Todo) {
-    this.delete(todo)
-  }
-}
+export const store = new Arbor(new Repository<Todo>())
 
-export const store = new Arbor(new TodosCollection())
-
-const persistence = new LocalStorage<TodosCollection>({
+const persistence = new LocalStorage<Repository<Todo>>({
   key: "TodoApp.todos",
   debounceBy: 300,
-  deserialize: (todos: TodosCollection) => {
-    const items = Object.values(todos?.items || {}) as Partial<Todo>[]
+  deserialize: (todos: Repository<Todo>) => {
+    const items = Object.values(todos || {}) as Partial<Todo>[]
     const todoItems = items.map((item) => Todo.from(item))
-    return new TodosCollection(...todoItems)
+    return new Repository<Todo>(...todoItems)
   },
 })
 
@@ -49,12 +43,12 @@ store.use(new Logger("[Todos]"))
 store.use(persistence)
 
 export const add = (text: string) => {
-  store.root.push(
-    Todo.from<Todo>({
-      text,
-      status: "active",
-    })
-  )
+  const todo = Todo.from<Todo>({
+    text,
+    status: "active",
+  })
+
+  store.root[todo.uuid] = todo
 }
 
 export default function useTodos() {
