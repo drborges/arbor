@@ -56,7 +56,7 @@ export default class NodeHandler<
       return handlerApiAccess
     }
 
-    let childValue = Reflect.get(target, prop, proxy)
+    let childValue = Reflect.get(target, prop, proxy) as any
 
     // Automatically unwrap proxied values that may have been used to initialize the store
     // either via new Arbor(...) or store.setRoot(...).
@@ -111,9 +111,9 @@ export default class NodeHandler<
   }
 
   deleteProperty(target: T, prop: string): boolean {
-    const childValue = Reflect.get(target, prop)
-
     if (prop in target) {
+      const childValue = Reflect.get(target, prop) as any
+
       this.$tree.mutate(this, (t: T) => {
         delete t[prop]
 
@@ -123,6 +123,12 @@ export default class NodeHandler<
         }
       })
 
+      // TODO: Investigate the possibility of removing the line below.
+      //
+      // Here we preemptively remove the value from the state tree cache
+      // however, we could leave it to the gargabe collector to free up the
+      // unused objects given that $children is a WeakMap. I'd rather shoot
+      // for simplicity if this line isn't providing any actual value
       this.$children.delete(childValue)
     }
 

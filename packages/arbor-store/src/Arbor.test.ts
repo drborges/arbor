@@ -334,18 +334,13 @@ describe("Arbor", () => {
     })
 
     it("handles mutations to nodes no longer attached to the state tree", () => {
-      const store = new Arbor({
-        "1": { name: "Alice" },
-        "2": { name: "Bob" },
-      })
+      const store = new Arbor(new Repository({ uuid: "1", name: "Alice" }, { uuid: "2", name: "Bob" }))
 
       const bob = store.root["2"]
       delete store.root["2"]
       bob.name = "This should not break the app"
 
-      expect(store.root).toEqual({
-        "1": { name: "Alice" },
-      })
+      expect(store.root["2"]).toBeUndefined()
     })
 
     it("only notifies subscribers affected by the mutation path", () => {
