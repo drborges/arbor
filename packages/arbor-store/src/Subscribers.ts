@@ -9,8 +9,8 @@ export type Unsubscribe = () => void
 /**
  * Describes a mutation event passed to subscribers
  */
-export type MutationEvent<T = object> = {
-  state: { current?: T; previous?: T }
+export type MutationEvent = {
+  state: { current?: object; previous?: object }
   mutationPath: Path
   metadata: MutationMetadata
 }
@@ -18,12 +18,12 @@ export type MutationEvent<T = object> = {
 /**
  * Subscriber function used to listen to mutation events triggered by the state tree.
  */
-export type Subscriber<T> = (event: MutationEvent<T>) => void
+export type Subscriber = (event: MutationEvent) => void
 
-export default class Subscribers<T extends object = object> {
-  constructor(private readonly subscribers: Set<Subscriber<T>> = new Set()) {}
+export default class Subscribers {
+  constructor(private readonly subscribers: Set<Subscriber> = new Set()) {}
 
-  subscribe(subscriber: Subscriber<T>): Unsubscribe {
+  subscribe(subscriber: Subscriber): Unsubscribe {
     this.subscribers.add(subscriber)
 
     return () => {
@@ -31,7 +31,7 @@ export default class Subscribers<T extends object = object> {
     }
   }
 
-  notify(event: MutationEvent<T>) {
+  notify(event: MutationEvent) {
     this.subscribers.forEach((subscriber) => {
       subscriber(event)
     })

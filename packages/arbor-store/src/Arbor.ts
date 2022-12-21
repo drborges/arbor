@@ -21,7 +21,7 @@ export interface NodeHandlerFactory {
     $path: Path,
     $value: any,
     $children: NodeCache,
-    $subscribers: Subscribers<any>
+    $subscribers: Subscribers
   ): NodeHandler<any, any>
 
   /**
@@ -52,7 +52,7 @@ export type INode<T extends object = object, K extends object = T> = T & {
   readonly $tree: Arbor<K>
   readonly $path: Path
   readonly $children: NodeCache
-  readonly $subscribers: Subscribers<T>
+  readonly $subscribers: Subscribers
 }
 
 /**
@@ -247,7 +247,7 @@ export default class Arbor<T extends object = object> {
   createNode<V extends object>(
     path: Path,
     value: V,
-    subscribers = new Subscribers<V>(),
+    subscribers = new Subscribers(),
     children = new NodeCache()
   ): INode<V> {
     const Factory = this.#factories.find((F) => F.accepts(value))
@@ -276,7 +276,7 @@ export default class Arbor<T extends object = object> {
     const current = this.createNode(
       Path.root,
       value,
-      this.#root?.$subscribers || new Subscribers<T>()
+      this.#root?.$subscribers || new Subscribers()
     )
 
     this.#root = current
@@ -299,7 +299,7 @@ export default class Arbor<T extends object = object> {
    * @param subscriber a function to be called whenever a state update occurs.
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
-  subscribe(subscriber: Subscriber<T>): Unsubscribe {
+  subscribe(subscriber: Subscriber): Unsubscribe {
     return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
   }
 
@@ -312,7 +312,7 @@ export default class Arbor<T extends object = object> {
    */
   subscribeTo<K extends object>(
     node: ArborNode<K>,
-    subscriber: Subscriber<K>
+    subscriber: Subscriber
   ): Unsubscribe {
     if (!isNode(node)) throw new NotAnArborNodeError()
 

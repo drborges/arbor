@@ -8,19 +8,19 @@ import Arbor, {
 
 export function from<T extends object>(
   node: ArborNode<T>
-): Observable<MutationEvent<T>>
+): Observable<MutationEvent>
 
 export function from<T extends object>(
   store: Arbor<T>
-): Observable<MutationEvent<T>>
+): Observable<MutationEvent>
 
 export function from<T extends object>(
   storeOrNode: Arbor<T> | ArborNode<T>
-): Observable<MutationEvent<T>>
+): Observable<MutationEvent>
 
 export function from<T extends object>(
   storeOrNode: any
-): Observable<MutationEvent<T>> {
+): Observable<MutationEvent> {
   if (!isNode(storeOrNode) && !(storeOrNode instanceof Arbor))
     throw new ArborError(
       "Observable target must be either an Arbor instance or an ArborNode"
@@ -34,7 +34,7 @@ export function from<T extends object>(
     ? (storeOrNode.$tree as Arbor<T>)
     : storeOrNode
 
-  return new Observable<MutationEvent<T>>((subscriber) =>
+  return new Observable<MutationEvent>((subscriber) =>
     store.subscribeTo(node, (event) => {
       subscriber.next(event)
     })

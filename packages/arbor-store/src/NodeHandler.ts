@@ -26,7 +26,7 @@ export default class NodeHandler<
     readonly $path: Path,
     readonly $value: T,
     readonly $children = new NodeCache(),
-    readonly $subscribers = new Subscribers<T>()
+    readonly $subscribers = new Subscribers()
   ) {}
 
   static accepts(_value: any) {

@@ -2,11 +2,6 @@ import { filter } from "rxjs/operators"
 import Arbor, { ArborError, MutationEvent } from "@arborjs/store"
 import { from } from "./from"
 
-interface User {
-  name: string
-  age: number
-}
-
 describe("from", () => {
   it("creates an observable from an Arbor store", () => {
     const store = new Arbor({
@@ -17,7 +12,7 @@ describe("from", () => {
     })
 
     const observable = from(store)
-    const mutationEvents: MutationEvent<{ users: User[] }>[] = []
+    const mutationEvents: MutationEvent[] = []
 
     observable
       .pipe(filter((event) => event.metadata.props.includes("name")))
@@ -42,7 +37,7 @@ describe("from", () => {
     })
 
     const observable = from(store.root.users[0])
-    const mutationEvents: MutationEvent<User>[] = []
+    const mutationEvents: MutationEvent[] = []
 
     observable
       .pipe(filter((event) => event.metadata.props.includes("name")))
@@ -67,7 +62,7 @@ describe("from", () => {
     })
 
     const observable = from(store.root.users[0])
-    const mutations: MutationEvent<User>[] = []
+    const mutations: MutationEvent[] = []
 
     const subscription = observable.subscribe((event) => {
       mutations.push(event)
