@@ -9,7 +9,7 @@ export type Unsubscribe = () => void
 /**
  * Describes a mutation event passed to subscribers
  */
-export type MutationEvent<T> = {
+export type MutationEvent<T = object> = {
   state: { current?: T; previous?: T }
   mutationPath: Path
   metadata: MutationMetadata

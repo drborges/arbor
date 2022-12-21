@@ -11,7 +11,7 @@ import { watchAnyMutations } from "./watchAnyMutations"
 
 export type Watcher<T extends object> = (
   target: ArborNode<T>,
-  event: MutationEvent<T>
+  event: MutationEvent
 ) => boolean
 
 function useArbor<T extends object>(
@@ -98,7 +98,7 @@ function useArbor<T extends object>(
   const [state, setState] = useState(node)
 
   const update = useCallback(
-    (event: MutationEvent<T>) => {
+    (event: MutationEvent) => {
       const nextState = store.getNodeAt(targetPath) as INode<T>
 
       if (nextState !== state && watcher(state, event)) {
@@ -116,8 +116,8 @@ function useArbor<T extends object>(
         props: [],
       },
       state: {
-        current: state,
-        previous: state,
+        current: store.root,
+        previous: store.root,
       },
     })
 
