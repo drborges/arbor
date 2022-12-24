@@ -94,7 +94,7 @@ describe("Arbor", () => {
     })
   })
 
-  it("allows passing custom node handler factories to the store via configuration", () => {
+  it("allows passing custom node handlers to the store via configuration", () => {
     interface Todo {
       text: string
     }
@@ -119,7 +119,7 @@ describe("Arbor", () => {
 
     const store = new Arbor<Todo[]>(
       [{ text: "Walk the dogs" }, { text: "Document Arbor" }],
-      { factories: [MyArrayHandler] }
+      { handlers: [MyArrayHandler] }
     )
 
     // traverses the tree forcing Arbor to proxy and

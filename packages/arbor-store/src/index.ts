@@ -22,6 +22,6 @@ export type {
   ArborNode,
   AttributesOf,
   INode,
-  NodeHandlerFactory,
+  Handler,
   Plugin,
 } from "./Arbor"
