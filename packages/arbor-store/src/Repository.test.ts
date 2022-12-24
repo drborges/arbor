@@ -61,4 +61,22 @@ describe("Repository", () => {
       user2,
     ])
   })
+
+  it("destructs repository into an array ordered by the items' insertion order", () => {
+    const store = new Arbor(new Repository(
+      User.from<User>({ uuid: "c", name: "User 1" }),
+      User.from<User>({ uuid: "b", name: "User 2" }),
+      User.from<User>({ uuid: "a", name: "User 3" }),
+    ))
+
+    const user1 = store.root.c
+    const user2 = store.root.b
+    const user3 = store.root.a
+
+    const [...users] = store.root
+
+    expect(users[0]).toBe(user1)
+    expect(users[1]).toBe(user2)
+    expect(users[2]).toBe(user3)
+  })
 })

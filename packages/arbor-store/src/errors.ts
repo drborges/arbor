@@ -3,7 +3,7 @@
 export class ArborError extends Error {}
 export class MissingUUIDError extends ArborError {
   constructor() {
-    super("Collection items must have a string 'uuid'")
+    super("Repository items must implement the 'Record' type")
   }
 }
 

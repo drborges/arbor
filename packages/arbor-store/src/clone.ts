@@ -10,7 +10,8 @@ export default function clone<T extends object>(
   value: T,
   overrides: Partial<AttributesOf<T>> = {}
 ): T {
-  const target = isNode(value) ? (value.$unwrap() as T) : value
+  const target = isNode(value) ? value.$unwrap() : value
+
   if (!proxiable(target)) return value
 
   if (isClonable<T>(target)) {

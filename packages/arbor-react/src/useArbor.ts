@@ -57,12 +57,6 @@ function useArbor<T extends object>(
  * }
  * ```
  *
- * Additionally, one can also provide an instance of `Repository`
- * wrapping the store, which provides built-in CRUD operations for
- * managing a collection of objects.
- *
- * In that case, make sure you add @arborjs/repository as a dependency.
- *
  * @param target either an instance of Arbor or an ArborNode or a initial state object used to create a store.
  * @param watcher a watcher implementation that tells Arbor when to react to a given mutation event.
  * @returns the current state of the Arbor state tree.

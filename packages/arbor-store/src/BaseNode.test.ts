@@ -29,10 +29,10 @@ describe("BaseNode", () => {
 
       const todo1 = store.root.abc
 
-      todo1?.detach()
+      todo1.detach()
 
       expect(store.root.abc).toBeUndefined()
-      expect(todo1?.isAttached()).toBe(false)
+      expect(todo1.isAttached()).toBe(false)
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
@@ -60,16 +60,14 @@ describe("BaseNode", () => {
         completed: false,
       })
 
-      const store = new Arbor({
-        todoId: todo,
-      })
+      const store = new Arbor({ todo })
 
       store.subscribe((event) => {
         expect(event.metadata.operation).toBe("delete")
-        expect(event.metadata.props).toEqual(["todoId"])
+        expect(event.metadata.props).toEqual(["todo"])
       })
 
-      store.root.todoId.detach()
+      store.root.todo.detach()
     })
   })
 
@@ -155,16 +153,14 @@ describe("BaseNode", () => {
         completed: false,
       })
 
-      const store = new Arbor({
-        todoId: todo,
-      })
+      const store = new Arbor({ todo })
 
-      const node = store.root.todoId
+      const node = store.root.todo
       node.detach()
 
       store.subscribe((event) => {
-        expect(event.metadata.operation).toBe("attach")
-        expect(event.metadata.props).toEqual(["todoId"])
+        expect(event.metadata.operation).toBe("set")
+        expect(event.metadata.props).toEqual(["todo"])
       })
 
       node.attach()

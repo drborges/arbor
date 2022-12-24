@@ -45,7 +45,7 @@ export default class BaseNode<T extends object> {
     node.$tree.mutate(parentPath, (parent) => {
       parent[id] = node.$unwrap()
       return {
-        operation: "attach",
+        operation: "set",
         props: [id],
       }
     })

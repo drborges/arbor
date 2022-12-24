@@ -333,7 +333,7 @@ describe("Arbor", () => {
       })
     })
 
-    it("handles mutations to nodes no longer attached to the state tree", () => {
+    it("ignores mutations to nodes no longer attached to the state tree", () => {
       const store = new Arbor(new Repository({ uuid: "1", name: "Alice" }, { uuid: "2", name: "Bob" }))
 
       const bob = store.root["2"]
@@ -621,8 +621,8 @@ describe("Arbor", () => {
       })
     })
 
-    describe("Collection", () => {
-      it("allows managing collections of items", () => {
+    describe("Repository", () => {
+      it("allows managing Repository of items", () => {
         const store = new Arbor(
           new Repository(
             Todo.from<Todo>({
@@ -638,20 +638,16 @@ describe("Arbor", () => {
           )
         )
 
-        const firstItem = store.root.abc as INode<Todo>
-        const lastItem = store.root.bcd as INode<Todo>
+        const [firstItem, secondItem] = store.root
 
         delete store.root.abc
 
-        const lastItem2 = store.root.bcd as INode<Todo>
+        const secondItem2 = store.root.bcd
 
-        expect(lastItem).toBe(lastItem2)
-
-        // does not trigger any mutations since the node is no longer in the state tree
-        firstItem.completed = true
-
-        expect(store.root[firstItem.uuid]).toBeUndefined()
-        expect(store.root.bcd).toBe(lastItem)
+        expect(secondItem).toBe(secondItem2)
+        expect(store.root.abc).toBeUndefined()
+        expect(store.root.bcd).toBe(secondItem)
+        expect(firstItem.isAttached()).toBe(false)
       })
     })
   })
