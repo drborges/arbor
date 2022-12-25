@@ -7416,6 +7416,7 @@ __metadata:
   resolution: "react-todo@workspace:examples/react-todo"
   dependencies:
     "@arborjs/react": "workspace:packages/arbor-react"
+    "@arborjs/store": "workspace:packages/arbor-store"
     "@types/react": ^18.0.26
     "@types/react-dom": ^18.0.9
     "@types/uuid": ^8.3.1

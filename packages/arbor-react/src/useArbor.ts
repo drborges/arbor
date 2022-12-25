@@ -102,21 +102,7 @@ function useArbor<T extends object>(
     [state, store, targetPath, watcher]
   )
 
-  useEffect(() => {
-    update({
-      mutationPath: state.$path,
-      metadata: {
-        operation: "set",
-        props: [],
-      },
-      state: {
-        current: store.root,
-        previous: store.root,
-      },
-    })
-
-    return store.subscribeTo(state as ArborNode<T>, update)
-  }, [state, store, target, targetPath, update])
+  useEffect(() => store.subscribeTo(state as ArborNode<T>, update), [state, store, update])
 
   return state as ArborNode<T>
 }
