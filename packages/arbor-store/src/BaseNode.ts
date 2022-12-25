@@ -1,5 +1,5 @@
 import isNode from "./isNode"
-import { ArborProxiable } from "./proxiable"
+import { ArborProxiable } from "./isProxiable"
 import { ArborError, NotAnArborNodeError } from "./errors"
 
 import type { AttributesOf, INode } from "./Arbor"

@@ -10,7 +10,7 @@ export { default as NodeHandler } from "./NodeHandler"
 export { default as NodeArrayHandler } from "./NodeArrayHandler"
 export { default as isClonable } from "./isClonable"
 export { default as Repository } from "./Repository"
-export { default as proxiable, ArborProxiable } from "./proxiable"
+export { default as isProxiable, ArborProxiable } from "./isProxiable"
 export { ArborError, NotAnArborNodeError, MissingUUIDError } from "./errors"
 
 export type { Mutation } from "./mutate"

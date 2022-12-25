@@ -1,7 +1,7 @@
 import Path from "./Path"
 import clone from "./clone"
 import isNode from "./isNode"
-import proxiable from "./proxiable"
+import isProxiable from "./isProxiable"
 import NodeCache from "./NodeCache"
 import Arbor, { INode } from "./Arbor"
 import Subscribers from "./Subscribers"
@@ -78,7 +78,7 @@ export default class NodeHandler<
       return this.$bindings.get(childValue)
     }
 
-    if (!proxiable(childValue)) {
+    if (!isProxiable(childValue)) {
       return childValue
     }
 
@@ -96,7 +96,7 @@ export default class NodeHandler<
     // clone assigned values to force Arbor to recompute that new value's path, otherwise
     // different nodes pointing to the same value would have the same path, and paths must
     // always be unique within the state tree.
-    const value = proxiable(newValue) ? clone(newValue) : newValue
+    const value = isProxiable(newValue) ? clone(newValue) : newValue
 
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value

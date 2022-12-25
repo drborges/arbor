@@ -4,7 +4,7 @@ import Arbor, {
   INode,
   isNode,
   MutationEvent,
-  proxiable,
+  isProxiable,
 } from "@arborjs/store"
 
 import { watchAnyMutations } from "./watchAnyMutations"
@@ -65,7 +65,7 @@ function useArbor<T extends object>(
   target: Arbor<T> | ArborNode<T> | T,
   watcher: Watcher<T> = watchAnyMutations()
 ): ArborNode<T> {
-  if (!(target instanceof Arbor) && !isNode(target) && !proxiable(target)) {
+  if (!(target instanceof Arbor) && !isNode(target) && !isProxiable(target)) {
     throw new Error(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )

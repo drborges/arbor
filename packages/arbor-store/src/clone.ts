@@ -1,5 +1,5 @@
 import isNode from "./isNode"
-import proxiable from "./proxiable"
+import isProxiable from "./isProxiable"
 import isClonable from "./isClonable"
 
 import type { AttributesOf } from "./Arbor"
@@ -12,7 +12,7 @@ export default function clone<T extends object>(
 ): T {
   const target = isNode(value) ? value.$unwrap() : value
 
-  if (!proxiable(target)) return value
+  if (!isProxiable(target)) return value
 
   if (isClonable<T>(target)) {
     return target.$clone()
