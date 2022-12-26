@@ -27,7 +27,7 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren("name", "age")))
 
     expect(result.all.length).toBe(1)
 
@@ -51,7 +51,7 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren("name", "age")))
 
     expect(result.all.length).toBe(1)
 
@@ -70,7 +70,7 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren("name", "age")))
 
     expect(result.all.length).toBe(1)
 
@@ -97,5 +97,96 @@ describe("watchChildren", () => {
     })
 
     expect(result.all.length).toBe(5)
+  })
+
+  it("updates if child node is detached from the state tree", () => {
+    const store = new Arbor<State>({
+      users: [
+        { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
+        { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
+      ]
+    })
+
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren()))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      delete store.root.users[0]
+    })
+
+    expect(result.all.length).toBe(2)
+  })
+
+  it("updates if a new child node is attached to the state tree", () => {
+    const store = new Arbor<State>({
+      users: [
+        { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
+        { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
+      ]
+    })
+
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren()))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root.users.push({
+        name: "Carol",
+        age: 20,
+        posts: []
+      })
+    })
+
+    expect(result.all.length).toBe(2)
+  })
+
+  it("updates if mutation targets any props", () => {
+    const store = new Arbor<State>({
+      users: [
+        { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
+        { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
+      ]
+    })
+
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren()))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root.users[0].name = "Alice updated"
+    })
+
+    expect(result.all.length).toBe(2)
+
+    act(() => {
+      store.root.users[0].age++
+    })
+
+    expect(result.all.length).toBe(3)
+
+    act(() => {
+      store.root.users[0].posts.push({ content: "new post" })
+    })
+
+    expect(result.all.length).toBe(4)
+
+    act(() => {
+      store.root.users[0].posts[0].content = "Updated content"
+    })
+
+    expect(result.all.length).toBe(5)
+
+    act(() => {
+      store.root.users[1].name = "Bob updated"
+    })
+
+    expect(result.all.length).toBe(6)
+
+    act(() => {
+      store.root.users[1].age++
+    })
+
+    expect(result.all.length).toBe(7)
   })
 })
