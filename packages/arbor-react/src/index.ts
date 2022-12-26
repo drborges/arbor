@@ -4,6 +4,6 @@ export { watchNode } from "./watchNode"
 export { watchPaths } from "./watchPaths"
 export { watchNodeProps } from "./watchNodeProps"
 export { watchAny } from "./watchAny"
-export { watchChildrenProps } from "./watchChildrenProps"
+export { watchChildren } from "./watchChildren"
 
 export type { Watcher } from "./useArbor"

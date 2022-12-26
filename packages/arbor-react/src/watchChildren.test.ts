@@ -2,7 +2,7 @@ import Arbor from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
-import { watchChildrenProps } from "./watchChildrenProps"
+import { watchChildren } from "./watchChildren"
 
 interface Post {
   content: string
@@ -18,7 +18,7 @@ interface State {
   users: User[]
 }
 
-describe("watchChildrenProps", () => {
+describe("watchChildren", () => {
   it("does not update if mutation does not target any of the listed children props", () => {
     const store = new Arbor<State>({
       users: [
@@ -27,7 +27,7 @@ describe("watchChildrenProps", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildrenProps<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren<User>("name", "age")))
 
     expect(result.all.length).toBe(1)
 
@@ -51,7 +51,7 @@ describe("watchChildrenProps", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildrenProps<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren<User>("name", "age")))
 
     expect(result.all.length).toBe(1)
 
@@ -70,7 +70,7 @@ describe("watchChildrenProps", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildrenProps<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users, watchChildren<User>("name", "age")))
 
     expect(result.all.length).toBe(1)
 

@@ -3,7 +3,7 @@ import { watchPaths } from "./watchPaths"
 
 type PropOf<T extends object> = keyof T
 
-export function watchChildrenProps<T extends object>(...props: PropOf<T>[]) {
+export function watchChildren<T extends object>(...props: PropOf<T>[]) {
   return <K extends object>(node: ArborNode<K>, event: MutationEvent) => {
     if (!isNode(node)) return false
     if (event.mutationPath.targets(node)) return true
