@@ -1,6 +1,6 @@
 import isNode from "./isNode"
 import { ArborNode } from "./Arbor"
-import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
+import { InvalidArgumentError } from "./errors"
 
 /**
  * Represent a path within the state tree.
@@ -130,10 +130,9 @@ export default class Path {
    * @param node the ArborNode to check for
    * @returns true if mutations to this path affects the given node, false otherwise
    */
-  affects(node: ArborNode<any>): boolean {
-    if (!isNode(node)) throw new NotAnArborNodeError()
-
-    return this.toString().startsWith(node.$path.toString())
+  affects(pathOrNode: Path | ArborNode<any>): boolean {
+    const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
+    return this.toString().startsWith(path.toString())
   }
 
   /**

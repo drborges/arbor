@@ -147,5 +147,16 @@ describe("Path", () => {
       expect(Path.parse("/users").affects(node2)).toBe(false)
       expect(Path.parse("/users/321").affects(node2)).toBe(false)
     })
+
+    it("checks if a path affects a given path", () => {
+      expect(Path.parse("/users").affects(Path.parse("/"))).toBe(true)
+      expect(Path.parse("/users").affects(Path.parse("/users"))).toBe(true)
+      expect(Path.parse("/users/123").affects(Path.parse("/users"))).toBe(true)
+      expect(Path.parse("/users/123/preferences").affects(Path.parse("/users"))).toBe(true)
+      expect(Path.parse("/users/123/preferences").affects(Path.parse("/users/123"))).toBe(true)
+      expect(Path.parse("/").affects(Path.parse("/users"))).toBe(false)
+      expect(Path.parse("/users").affects(Path.parse("/posts"))).toBe(false)
+      expect(Path.parse("/users").affects(Path.parse("/users/123"))).toBe(false)
+    })
   })
 })
