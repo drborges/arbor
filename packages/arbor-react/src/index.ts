@@ -1,9 +1,9 @@
 export { default } from "./useArbor"
 
+export { watchAny } from "./watchAny"
 export { watchNode } from "./watchNode"
 export { watchPaths } from "./watchPaths"
-export { watchNodeProps } from "./watchNodeProps"
-export { watchAnyMutations } from "./watchAnyMutations"
-export { watchChildrenProps } from "./watchChildrenProps"
+export { watchChild } from "./watchChild"
+export { watchChildren } from "./watchChildren"
 
 export type { Watcher } from "./useArbor"

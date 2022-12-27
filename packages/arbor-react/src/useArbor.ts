@@ -7,7 +7,7 @@ import Arbor, {
   isProxiable,
 } from "@arborjs/store"
 
-import { watchAnyMutations } from "./watchAnyMutations"
+import { watchAny } from "./watchAny"
 
 export type Watcher<T extends object> = (
   target: ArborNode<T>,
@@ -63,7 +63,7 @@ function useArbor<T extends object>(
  */
 function useArbor<T extends object>(
   target: Arbor<T> | ArborNode<T> | T,
-  watcher: Watcher<T> = watchAnyMutations()
+  watcher: Watcher<T> = watchAny()
 ): ArborNode<T> {
   if (!(target instanceof Arbor) && !isNode(target) && !isProxiable(target)) {
     throw new Error(

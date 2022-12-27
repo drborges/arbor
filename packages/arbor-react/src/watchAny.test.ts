@@ -2,9 +2,9 @@ import Arbor from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
-import { watchAnyMutations } from "./watchAnyMutations"
+import { watchAny } from "./watchAny"
 
-describe("watchAnyMutations", () => {
+describe("watchAny", () => {
   it("does not update if mutation does not affect the given node", () => {
     const store = new Arbor({
       users: [
@@ -13,7 +13,7 @@ describe("watchAnyMutations", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], watchAnyMutations()))
+    const { result } = renderHook(() => useArbor(store.root.users[0], watchAny()))
 
     expect(result.all.length).toBe(1)
 
@@ -34,7 +34,7 @@ describe("watchAnyMutations", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], watchAnyMutations()))
+    const { result } = renderHook(() => useArbor(store.root.users[0], watchAny()))
 
     expect(result.all.length).toBe(1)
 
