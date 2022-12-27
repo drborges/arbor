@@ -86,4 +86,41 @@ describe("watchNode", () => {
 
     expect(result.all.length).toBe(3)
   })
+
+  it("watches for any node mutation", () => {
+    const store = new Arbor<State>({
+      users: [
+        { name: "Alice", age: 20, posts: [{ content: "some post" }] },
+        { name: "Bob", age: 30, posts: [] },
+      ]
+    })
+
+    const { result } = renderHook(() => useArbor(store.root.users[0], watchNode()))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root.users[0].name = "Alice Updated"
+    })
+
+    expect(result.all.length).toBe(2)
+
+    act(() => {
+      store.root.users[0].age++
+    })
+
+    expect(result.all.length).toBe(3)
+
+    act(() => {
+      store.root.users[0].posts[0].content = "Updated post"
+    })
+
+    expect(result.all.length).toBe(3)
+
+    act(() => {
+      store.root.users[0].posts = []
+    })
+
+    expect(result.all.length).toBe(4)
+  })
 })
