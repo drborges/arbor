@@ -2,7 +2,7 @@ import Arbor from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
-import { watchNodeProps } from "./watchNodeProps"
+import { watchNode } from "./watchNode"
 
 interface Post {
   content: string
@@ -18,7 +18,7 @@ interface State {
   users: User[]
 }
 
-describe("watchNodeProps", () => {
+describe("watchNode", () => {
   it("does not update if mutation does not targets the given node", () => {
     const store = new Arbor<State>({
       users: [
@@ -27,7 +27,7 @@ describe("watchNodeProps", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], watchNodeProps<User>("name")))
+    const { result } = renderHook(() => useArbor(store.root.users[0], watchNode("name")))
 
     expect(result.all.length).toBe(1)
 
@@ -51,7 +51,7 @@ describe("watchNodeProps", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], watchNodeProps<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users[0], watchNode("name", "age")))
 
     expect(result.all.length).toBe(1)
 
@@ -70,7 +70,7 @@ describe("watchNodeProps", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], watchNodeProps<User>("name", "age")))
+    const { result } = renderHook(() => useArbor(store.root.users[0], watchNode("name", "age")))
 
     expect(result.all.length).toBe(1)
 

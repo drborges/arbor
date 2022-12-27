@@ -2,7 +2,7 @@ import { ArborNode, MutationEvent } from "@arborjs/store"
 
 type PropOf<T extends object> = keyof T
 
-export function watchNodeProps<T extends object>(...props: PropOf<T>[]) {
+export function watchNode<T extends object>(...props: PropOf<T>[]) {
   return (node: ArborNode<T>, event: MutationEvent) => {
     if (!event.mutationPath.targets(node)) return false
 
