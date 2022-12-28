@@ -1,3 +1,4 @@
+import Path from "./Path"
 import isNode from "./isNode"
 import { ArborProxiable } from "./isProxiable"
 import { ArborError, NotAnArborNodeError } from "./errors"
@@ -81,9 +82,9 @@ export default class BaseNode<T extends object> {
     return this !== this.reload()
   }
 
-  get path(): string {
+  get path(): Path {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
-    return this.$path.toString()
+    return this.$path
   }
 }

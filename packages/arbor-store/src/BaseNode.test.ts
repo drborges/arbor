@@ -350,7 +350,7 @@ describe("BaseNode", () => {
 
       const todo = store.root.todos.abc
 
-      expect(todo.path).toBe("/todos/abc")
+      expect(todo.path.toString()).toBe("/todos/abc")
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
