@@ -1,10 +1,6 @@
 # Arbor
 
-<form action="https://www.paypal.com/donate" method="post" target="_top">
-  <input type="hidden" name="hosted_button_id" value="E7PXJC6WW6M4S" />
-  <input type="image" src="https://pics.paypal.com/00/s/MzUxMWFiZWUtMzU3Zi00MzgxLTg2YmUtNjRhM2U1YWUwMDg0/file.PNG" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" style="width:7%" />
-  <img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="7%" />
-</form>
+[<img src="https://pics.paypal.com/00/s/MzUxMWFiZWUtMzU3Zi00MzgxLTg2YmUtNjRhM2U1YWUwMDg0/file.PNG" width="7%" />](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=E7PXJC6WW6M4S)
 
 A fully typed, minimalistic proxy-based state tree library with very little boilerplate for React apps.
 
@@ -67,12 +63,7 @@ Help us improve our docs, PRs are very welcome!
 
 ## Support This Project
 
-<form action="https://www.paypal.com/donate" method="post" target="_top">
-  <input type="hidden" name="hosted_button_id" value="E7PXJC6WW6M4S" />
-  <input type="image" src="https://pics.paypal.com/00/s/MzUxMWFiZWUtMzU3Zi00MzgxLTg2YmUtNjRhM2U1YWUwMDg0/file.PNG" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" style="width: 9%" />
-  <img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="9%" />
-</form>
-
+[<img src="https://pics.paypal.com/00/s/MzUxMWFiZWUtMzU3Zi00MzgxLTg2YmUtNjRhM2U1YWUwMDg0/file.PNG" width="8%" />](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=E7PXJC6WW6M4S)
 ## License
 
 Arbor is [MIT licensed](./LICENSE).
