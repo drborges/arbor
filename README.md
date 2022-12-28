@@ -10,41 +10,48 @@ Arbor is not just another state management library for React apps, it focuses on
 
 Here's a simple Counter example:
 
-```ts
-import Arbor, { useArbor } from "@arborjs/react"
+[![Edit counter-example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/counter-example-yj26xb?fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.tsx&theme=dark)
+
+```tsx
+import Arbor from "@arborjs/store";
+import useArbor from "@arborjs/react";
 
 // Create a store to hold the counter state
 const store = new Arbor({
-  count: 0,
-})
+  count: 0
+});
 
-function Counter() {
+function Actions() {
   // Connect the Counter component to the store
-  const counter = useArbor(store)
+  const counter = useArbor(store);
 
   // Mutate the state using plain Javascript APIs
   return (
-    <>
-      <button onClick={() => counter.count++} value="Increment" />
-      <button onClick={() => counter.count--} value="Decrement" />
-    </>
-  )
+    <div>
+      <button onClick={() => counter.count--} value="Decrement">
+        -1
+      </button>
+      <button onClick={() => counter.count++} value="Increment">
+        +1
+      </button>
+    </div>
+  );
 }
 
-function Echo() {
+function Counter() {
   // Easily share state across components, no need for context providers!
-  const counter = useArbor(store)
+  const counter = useArbor(store);
 
-  return <h1>Count: {counter.count}</h1>
+  return <h1>Count: {counter.count}</h1>;
 }
 
-function MyApp() {
+export default function App() {
   return (
     <div>
-      <Echo />
       <Counter />
+      <Actions />
     </div>
-  )
+  );
 }
 ```
 
