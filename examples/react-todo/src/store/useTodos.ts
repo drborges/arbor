@@ -15,6 +15,17 @@ export class Todo extends BaseNode<Todo> {
   text!: string
   status: Status = "active"
 
+  static add(text: string) {
+    const todo = Todo.from<Todo>({
+      text,
+      status: "active",
+    })
+
+    store.root[todo.uuid] = todo
+
+    return todo
+  }
+
   toggle() {
     this.status = this.completed ? "active" : "completed"
   }
@@ -46,17 +57,8 @@ const persistence = new LocalStorage<Repository<Todo>>({
   },
 })
 
-// store.use(new Logger("[Todos]"))
+store.use(new Logger("[Todos]"))
 store.use(persistence)
-
-export const add = (text: string) => {
-  const todo = Todo.from<Todo>({
-    text,
-    status: "active",
-  })
-
-  store.root[todo.uuid] = todo
-}
 
 export default function useTodos() {
   return useArbor(store.root, watchTodosFilteredBy(storeFilter.root.value))

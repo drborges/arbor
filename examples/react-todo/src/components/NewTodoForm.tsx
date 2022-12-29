@@ -1,14 +1,14 @@
 import React, { memo, SyntheticEvent } from "react"
 
 import useNewTodo from "../store/useNewTodo"
-import { add } from "../store/useTodos"
+import { Todo } from "../store/useTodos"
 import { activate, store as filterStore } from "../store/useTodosFilter"
 
 export default memo(function NewTodoForm() {
   const input = useNewTodo()
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
-    add(input.value)
+    Todo.add(input.value)
     input.value = ""
     if (filterStore.root.value === "completed") activate()
   }

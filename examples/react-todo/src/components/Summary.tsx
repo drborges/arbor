@@ -1,10 +1,10 @@
 import React, { memo } from "react"
 import useArbor, { watchChildren } from "@arborjs/react"
 
-import { store, Todo } from "../store/useTodos"
+import { store } from "../store/useTodos"
 
 export default memo(function Summary() {
-  const repo = useArbor(store, watchChildren<Todo>("status"))
+  const repo = useArbor(store.root, watchChildren("status"))
   const todos = Object.values(repo)
   const total = todos.length
   const completed = todos.filter(todo => todo.completed).length
