@@ -1,4 +1,4 @@
-import Arbor from "@arborjs/store"
+import Arbor, { BaseNode } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
@@ -85,6 +85,31 @@ describe("watchNode", () => {
     })
 
     expect(result.all.length).toBe(3)
+  })
+
+
+  it("watches a BseNode value", () => {
+    class User extends BaseNode<User> {
+      name: string
+      age: number
+    }
+    const store = new Arbor(new User())
+
+    const { result } = renderHook(() => useArbor(store, watchNode("name")))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root.name = "Alice"
+    })
+
+    expect(result.all.length).toBe(2)
+
+    act(() => {
+      store.root.age++
+    })
+
+    expect(result.all.length).toBe(2)
   })
 
   it("watches for any node mutation", () => {

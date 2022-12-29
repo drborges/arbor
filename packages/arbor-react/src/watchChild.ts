@@ -1,11 +1,16 @@
 import { ArborNode, isNode, MutationEvent } from "@arborjs/store"
+import { ChildrenNodeProps, NodeProps } from "./watchChildren"
 import { watchPaths } from "./watchPaths"
 
-type ChildPropsOf<T extends object> = T extends Array<infer K>
-  ? keyof K
-  : keyof T[keyof T]
+export type ObjectProps<T> = {
+  [K in keyof T]: T[K] extends Function ? never : T[K] extends object ? K : never;
+}[keyof T];
 
-export function watchChild<T extends object>(childKey: keyof T, ...props: ChildPropsOf<T>[]) {
+export type WatchableProps<T> = T extends Array<any>
+  ? number
+  : Extract<ObjectProps<T>, NodeProps<T>>
+
+export function watchChild<T extends object>(childKey: WatchableProps<T>, ...props: ChildrenNodeProps<T>[]) {
   return (node: ArborNode<T>, event: MutationEvent) => {
     if (!isNode(node)) return false
     const childPath = node.$path.child(String(childKey))

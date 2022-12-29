@@ -1,4 +1,5 @@
-import Arbor from "@arborjs/store"
+/* eslint-disable max-classes-per-file */
+import Arbor, { BaseNode } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
@@ -57,6 +58,28 @@ describe("watchChild", () => {
 
     act(() => {
       store.root.users.push({ name: "Carol", age: 25, posts: [] })
+    })
+
+    expect(result.all.length).toBe(2)
+  })
+
+  it("watches child props of a BseNode", () => {
+    class Preference extends BaseNode<Preference> {
+      sms = false
+      email = false
+    }
+    class User extends BaseNode<User> {
+      name: string
+      preference = new Preference()
+    }
+    const store = new Arbor(new User())
+
+    const { result } = renderHook(() => useArbor(store, watchChild("preference", "sms")))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root.preference.sms = true
     })
 
     expect(result.all.length).toBe(2)

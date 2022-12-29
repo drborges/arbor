@@ -1,4 +1,5 @@
-import Arbor from "@arborjs/store"
+/* eslint-disable max-classes-per-file */
+import Arbor, { BaseNode, Repository } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor from "./useArbor"
@@ -41,6 +42,59 @@ describe("watchChildren", () => {
     })
 
     expect(result.all.length).toBe(1)
+  })
+
+  it("allow watching props of a given object", () => {
+    const store = new Arbor(new Repository({
+      uuid: "123",
+      name: "Alice",
+      age: 30
+    }))
+
+    const { result } = renderHook(() => useArbor(store, watchChildren("name")))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root["123"].name = "Alice updated"
+    })
+
+    expect(result.all.length).toBe(2)
+
+    act(() => {
+      store.root["123"].age++
+    })
+
+    expect(result.all.length).toBe(2)
+  })
+
+  it("allow watching props of BaseNode children", () => {
+    class Preference extends BaseNode<Preference> {
+      email = false
+      sms = false
+    }
+    class User extends BaseNode<User> {
+      name: string
+      preference = new Preference()
+    }
+
+    const store = new Arbor(new User())
+
+    const { result } = renderHook(() => useArbor(store, watchChildren("email")))
+
+    expect(result.all.length).toBe(1)
+
+    act(() => {
+      store.root.preference.email = true
+    })
+
+    expect(result.all.length).toBe(2)
+
+    act(() => {
+      store.root.preference.sms = true
+    })
+
+    expect(result.all.length).toBe(2)
   })
 
   it("updates when mutation targets the node being watched", () => {
