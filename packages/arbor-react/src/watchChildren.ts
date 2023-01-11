@@ -3,12 +3,12 @@ import { watchPaths } from "./watchPaths"
 
 export type NodeProps<T> =
   T extends Function
-  ? never
-  : T extends BaseNode<infer D>
-    ? keyof Omit<D, keyof BaseNode<any>>
-    : T extends object
-      ? keyof T
-      : never
+    ? never
+    : T extends BaseNode<infer D>
+      ? keyof Omit<D, keyof BaseNode<any>>
+      : T extends object
+        ? keyof T
+        : never
 
 export type ChildrenNodeProps<T> = {
   [K in keyof T]:

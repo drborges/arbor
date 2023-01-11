@@ -16,7 +16,7 @@ describe("Arbor", () => {
 
     const store = new Arbor(user)
 
-    const alice = store.root
+    const alice = store.state
     alice.name = "Alice Doe"
     alice.age = 31
 
@@ -30,7 +30,7 @@ describe("Arbor", () => {
       age: 30,
     })
 
-    expect(store.root).toEqual({
+    expect(store.state).toEqual({
       name: "Alice Doe",
       age: 31,
     })
@@ -44,7 +44,7 @@ describe("Arbor", () => {
 
     const store = new Arbor(user)
 
-    const alice = store.root
+    const alice = store.state
     alice.name = "Alice Doe"
     alice.age = 31
 
@@ -58,7 +58,7 @@ describe("Arbor", () => {
       age: 30,
     })
 
-    expect(store.root).toEqual({
+    expect(store.state).toEqual({
       name: "Alice Doe",
       age: 31,
     })
@@ -74,7 +74,7 @@ describe("Arbor", () => {
       mode: MutationMode.FORGIVEN,
     })
 
-    const alice = store.root
+    const alice = store.state
     alice.name = "Alice Doe"
     alice.age = 31
 
@@ -88,7 +88,7 @@ describe("Arbor", () => {
       age: 31,
     })
 
-    expect(store.root).toEqual({
+    expect(store.state).toEqual({
       name: "Alice Doe",
       age: 31,
     })
@@ -123,11 +123,11 @@ describe("Arbor", () => {
     )
 
     // traverses the tree forcing Arbor to proxy and
-    // cache store.root and store.root[1] nodes
-    store.root[1].text
-    const todos = store.root as any
+    // cache store.state and store.state[1] nodes
+    store.state[1].text
+    const todos = store.state as any
 
-    // Arbor lazily proxies nodes in the state tree, since store.root[0]
+    // Arbor lazily proxies nodes in the state tree, since store.state[0]
     // was never proxied no custom $id was generated for that node.
     expect(todos.$idFor(0)).toBeUndefined()
     expect(todos.$idFor(1)).toEqual("random-id-1")
@@ -140,13 +140,13 @@ describe("Arbor", () => {
       }
       const store = new Arbor(initialState)
 
-      const node = store.root as INode<{ users: { name: string }[] }>
+      const node = store.state as INode<{ users: { name: string }[] }>
 
       expect(node.$unwrap()).toBe(initialState)
     })
   })
 
-  describe("#setRoot", () => {
+  describe("#setState", () => {
     interface IUser {
       name: string
     }
@@ -157,9 +157,9 @@ describe("Arbor", () => {
       }
 
       const store = new Arbor<{ users: IUser[] }>()
-      const node = store.setRoot(initialState)
+      const node = store.setState(initialState)
 
-      const nodeFromCache = store.root
+      const nodeFromCache = store.state
 
       expect(nodeFromCache).toBe(node)
       expect(nodeFromCache.users[1].name).toEqual("User 2")
@@ -180,7 +180,7 @@ describe("Arbor", () => {
       store.subscribe(subscriber1)
       store.subscribe(subscriber2)
 
-      const newRoot = store.setRoot(newState)
+      const newRoot = store.setState(newState)
 
       expect(subscriber1).toHaveBeenCalledWith({
         mutationPath: Path.root,
@@ -214,8 +214,8 @@ describe("Arbor", () => {
         users: [{ name: "User 1" }, { name: "User 2" }],
       })
 
-      expect(Path.root.walk(store.root)).toBe(store.root)
-      expect(Path.parse("/users/1").walk(store.root)).toBe(store.root.users[1])
+      expect(Path.root.walk(store.state)).toBe(store.state)
+      expect(Path.parse("/users/1").walk(store.state)).toBe(store.state.users[1])
     })
   })
 
@@ -226,20 +226,20 @@ describe("Arbor", () => {
       }
 
       const store = new Arbor(initialState)
-      const initialRoot = store.root
-      const initialUsers = store.root.users
-      const initialUser0 = store.root.users[0]
-      const initialUser1 = store.root.users[1]
+      const initialRoot = store.state
+      const initialUsers = store.state.users
+      const initialUser0 = store.state.users[0]
+      const initialUser1 = store.state.users[1]
 
       store.mutate<{ name: string }>(Path.parse("/users/0"), (user) => {
         user.name = "Bob 2"
       })
 
-      expect(store.root).not.toBe(initialRoot)
-      expect(store.root.users).not.toBe(initialUsers)
-      expect(store.root.users[0]).not.toBe(initialUser0)
-      expect(store.root.users[1]).toBe(initialUser1)
-      expect(store.root).toEqual({
+      expect(store.state).not.toBe(initialRoot)
+      expect(store.state.users).not.toBe(initialUsers)
+      expect(store.state.users[0]).not.toBe(initialUser0)
+      expect(store.state.users[1]).toBe(initialUser1)
+      expect(store.state).toEqual({
         users: [{ name: "Bob 2" }, { name: "Alice" }],
       })
     })
@@ -250,20 +250,20 @@ describe("Arbor", () => {
       }
 
       const store = new Arbor(initialState)
-      const initialRoot = store.root
-      const initialUsers = store.root.users
-      const initialUser0 = store.root.users[0] as INode<{ name: string }>
-      const initialUser1 = store.root.users[1]
+      const initialRoot = store.state
+      const initialUsers = store.state.users
+      const initialUser0 = store.state.users[0] as INode<{ name: string }>
+      const initialUser1 = store.state.users[1]
 
       store.mutate(initialUser0, (user) => {
         user.name = "Bob 2"
       })
 
-      expect(store.root).not.toBe(initialRoot)
-      expect(store.root.users).not.toBe(initialUsers)
-      expect(store.root.users[0]).not.toBe(initialUser0)
-      expect(store.root.users[1]).toBe(initialUser1)
-      expect(store.root).toEqual({
+      expect(store.state).not.toBe(initialRoot)
+      expect(store.state.users).not.toBe(initialUsers)
+      expect(store.state.users[0]).not.toBe(initialUser0)
+      expect(store.state.users[1]).toBe(initialUser1)
+      expect(store.state).toEqual({
         users: [{ name: "Bob 2" }, { name: "Alice" }],
       })
     })
@@ -279,7 +279,7 @@ describe("Arbor", () => {
       store.subscribe(subscriber1)
       store.subscribe(subscriber2)
 
-      store.root.users[0].name = "User"
+      store.state.users[0].name = "User"
 
       expect(subscriber1).toHaveBeenCalledWith({
         mutationPath: Path.parse("/users/0"),
@@ -288,7 +288,7 @@ describe("Arbor", () => {
           props: ["name"],
         },
         state: {
-          current: store.root,
+          current: store.state,
           previous: initialState,
         },
       })
@@ -300,7 +300,7 @@ describe("Arbor", () => {
           props: ["name"],
         },
         state: {
-          current: store.root,
+          current: store.state,
           previous: initialState,
         },
       })
@@ -329,18 +329,18 @@ describe("Arbor", () => {
           resolve(state.current)
         })
 
-        store.root.users.push({ name: "User 2" })
+        store.state.users.push({ name: "User 2" })
       })
     })
 
     it("ignores mutations to nodes no longer attached to the state tree", () => {
       const store = new Arbor(new Repository({ uuid: "1", name: "Alice" }, { uuid: "2", name: "Bob" }))
 
-      const bob = store.root["2"]
-      delete store.root["2"]
+      const bob = store.state["2"]
+      delete store.state["2"]
       bob.name = "This should not break the app"
 
-      expect(store.root["2"]).toBeUndefined()
+      expect(store.state["2"]).toBeUndefined()
     })
 
     it("only notifies subscribers affected by the mutation path", () => {
@@ -376,10 +376,10 @@ describe("Arbor", () => {
       const store = new Arbor(initialState)
 
       store.subscribe(subscriber1)
-      store.subscribeTo(store.root.users[1], subscriber2)
-      store.subscribeTo(store.root.users[0].posts, subscriber3)
+      store.subscribeTo(store.state.users[1], subscriber2)
+      store.subscribeTo(store.state.users[0].posts, subscriber3)
 
-      store.root.users[0].posts[1].content = "Post 2 updated"
+      store.state.users[0].posts[1].content = "Post 2 updated"
 
       expect(subscriber2).not.toHaveBeenCalled()
       expect(subscriber1).toHaveBeenCalledWith({
@@ -390,7 +390,7 @@ describe("Arbor", () => {
         },
         state: {
           previous: initialState,
-          current: store.root,
+          current: store.state,
         },
       })
 
@@ -402,11 +402,11 @@ describe("Arbor", () => {
         },
         state: {
           previous: initialState,
-          current: store.root,
+          current: store.state,
         },
       })
 
-      store.root.users[0].posts[1].content = "Post 2 updated again"
+      store.state.users[0].posts[1].content = "Post 2 updated again"
 
       expect(subscriber2).not.toHaveBeenCalled()
       expect(subscriber1).toHaveBeenCalledWith({
@@ -417,7 +417,7 @@ describe("Arbor", () => {
         },
         state: {
           previous: firstUpdateExpectedState,
-          current: store.root,
+          current: store.state,
         },
       })
 
@@ -429,7 +429,7 @@ describe("Arbor", () => {
         },
         state: {
           previous: firstUpdateExpectedState,
-          current: store.root,
+          current: store.state,
         },
       })
     })
@@ -443,21 +443,21 @@ describe("Arbor", () => {
         { name: "User 3" },
       ])
 
-      warmup(store.root[0])
-      warmup(store.root[1])
-      warmup(store.root[2])
+      warmup(store.state[0])
+      warmup(store.state[1])
+      warmup(store.state[2])
 
-      store.root.reverse()
+      store.state.reverse()
 
-      warmup(store.root[0])
-      warmup(store.root[1])
-      warmup(store.root[2])
+      warmup(store.state[0])
+      warmup(store.state[1])
+      warmup(store.state[2])
 
-      store.root[0].name = "User 3 Updated"
+      store.state[0].name = "User 3 Updated"
 
-      const user1 = warmup(store.root[0])
-      const user2 = warmup(store.root[1])
-      const user3 = warmup(store.root[2])
+      const user1 = warmup(store.state[0])
+      const user2 = warmup(store.state[1])
+      const user3 = warmup(store.state[2])
 
       expect(user1.$path.toString()).toEqual("/0")
       expect(user2.$path.toString()).toEqual("/1")
@@ -466,7 +466,7 @@ describe("Arbor", () => {
       expect(user1.name).toEqual("User 3 Updated")
       expect(user2.name).toEqual("User 2")
       expect(user3.name).toEqual("User 1")
-      expect(store.root).toEqual([
+      expect(store.state).toEqual([
         { name: "User 3 Updated" },
         { name: "User 2" },
         { name: "User 1" },
@@ -480,21 +480,21 @@ describe("Arbor", () => {
         { name: "User 3" },
       ])
 
-      warmup(store.root[0])
-      warmup(store.root[1])
-      warmup(store.root[2])
+      warmup(store.state[0])
+      warmup(store.state[1])
+      warmup(store.state[2])
 
-      delete store.root[0]
+      delete store.state[0]
 
-      const user1 = warmup(store.root[0])
-      const user2 = warmup(store.root[1])
+      const user1 = warmup(store.state[0])
+      const user2 = warmup(store.state[1])
 
       expect(user1.$path.toString()).toEqual("/0")
       expect(user2.$path.toString()).toEqual("/1")
 
       expect(user1.name).toEqual("User 2")
       expect(user2.name).toEqual("User 3")
-      expect(store.root).toEqual([{ name: "User 2" }, { name: "User 3" }])
+      expect(store.state).toEqual([{ name: "User 2" }, { name: "User 3" }])
     })
   })
 
@@ -523,17 +523,17 @@ describe("Arbor", () => {
         Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
-      const todo1 = store.root[0]
-      const todo2 = store.root[1]
+      const todo1 = store.state[0]
+      const todo2 = store.state[1]
 
       expect(todo1.status).toEqual("Active")
       expect(todo2.status).toEqual("Completed")
 
       todo1.text = "Walk the dog"
 
-      expect(todo1).not.toBe(store.root[0])
-      expect(todo2).toBe(store.root[1])
-      expect(store.root).toEqual([
+      expect(todo1).not.toBe(store.state[0])
+      expect(todo2).toBe(store.state[1])
+      expect(store.state).toEqual([
         Todo.from<Todo>({ text: "Walk the dog", completed: false }),
         Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
@@ -545,17 +545,17 @@ describe("Arbor", () => {
         Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
-      let todo = store.root[0]
-      store.root[0].complete()
+      let todo = store.state[0]
+      store.state[0].complete()
 
-      expect(store.root[0]).not.toBe(todo)
-      expect(store.root[0].completed).toBe(true)
+      expect(store.state[0]).not.toBe(todo)
+      expect(store.state[0].completed).toBe(true)
 
-      todo = store.root[0]
-      store.root[0].activate()
+      todo = store.state[0]
+      store.state[0].activate()
 
-      expect(store.root[0]).not.toBe(todo)
-      expect(store.root[0].completed).toBe(false)
+      expect(store.state[0]).not.toBe(todo)
+      expect(store.state[0].completed).toBe(false)
     })
 
     it("can be refreshed", () => {
@@ -564,7 +564,7 @@ describe("Arbor", () => {
         Todo.from<Todo>({ text: "Clean the house", completed: true }),
       ])
 
-      const firstTodo = store.root[0]
+      const firstTodo = store.state[0]
       firstTodo.complete()
       firstTodo.text = "Updated content"
 
@@ -604,17 +604,17 @@ describe("Arbor", () => {
 
         // Initializes the store after registering a new node handler
         // so that the root node can be proxyied with the correct handler
-        store.setRoot([
+        store.setState([
           Todo.from<Todo>({ text: "Walk the dogs" }),
           Todo.from<Todo>({ text: "Document Arbor" }),
         ])
 
         // traverses the tree forcing Arbor to proxy and
-        // cache store.root and store.root[1] nodes
-        store.root[1].text
-        const todos = store.root as any
+        // cache store.state and store.state[1] nodes
+        store.state[1].text
+        const todos = store.state as any
 
-        // Arbor lazily proxies nodes in the state tree, since store.root[0]
+        // Arbor lazily proxies nodes in the state tree, since store.state[0]
         // was never proxied no custom $id was generated for that node.
         expect(todos.$idFor(0)).toBeUndefined()
         expect(todos.$idFor(1)).toEqual("random-id-1")
@@ -638,15 +638,15 @@ describe("Arbor", () => {
           )
         )
 
-        const [firstItem, secondItem] = store.root
+        const [firstItem, secondItem] = store.state
 
-        delete store.root.abc
+        delete store.state.abc
 
-        const secondItem2 = store.root.bcd
+        const secondItem2 = store.state.bcd
 
         expect(secondItem).toBe(secondItem2)
-        expect(store.root.abc).toBeUndefined()
-        expect(store.root.bcd).toBe(secondItem)
+        expect(store.state.abc).toBeUndefined()
+        expect(store.state.bcd).toBe(secondItem)
         expect(firstItem.isAttached()).toBe(false)
       })
     })

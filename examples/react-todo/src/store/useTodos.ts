@@ -21,7 +21,7 @@ export class Todo extends BaseNode<Todo> {
       status: "active",
     })
 
-    store.root[todo.uuid] = todo
+    store.state[todo.uuid] = todo
 
     return todo
   }
@@ -61,5 +61,5 @@ store.use(new Logger("[Todos]"))
 store.use(persistence)
 
 export default function useTodos() {
-  return useArbor(store.root, watchTodosFilteredBy(storeFilter.root.value))
+  return useArbor(store.state, watchTodosFilteredBy(storeFilter.state.value))
 }

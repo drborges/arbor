@@ -15,7 +15,7 @@ describe("useArbor", () => {
 
     const { result } = renderHook(() => useArbor(store))
 
-    expect(result.current).toBe(store.root)
+    expect(result.current).toBe(store.state)
   })
 
   it("updates the state whenever a store mutation is triggered", () => {
@@ -136,10 +136,10 @@ describe("useArbor", () => {
       users: [{ name: "Alice" }, { name: "Bob" }],
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0]))
+    const { result } = renderHook(() => useArbor(store.state.users[0]))
 
     expect(result.all.length).toBe(1)
-    expect(result.current).toBe(store.root.users[0])
+    expect(result.current).toBe(store.state.users[0])
 
     act(() => {
       result.current.name = "Alice Updated"
@@ -148,12 +148,12 @@ describe("useArbor", () => {
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users.push({ name: "Carol" })
+      store.state.users.push({ name: "Carol" })
     })
 
     expect(result.all.length).toBe(2)
 
-    expect(store.root.users[0]).toEqual({ name: "Alice Updated" })
+    expect(store.state.users[0]).toEqual({ name: "Alice Updated" })
   })
 
   it("allows overriding the state tree watching logic", () => {
@@ -176,17 +176,17 @@ describe("useArbor", () => {
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Carol"
+      store.state.users[0].name = "Carol"
     })
 
-    expect(store.root.users[0].name).toBe("Carol")
+    expect(store.state.users[0].name).toBe("Carol")
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[1].name = "John"
+      store.state.users[1].name = "John"
     })
 
-    expect(store.root.users[1].name).toBe("John")
+    expect(store.state.users[1].name).toBe("John")
     expect(result.all.length).toBe(2)
   })
 

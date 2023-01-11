@@ -27,17 +27,17 @@ describe("watchPaths", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchPaths("/users/0", "/users/1/posts")))
+    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/0", "/users/1/posts")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users.push({ name: "Carol", age: 25, posts: [] })
-      store.root.users[0].posts[0].content = "Updated post"
-      store.root.users[1].posts[0].content = "Another updated post"
-      store.root.users[1].name = "Bob Updated"
-      store.root.users[1].age++
-      store.setRoot({} as State)
+      store.state.users.push({ name: "Carol", age: 25, posts: [] })
+      store.state.users[0].posts[0].content = "Updated post"
+      store.state.users[1].posts[0].content = "Another updated post"
+      store.state.users[1].name = "Bob Updated"
+      store.state.users[1].age++
+      store.setState({} as State)
     })
 
     expect(result.all.length).toBe(1)
@@ -51,30 +51,30 @@ describe("watchPaths", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchPaths("/users/0", "/users/1/posts")))
+    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/0", "/users/1/posts")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Alice Updated"
+      store.state.users[0].name = "Alice Updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].age++
+      store.state.users[0].age++
     })
 
     expect(result.all.length).toBe(3)
 
     act(() => {
-      store.root.users[0].posts = []
+      store.state.users[0].posts = []
     })
 
     expect(result.all.length).toBe(4)
 
     act(() => {
-      store.root.users[1].posts.push({ content: "New post" })
+      store.state.users[1].posts.push({ content: "New post" })
     })
 
     expect(result.all.length).toBe(5)
@@ -88,42 +88,42 @@ describe("watchPaths", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchPaths("/users/0/#name", "/users/1/#age")))
+    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/0/#name", "/users/1/#age")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Alice Updated"
+      store.state.users[0].name = "Alice Updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].age++
+      store.state.users[0].age++
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].posts = []
+      store.state.users[0].posts = []
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[1].name = "Bob updated"
+      store.state.users[1].name = "Bob updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[1].age++
+      store.state.users[1].age++
     })
 
     expect(result.all.length).toBe(3)
 
     act(() => {
-      store.root.users[1].posts = []
+      store.state.users[1].posts = []
     })
 
     expect(result.all.length).toBe(3)
@@ -137,42 +137,42 @@ describe("watchPaths", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchPaths("/users/:any/#name", "/users/1/#age")))
+    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/:any/#name", "/users/1/#age")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Alice Updated"
+      store.state.users[0].name = "Alice Updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].age++
+      store.state.users[0].age++
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].posts = []
+      store.state.users[0].posts = []
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[1].name = "Bob updated"
+      store.state.users[1].name = "Bob updated"
     })
 
     expect(result.all.length).toBe(3)
 
     act(() => {
-      store.root.users[1].age++
+      store.state.users[1].age++
     })
 
     expect(result.all.length).toBe(4)
 
     act(() => {
-      store.root.users[1].posts = []
+      store.state.users[1].posts = []
     })
 
     expect(result.all.length).toBe(4)

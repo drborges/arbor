@@ -23,9 +23,9 @@ store.use(
   })
 )
 
-export const activate = () => (store.root.value = "active")
-export const complete = () => (store.root.value = "completed")
-export const select = (filter: FilterValue) => (store.root.value = filter)
+export const activate = () => (store.state.value = "active")
+export const complete = () => (store.state.value = "completed")
+export const select = (filter: FilterValue) => (store.state.value = filter)
 
 export const filterTodos = (repo: Repository<Todo>, filter: FilterValue) => {
   const todos = Object.values(repo)

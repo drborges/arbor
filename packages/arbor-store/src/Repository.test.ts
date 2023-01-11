@@ -13,9 +13,9 @@ describe("Repository", () => {
     const store = new Arbor(new Repository<User>())
     const user = User.from<User>({ uuid: "123", name: "Alice", age: 22 })
 
-    store.root["123"] = user
+    store.state["123"] = user
 
-    const node = store.root["123"] as INode<User>
+    const node = store.state["123"] as INode<User>
 
     expect(node.$unwrap()).toEqual(user)
     expect(node.$unwrap()).not.toBe(user)
@@ -26,7 +26,7 @@ describe("Repository", () => {
     const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
     const store = new Arbor(new Repository(user1, user2))
 
-    expect(store.root).toEqual({
+    expect(store.state).toEqual({
       "1": user1,
       "2": user2,
     })
@@ -37,9 +37,9 @@ describe("Repository", () => {
     const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
     const store = new Arbor(new Repository(user1, user2))
 
-    delete store.root[user1.uuid]
+    delete store.state[user1.uuid]
 
-    expect(store.root).toEqual({
+    expect(store.state).toEqual({
       "2": user2
     })
   })
@@ -50,12 +50,12 @@ describe("Repository", () => {
     const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
     const store = new Arbor(new Repository(user1, user2))
 
-    for (const item of store.root) {
+    for (const item of store.state) {
       items.push(item)
     }
 
-    expect(items[0]).toBe(store.root["1"])
-    expect(items[1]).toBe(store.root["2"])
+    expect(items[0]).toBe(store.state["1"])
+    expect(items[1]).toBe(store.state["2"])
     expect(items).toEqual([
       user1,
       user2,
@@ -69,11 +69,11 @@ describe("Repository", () => {
       User.from<User>({ uuid: "a", name: "User 3" }),
     ))
 
-    const user1 = store.root.c
-    const user2 = store.root.b
-    const user3 = store.root.a
+    const user1 = store.state.c
+    const user2 = store.state.b
+    const user3 = store.state.a
 
-    const [...users] = store.root
+    const [...users] = store.state
 
     expect(users[0]).toBe(user1)
     expect(users[1]).toBe(user2)

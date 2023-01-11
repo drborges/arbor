@@ -20,8 +20,8 @@ describe("from", () => {
         mutationEvents.push(event)
       })
 
-    store.root.users[0].name = "Alice Updated"
-    store.root.users[0].age++
+    store.state.users[0].name = "Alice Updated"
+    store.state.users[0].age++
 
     expect(mutationEvents.length).toBe(1)
     expect(mutationEvents[0].metadata.props).toContain("name")
@@ -36,7 +36,7 @@ describe("from", () => {
       ],
     })
 
-    const observable = from(store.root.users[0])
+    const observable = from(store.state.users[0])
     const mutationEvents: MutationEvent[] = []
 
     observable
@@ -45,8 +45,8 @@ describe("from", () => {
         mutationEvents.push(event)
       })
 
-    store.root.users[0].name = "Alice Updated"
-    store.root.users[0].age++
+    store.state.users[0].name = "Alice Updated"
+    store.state.users[0].age++
 
     expect(mutationEvents.length).toBe(1)
     expect(mutationEvents[0].metadata.props).toContain("name")
@@ -61,7 +61,7 @@ describe("from", () => {
       ],
     })
 
-    const observable = from(store.root.users[0])
+    const observable = from(store.state.users[0])
     const mutations: MutationEvent[] = []
 
     const subscription = observable.subscribe((event) => {
@@ -70,7 +70,7 @@ describe("from", () => {
 
     subscription.unsubscribe()
 
-    store.root.users[0].name = "Alice Updated"
+    store.state.users[0].name = "Alice Updated"
 
     expect(mutations.length).toBe(0)
   })

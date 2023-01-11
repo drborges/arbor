@@ -28,7 +28,7 @@ export function from<T extends object>(
 
   const node = isNode(storeOrNode)
     ? (storeOrNode as ArborNode<T>)
-    : storeOrNode.root
+    : storeOrNode.state
 
   const store = isNode(storeOrNode)
     ? (storeOrNode.$tree as Arbor<T>)

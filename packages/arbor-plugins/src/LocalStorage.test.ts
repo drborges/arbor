@@ -14,7 +14,7 @@ describe("LocalStorage", () => {
 
     await plugin.configure(store)
 
-    expect(store.root.text).toEqual("the app state")
+    expect(store.state.text).toEqual("the app state")
   })
 
   it("updates the storage upon changes to the store", async () => {
@@ -32,7 +32,7 @@ describe("LocalStorage", () => {
         }, 500)
       })
 
-      store.root.text = "a new state"
+      store.state.text = "a new state"
     })
   })
 
@@ -53,6 +53,6 @@ describe("LocalStorage", () => {
 
     await plugin.configure(store)
 
-    expect(store.root.text).toEqual("!!the app state!!")
+    expect(store.state.text).toEqual("!!the app state!!")
   })
 })

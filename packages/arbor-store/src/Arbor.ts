@@ -67,12 +67,11 @@ export type INode<T extends object = object, K extends object = T> = T & {
  * @example
  *
  * ```ts
- * const state = { count: 0 }
- * const tree = new Arbor(state, { mode: MutationMode.FORGIVEN })
- * const root = tree.root
- * root.count++
+ * const store = new Arbor({ count: 0 }, { mode: MutationMode.FORGIVEN })
+ * const counter = store.state
+ * counter.count++
  * => 1
- * root.count++
+ * counter.count++
  * => 2
  * ```
  *
@@ -83,12 +82,11 @@ export type INode<T extends object = object, K extends object = T> = T & {
  * @example
  *
  * ```ts
- * cosnt state = { count: 0 }
- * const tree = new Arbor(state, { mode: MutationMode.STRICT })
- * const root = tree.root
- * root.count++
+ * const store = new Arbor({ count: 0 }, { mode: MutationMode.STRICT })
+ * const counter = store.state
+ * counter.count++
  * => 1
- * root.count++
+ * counter.count++
  * => 1
  * ```
  */
@@ -154,9 +152,9 @@ export default class Arbor<T extends object = object> {
   #handlers: Handler[]
 
   /**
-   * Tracks the current state tree root node.
+   * Retrieves the current state of the store
    */
-  #root: INode<T>
+  #state: INode<T>
 
   /**
    * Create a new Arbor instance.
@@ -169,7 +167,7 @@ export default class Arbor<T extends object = object> {
   ) {
     this.mode = mode
     this.#handlers = [...handlers, NodeArrayHandler, NodeHandler]
-    this.setRoot(initialState)
+    this.setState(initialState)
   }
 
   /**
@@ -184,7 +182,7 @@ export default class Arbor<T extends object = object> {
    * ```ts
    * const store = new Arbor({ users: [] })
    * store.mutate(Path.parse("/users"), node => node.push({ name: "John Doe" }))
-   * store.root
+   * store.state
    * => { users: [{ name: "John Doe" }]}
    * ```
    *
@@ -192,8 +190,8 @@ export default class Arbor<T extends object = object> {
    *
    * ```ts
    * const store = new Arbor({ users: [] })
-   * store.mutate(store.root.users, node => node.push({ name: "John Doe" }))
-   * store.root
+   * store.mutate(store.state.users, node => node.push({ name: "John Doe" }))
+   * store.state
    * => { users: [{ name: "John Doe" }]}
    * ```
    *
@@ -208,18 +206,18 @@ export default class Arbor<T extends object = object> {
     mutation: Mutation<V>
   ): void {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    const result = mutate(this.#root, path, mutation)
-    const previous = this.#root.$unwrap()
+    const result = mutate(this.#state, path, mutation)
+    const previous = this.#state.$unwrap()
     const node = isNode(pathOrNode)
       ? pathOrNode
-      : (path.walk(this.#root) as INode<V>)
+      : (path.walk(this.#state) as INode<V>)
 
     if (result?.root) {
       if (this.mode === MutationMode.FORGIVEN) {
         mutation(node.$unwrap())
       }
 
-      this.#root = result?.root
+      this.#state = result?.root
 
       notifyAffectedSubscribers({
         state: { current: result?.root, previous },
@@ -262,7 +260,7 @@ export default class Arbor<T extends object = object> {
    * @returns the node at the given path.
    */
   getNodeAt<V extends object>(path: Path): INode<V> {
-    return path.walk(this.#root)
+    return path.walk(this.#state)
   }
 
   /**
@@ -271,15 +269,15 @@ export default class Arbor<T extends object = object> {
    * @param value the value to be used as the root of the state tree.
    * @returns the root node.
    */
-  setRoot(value: T): INode<T> {
-    const previous = this.#root?.$unwrap()
+  setState(value: T): INode<T> {
+    const previous = this.#state?.$unwrap()
     const current = this.createNode(
       Path.root,
       value,
-      this.#root?.$subscribers || new Subscribers()
+      this.#state?.$subscribers || new Subscribers()
     )
 
-    this.#root = current
+    this.#state = current
 
     notifyAffectedSubscribers({
       state: { current, previous },
@@ -300,7 +298,7 @@ export default class Arbor<T extends object = object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber): Unsubscribe {
-    return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
+    return this.subscribeTo(this.#state as ArborNode<T>, subscriber)
   }
 
   /**
@@ -339,9 +337,9 @@ export default class Arbor<T extends object = object> {
   }
 
   /**
-   * Returns the current state tree root node.
+   * Returns the current state of the store
    */
-  get root(): ArborNode<T> {
-    return this.#root
+  get state(): ArborNode<T> {
+    return this.#state
   }
 }

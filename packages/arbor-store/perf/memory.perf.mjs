@@ -28,7 +28,7 @@ export function checkMemoryAllocationWhenProduceNextStateViaArbor() {
     "Kb"
   )
 
-  const node = readRecursevly(store.root)
+  const node = readRecursevly(store.state)
   const afterAccessingLeafNode = memoryUsage()
   console.log(
     "  After accessing leaf node",
@@ -45,7 +45,7 @@ export function checkMemoryAllocationWhenProduceNextStateViaArbor() {
     "Kb"
   )
 
-  const newLeafNode = readRecursevly(store.root)
+  const newLeafNode = readRecursevly(store.state)
   newLeafNode.newProp = "mutating leaf node..."
   const afterMutatingLeafNodeASecondTime = memoryUsage()
   console.log(

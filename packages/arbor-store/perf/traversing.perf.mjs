@@ -12,7 +12,7 @@ export function readingLeafNodeFromArborStateTree() {
   const store = new Arbor(state)
 
   performance.mark("start")
-  readRecursevly(store.root)
+  readRecursevly(store.state)
   performance.mark("finish")
   performance.measure(
     `Reading a leaf node from an Arbor state tree (depth = ${defaultDepth})`,
@@ -21,7 +21,7 @@ export function readingLeafNodeFromArborStateTree() {
   )
 
   performance.mark("start")
-  readRecursevly(store.root)
+  readRecursevly(store.state)
   performance.mark("finish")
   performance.measure(
     `Reading a leaf node from a cached Arbor state tree (depth = ${defaultDepth})`,

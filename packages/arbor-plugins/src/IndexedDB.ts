@@ -16,7 +16,7 @@ export default class IndexedDB<T extends object> implements Plugin<T> {
     const db = await openDB(this.config.name, this.config.version, this.config)
     const initialState = await this.config.load(db)
 
-    store.setRoot(initialState)
+    store.setState(initialState)
     store.subscribe(({ state }) => {
       const value = (state.current as INode<T>).$unwrap()
       this.config.update(db, value)

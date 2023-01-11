@@ -80,7 +80,7 @@ function useArbor<T extends object>(
   }, [])
 
   const targetPath = useMemo(
-    () => (isNode(target) ? target.$path : (store.root as INode).$path),
+    () => (isNode(target) ? target.$path : (store.state as INode).$path),
     [store, target]
   )
 

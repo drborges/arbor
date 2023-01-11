@@ -27,11 +27,11 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo1 = store.root.abc
+      const todo1 = store.state.abc
 
       todo1.detach()
 
-      expect(store.root.abc).toBeUndefined()
+      expect(store.state.abc).toBeUndefined()
       expect(todo1.isAttached()).toBe(false)
     })
 
@@ -50,7 +50,7 @@ describe("BaseNode", () => {
 
       const store = new Arbor(todo)
 
-      expect(() => store.root.detach()).toThrowError(ArborError)
+      expect(() => store.state.detach()).toThrowError(ArborError)
     })
 
     it("publishes mutation metadata to subscribers", () => {
@@ -67,7 +67,7 @@ describe("BaseNode", () => {
         expect(event.metadata.props).toEqual(["todo"])
       })
 
-      store.root.todo.detach()
+      store.state.todo.detach()
     })
   })
 
@@ -88,11 +88,11 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo = store.root.abc
+      const todo = store.state.abc
 
       const todos = todo.parent()
 
-      expect(todos).toBe(store.root)
+      expect(todos).toBe(store.state)
     })
 
     it("returns undefined if parent node does not exist", () => {
@@ -104,7 +104,7 @@ describe("BaseNode", () => {
         })
       )
 
-      const parent = store.root.parent()
+      const parent = store.state.parent()
 
       expect(parent).toBe(undefined)
     })
@@ -127,17 +127,17 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo1 = store.root.abc
+      const todo1 = store.state.abc
 
-      delete store.root.abc
+      delete store.state.abc
 
-      expect(store.root.abc).toBeUndefined()
+      expect(store.state.abc).toBeUndefined()
       expect(todo1.isAttached()).toBe(false)
 
       todo1.attach()
 
       expect(todo1.isAttached()).toBe(true)
-      expect(store.root.abc).toEqual(todo1)
+      expect(store.state.abc).toEqual(todo1)
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
@@ -155,7 +155,7 @@ describe("BaseNode", () => {
 
       const store = new Arbor({ todo })
 
-      const node = store.root.todo
+      const node = store.state.todo
       node.detach()
 
       store.subscribe((event) => {
@@ -184,16 +184,16 @@ describe("BaseNode", () => {
         )
       )
 
-      const root = store.root
-      const todo1 = store.root.abc
-      const todo2 = store.root.bcd
+      const root = store.state
+      const todo1 = store.state.abc
+      const todo2 = store.state.bcd
 
       todo1.merge({ text: "Walk the dogs" })
 
-      expect(store.root).not.toBe(root)
-      expect(store.root.bcd).toBe(todo2)
-      expect(store.root.abc).not.toBe(todo1)
-      expect(store.root.abc).toEqual(
+      expect(store.state).not.toBe(root)
+      expect(store.state.bcd).toBe(todo2)
+      expect(store.state.abc).not.toBe(todo1)
+      expect(store.state.abc).toEqual(
         Todo.from<Todo>({
           uuid: "abc",
           text: "Walk the dogs",
@@ -224,7 +224,7 @@ describe("BaseNode", () => {
         expect(event.metadata.props).toEqual(["text", "completed"])
       })
 
-      store.root.todoId.merge({
+      store.state.todoId.merge({
         text: "New Todo",
         completed: true,
       })
@@ -248,7 +248,7 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo = store.root.abc
+      const todo = store.state.abc
 
       expect(todo.isStale()).toBe(false)
 
@@ -258,8 +258,8 @@ describe("BaseNode", () => {
 
       const reloaded = todo.reload()
 
-      expect(todo).not.toBe(store.root.abc)
-      expect(reloaded).toBe(store.root.abc)
+      expect(todo).not.toBe(store.state.abc)
+      expect(reloaded).toBe(store.state.abc)
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
@@ -286,10 +286,10 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo = store.root.abc
+      const todo = store.state.abc
 
       expect(todo.isAttached()).toBe(true)
-      delete store.root.abc
+      delete store.state.abc
       expect(todo.isAttached()).toBe(false)
     })
 
@@ -317,7 +317,7 @@ describe("BaseNode", () => {
         )
       )
 
-      const todo = store.root.abc
+      const todo = store.state.abc
 
       expect(todo.isStale()).toBe(false)
       todo.text = "Walk the dogs"
@@ -348,7 +348,7 @@ describe("BaseNode", () => {
         ),
       })
 
-      const todo = store.root.todos.abc
+      const todo = store.state.todos.abc
 
       expect(todo.path.toString()).toBe("/todos/abc")
     })

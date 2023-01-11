@@ -14,7 +14,7 @@ export function produceNextStateViaArbor() {
   global.gc()
   const state = createDeeplyNestedState()
   const store = new Arbor(state)
-  const node = readRecursevly(store.root)
+  const node = readRecursevly(store.state)
 
   performance.mark("start")
   node.newProp = "mutating leaf node..."

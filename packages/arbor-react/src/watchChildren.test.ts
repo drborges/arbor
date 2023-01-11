@@ -28,17 +28,17 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren("name", "age")))
+    const { result } = renderHook(() => useArbor(store.state.users, watchChildren("name", "age")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].posts[0].content = "Updated post"
-      store.root.users[1].posts[0].content = "Another updated post"
-      store.root.users[0].posts = []
-      store.root.users[1].posts = []
-      store.root.users = []
-      store.setRoot({} as State)
+      store.state.users[0].posts[0].content = "Updated post"
+      store.state.users[1].posts[0].content = "Another updated post"
+      store.state.users[0].posts = []
+      store.state.users[1].posts = []
+      store.state.users = []
+      store.setState({} as State)
     })
 
     expect(result.all.length).toBe(1)
@@ -56,13 +56,13 @@ describe("watchChildren", () => {
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root["123"].name = "Alice updated"
+      store.state["123"].name = "Alice updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root["123"].age++
+      store.state["123"].age++
     })
 
     expect(result.all.length).toBe(2)
@@ -85,13 +85,13 @@ describe("watchChildren", () => {
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.preference.email = true
+      store.state.preference.email = true
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.preference.sms = true
+      store.state.preference.sms = true
     })
 
     expect(result.all.length).toBe(2)
@@ -105,12 +105,12 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren("name", "age")))
+    const { result } = renderHook(() => useArbor(store.state.users, watchChildren("name", "age")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users.push({ name: "Carol", age: 25, posts: [] })
+      store.state.users.push({ name: "Carol", age: 25, posts: [] })
     })
 
     expect(result.all.length).toBe(2)
@@ -124,30 +124,30 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren("name", "age")))
+    const { result } = renderHook(() => useArbor(store.state.users, watchChildren("name", "age")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Alice updated"
+      store.state.users[0].name = "Alice updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].age++
+      store.state.users[0].age++
     })
 
     expect(result.all.length).toBe(3)
 
     act(() => {
-      store.root.users[1].name = "Bob updated"
+      store.state.users[1].name = "Bob updated"
     })
 
     expect(result.all.length).toBe(4)
 
     act(() => {
-      store.root.users[1].age++
+      store.state.users[1].age++
     })
 
     expect(result.all.length).toBe(5)
@@ -161,12 +161,12 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren()))
+    const { result } = renderHook(() => useArbor(store.state.users, watchChildren()))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      delete store.root.users[0]
+      delete store.state.users[0]
     })
 
     expect(result.all.length).toBe(2)
@@ -180,12 +180,12 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren()))
+    const { result } = renderHook(() => useArbor(store.state.users, watchChildren()))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users.push({
+      store.state.users.push({
         name: "Carol",
         age: 20,
         posts: []
@@ -203,42 +203,42 @@ describe("watchChildren", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users, watchChildren()))
+    const { result } = renderHook(() => useArbor(store.state.users, watchChildren()))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Alice updated"
+      store.state.users[0].name = "Alice updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].age++
+      store.state.users[0].age++
     })
 
     expect(result.all.length).toBe(3)
 
     act(() => {
-      store.root.users[0].posts.push({ content: "new post" })
+      store.state.users[0].posts.push({ content: "new post" })
     })
 
     expect(result.all.length).toBe(4)
 
     act(() => {
-      store.root.users[0].posts[0].content = "Updated content"
+      store.state.users[0].posts[0].content = "Updated content"
     })
 
     expect(result.all.length).toBe(5)
 
     act(() => {
-      store.root.users[1].name = "Bob updated"
+      store.state.users[1].name = "Bob updated"
     })
 
     expect(result.all.length).toBe(6)
 
     act(() => {
-      store.root.users[1].age++
+      store.state.users[1].age++
     })
 
     expect(result.all.length).toBe(7)

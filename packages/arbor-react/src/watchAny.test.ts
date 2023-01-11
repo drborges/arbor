@@ -13,14 +13,14 @@ describe("watchAny", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], watchAny()))
+    const { result } = renderHook(() => useArbor(store.state.users[0], watchAny()))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users.push({ name: "Carol", posts: [] })
-      store.root.users[1].name = "Bob Updated"
-      store.root.users[1].posts[0].content = "My first updated post"
+      store.state.users.push({ name: "Carol", posts: [] })
+      store.state.users[1].name = "Bob Updated"
+      store.state.users[1].posts[0].content = "My first updated post"
     })
 
     expect(result.all.length).toBe(1)
@@ -34,18 +34,18 @@ describe("watchAny", () => {
       ]
     })
 
-    const { result } = renderHook(() => useArbor(store.root.users[0], watchAny()))
+    const { result } = renderHook(() => useArbor(store.state.users[0], watchAny()))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.root.users[0].name = "Alice Updated"
+      store.state.users[0].name = "Alice Updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.root.users[0].posts[0].content = "Updated Hello World"
+      store.state.users[0].posts[0].content = "Updated Hello World"
     })
 
     expect(result.all.length).toBe(3)

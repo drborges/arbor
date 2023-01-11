@@ -10,7 +10,7 @@ export default memo(function NewTodoForm() {
     e.preventDefault()
     Todo.add(input.value)
     input.value = ""
-    if (filterStore.root.value === "completed") activate()
+    if (filterStore.state.value === "completed") activate()
   }
 
   return (

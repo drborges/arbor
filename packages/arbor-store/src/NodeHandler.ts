@@ -59,7 +59,7 @@ export default class NodeHandler<
     let childValue = Reflect.get(target, prop, proxy) as any
 
     // Automatically unwrap proxied values that may have been used to initialize the store
-    // either via new Arbor(...) or store.setRoot(...).
+    // either via new Arbor(...) or store.setState(...).
     // This is done for consistency at the moment to ensure that node values are not proxies
     // but the actual proxied value. This decision can be revisited if needed.
     if (isNode(childValue)) {
