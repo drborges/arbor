@@ -152,9 +152,9 @@ export default class Arbor<T extends object = object> {
   #handlers: Handler[]
 
   /**
-   * Retrieves the current state of the store
+   * Reference to the root node of the state tree
    */
-  #state: INode<T>
+  #root: INode<T>
 
   /**
    * Create a new Arbor instance.
@@ -205,29 +205,29 @@ export default class Arbor<T extends object = object> {
     pathOrNode: Path | INode<V>,
     mutation: Mutation<V>
   ): void {
-    const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    const result = mutate(this.#state, path, mutation)
-    const previous = this.#state.$unwrap()
     const node = isNode(pathOrNode)
       ? pathOrNode
-      : (path.walk(this.#state) as INode<V>)
+      : (pathOrNode.walk(this.#root) as INode<V>)
+
+    const previous = this.#root.$unwrap()
+    const result = mutate(this.#root, node.$path, mutation)
 
     if (result?.root) {
       if (this.mode === MutationMode.FORGIVEN) {
         mutation(node.$unwrap())
       }
 
-      this.#state = result?.root
+      this.#root = result?.root
 
       notifyAffectedSubscribers({
         state: { current: result?.root, previous },
         metadata: result.metadata as MutationMetadata,
-        mutationPath: path,
+        mutationPath: node.$path,
       })
     } else if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(
-        `Could not mutate path ${path}. The path no longer exists within the state tree.`
+        `Could not mutate path ${node.$path}. The path no longer exists within the state tree.`
       )
     }
   }
@@ -260,7 +260,7 @@ export default class Arbor<T extends object = object> {
    * @returns the node at the given path.
    */
   getNodeAt<V extends object>(path: Path): INode<V> {
-    return path.walk(this.#state)
+    return path.walk(this.#root)
   }
 
   /**
@@ -270,14 +270,14 @@ export default class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): INode<T> {
-    const previous = this.#state?.$unwrap()
+    const previous = this.#root?.$unwrap()
     const current = this.createNode(
       Path.root,
       value,
-      this.#state?.$subscribers || new Subscribers()
+      this.#root?.$subscribers || new Subscribers()
     )
 
-    this.#state = current
+    this.#root = current
 
     notifyAffectedSubscribers({
       state: { current, previous },
@@ -298,7 +298,7 @@ export default class Arbor<T extends object = object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber): Unsubscribe {
-    return this.subscribeTo(this.#state as ArborNode<T>, subscriber)
+    return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
   }
 
   /**
@@ -340,6 +340,6 @@ export default class Arbor<T extends object = object> {
    * Returns the current state of the store
    */
   get state(): ArborNode<T> {
-    return this.#state
+    return this.#root
   }
 }
