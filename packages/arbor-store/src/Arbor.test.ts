@@ -621,6 +621,45 @@ describe("Arbor", () => {
       })
     })
 
+    it("ignores mutations on stale nodes", () => {
+      const store = new Arbor({
+        users: {
+          a: { name: "Alice" },
+          b: { name: "Bob" },
+          c: { name: "Carol" },
+        }
+      })
+
+      const alice = store.state.users.a
+      store.state.users.a = store.state.users.b
+      expect(store.state.users.a).toEqual({ name: "Bob" })
+
+      // the alice variable at this point, references a node that
+      // no longer exists within the state tree since it was replaced
+      // on line 634.
+      alice.name = "Alice Doe"
+
+      expect(store.state.users.a).toEqual({ name: "Bob" })
+    })
+
+    it("ignores array deletions on stale nodes", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Alice" },
+          { name: "Bob" },
+          { name: "Carol" },
+        ]
+      })
+
+      const alice = store.state.users[0]
+      store.state.users[0] = store.state.users[1]
+      expect(store.state.users[0]).toEqual({ name: "Bob" })
+
+      alice.name = "Alice Doe"
+
+      expect(store.state.users[0]).toEqual({ name: "Bob" })
+    })
+
     describe("Repository", () => {
       it("allows managing Repository of items", () => {
         const store = new Arbor(

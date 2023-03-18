@@ -1,12 +1,14 @@
+// eslint-disable-next-line max-classes-per-file
 import Path from "./Path"
 import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
+import NodeArrayHandler from "./NodeArrayHandler"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
 import { NotAnArborNodeError } from "./errors"
-import NodeArrayHandler from "./NodeArrayHandler"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
+import { assignUUID, ArborUUID } from "./uuid"
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
@@ -250,7 +252,11 @@ export default class Arbor<T extends object = object> {
   ): INode<V> {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
-    return new Proxy<V>(value, handler) as INode<V>
+    const node = new Proxy<V>(value, handler) as INode<V>
+
+    assignUUID(value)
+
+    return node
   }
 
   /**
@@ -315,6 +321,25 @@ export default class Arbor<T extends object = object> {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     return node.$subscribers.subscribe(subscriber)
+  }
+
+  isStale(node: object) {
+    if (!isNode(node)) return true
+
+    const reloadedNode = this.getNodeAt(node.$path)
+
+    // Node no longer exists within the state tree
+    if (!reloadedNode) return true
+
+    const reloadedValue = reloadedNode.$unwrap()
+    const value = node.$unwrap()
+    if (value[ArborUUID] === reloadedValue[ArborUUID]) return false
+    if (global.DEBUG) {
+      // eslint-disable-next-line no-console
+      console.warn(`Stale node pointing to path ${node.$path.toString()}`)
+    }
+
+    return true
   }
 
   /**

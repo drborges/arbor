@@ -88,6 +88,8 @@ export default class NodeHandler<
   }
 
   set(target: T, prop: string, newValue: any, proxy: INode<T>): boolean {
+    if (this.$tree.isStale(this)) return true
+
     // Ignores the mutation if new value is the current value
     if (proxy[prop] === newValue || target[prop] === newValue) return true
 
@@ -111,6 +113,8 @@ export default class NodeHandler<
   }
 
   deleteProperty(target: T, prop: string): boolean {
+    if (this.$tree.isStale(this)) return true
+
     if (prop in target) {
       const childValue = Reflect.get(target, prop) as any
 
