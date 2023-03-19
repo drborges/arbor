@@ -5,7 +5,7 @@ import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import NodeArrayHandler from "./NodeArrayHandler"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
-import { NotAnArborNodeError } from "./errors"
+import { NotAnArborNodeError, StaleNodeError } from "./errors"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 import { assignUUID, ArborUUID } from "./uuid"
@@ -210,6 +210,10 @@ export default class Arbor<T extends object = object> {
     const node = isNode(pathOrNode)
       ? pathOrNode
       : (pathOrNode.walk(this.#root) as INode<V>)
+
+    if (this.isStale(node)) {
+      throw new StaleNodeError()
+    }
 
     const previous = this.#root.$unwrap()
     const result = mutate(this.#root, node.$path, mutation)

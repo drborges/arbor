@@ -14,3 +14,9 @@ export class NotAnArborNodeError extends ArborError {
     super("Object not bound to an Arbor store")
   }
 }
+
+export class StaleNodeError extends ArborError {
+  constructor() {
+    super("Mutation attempt on a stale node")
+  }
+}

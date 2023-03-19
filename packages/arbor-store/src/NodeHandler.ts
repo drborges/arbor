@@ -88,8 +88,6 @@ export default class NodeHandler<
   }
 
   set(target: T, prop: string, newValue: any, proxy: INode<T>): boolean {
-    if (this.$tree.isStale(this)) return true
-
     // Ignores the mutation if new value is the current value
     if (proxy[prop] === newValue || target[prop] === newValue) return true
 
@@ -98,6 +96,10 @@ export default class NodeHandler<
     // clone assigned values to force Arbor to recompute that new value's path, otherwise
     // different nodes pointing to the same value would have the same path, and paths must
     // always be unique within the state tree.
+    //
+    // TODO: revisit the clonning bit.
+    // This will likely prevent reference assignments from happening
+    // which may not be intuitive.
     const value = isProxiable(newValue) ? clone(newValue) : newValue
 
     this.$tree.mutate(proxy, (t: T) => {
@@ -113,8 +115,6 @@ export default class NodeHandler<
   }
 
   deleteProperty(target: T, prop: string): boolean {
-    if (this.$tree.isStale(this)) return true
-
     if (prop in target) {
       const childValue = Reflect.get(target, prop) as any
 

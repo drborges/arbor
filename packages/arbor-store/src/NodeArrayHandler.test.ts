@@ -2,6 +2,7 @@ import Path from "./Path"
 import { unwrap, warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
 import Arbor, { INode, MutationMode } from "./Arbor"
+import { StaleNodeError } from "./errors"
 
 interface Address {
   street: string
@@ -211,7 +212,7 @@ describe("NodeArrayHandler", () => {
 
       expect(store.state.users1).toEqual(users2)
 
-      delete users1[0]
+      expect(() => { delete users1[0] }).toThrowError(StaleNodeError)
 
       expect(store.state.users1).toEqual(users2)
     })
@@ -260,9 +261,7 @@ describe("NodeArrayHandler", () => {
       store.state.users1 = users2
 
       expect(store.state.users1).toEqual(users2)
-
-      users1.splice(0, 1)
-
+      expect(() => { users1.splice(0, 1) }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
     })
 
@@ -428,9 +427,7 @@ describe("NodeArrayHandler", () => {
       store.state.users1 = users2
 
       expect(store.state.users1).toEqual(users2)
-
-      users1.push({ name: "Carol" })
-
+      expect(() => { users1.push({ name: "Carol" }) }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
     })
 
@@ -559,9 +556,7 @@ describe("NodeArrayHandler", () => {
       store.state.users1 = users2
 
       expect(store.state.users1).toEqual(users2)
-
-      users1.reverse()
-
+      expect(() => { users1.reverse() }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
     })
 
@@ -751,9 +746,7 @@ describe("NodeArrayHandler", () => {
       store.state.users1 = users2
 
       expect(store.state.users1).toEqual(users2)
-
-      users1.pop()
-
+      expect(() => { users1.pop() }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
     })
 
@@ -921,9 +914,7 @@ describe("NodeArrayHandler", () => {
       store.state.users1 = users2
 
       expect(store.state.users1).toEqual(users2)
-
-      users1.shift()
-
+      expect(() => { users1.shift() }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
     })
 
@@ -1074,9 +1065,7 @@ describe("NodeArrayHandler", () => {
       store.state.users1 = users2
 
       expect(store.state.users1).toEqual(users2)
-
-      users1.sort((a, b) => a.name.localeCompare(b.name))
-
+      expect(() => { users1.sort((a, b) => a.name.localeCompare(b.name)) }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
     })
 
@@ -1243,9 +1232,7 @@ describe("NodeArrayHandler", () => {
       store.state.users1 = users2
 
       expect(store.state.users1).toEqual(users2)
-
-      users1.unshift({ name: "Carol" })
-
+      expect(() => { users1.unshift({ name: "Carol" }) }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
     })
 

@@ -9,8 +9,6 @@ export default class NodeArrayHandler<
   }
 
   deleteProperty(_target: T[], prop: string): boolean {
-    if (this.$tree.isStale(this)) return true
-
     this.$tree.mutate(this, (node: T[]) => {
       node.splice(parseInt(prop, 10), 1)
 
@@ -26,8 +24,6 @@ export default class NodeArrayHandler<
   }
 
   push(...item: T[]): number {
-    if (this.$tree.isStale(this)) return 0
-
     let size: number
 
     this.$tree.mutate(this, (node: T[]) => {
@@ -43,8 +39,6 @@ export default class NodeArrayHandler<
   }
 
   reverse() {
-    if (this.$tree.isStale(this)) return this
-
     this.$tree.mutate(this, (node: T[]) => {
       node.reverse()
 
@@ -60,8 +54,6 @@ export default class NodeArrayHandler<
   }
 
   pop(): T {
-    if (this.$tree.isStale(this)) return undefined
-
     let popped: T
 
     this.$tree.mutate(this, (node: T[]) => {
@@ -80,8 +72,6 @@ export default class NodeArrayHandler<
   }
 
   shift(): T {
-    if (this.$tree.isStale(this)) return undefined
-
     let shifted: T
 
     this.$tree.mutate(this, (node: T[]) => {
@@ -99,8 +89,6 @@ export default class NodeArrayHandler<
   }
 
   sort(compareFn: (a: T, b: T) => number) {
-    if (this.$tree.isStale(this)) return this
-
     this.$tree.mutate(this, (node: T[]) => {
       node.sort(compareFn)
 
@@ -116,8 +104,6 @@ export default class NodeArrayHandler<
   }
 
   splice(start: number, deleteCount: number, ...items: T[]): T[] {
-    if (this.$tree.isStale(this)) return []
-
     let deleted: T[] = []
 
     this.$tree.mutate(this, (node: T[]) => {
@@ -137,8 +123,6 @@ export default class NodeArrayHandler<
   }
 
   unshift(...items: T[]): number {
-    if (this.$tree.isStale(this)) return 0
-
     let size: number
 
     this.$tree.mutate(this, (node: T[]) => {
