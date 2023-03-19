@@ -1,0 +1,10 @@
+☐ Move stale node check into Arbor#mutate so it is centralized
+☐ Throw an error when attempting to mutate a stale node as oppposed to ignoring the mutation
+☐ Tackle code TODOs
+☐ Look for improvement areas around:
+  ☐ readability
+  ☐ abstraction extractions
+  ☐ release process
+  ☐ documentation
+  ☐ spec coverage
+  ☐ streamline specs: they're a bit confusing at the moment
