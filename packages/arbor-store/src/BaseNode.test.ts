@@ -232,7 +232,7 @@ describe("BaseNode", () => {
   })
 
   describe("#reload", () => {
-    it("allows reloading stale nodes", () => {
+    it("allows retrieving a fresh reference of the node", () => {
       const store = new Arbor(
         new Repository(
           Todo.from<Todo>({
@@ -249,17 +249,12 @@ describe("BaseNode", () => {
       )
 
       const todo = store.state.abc
-
-      expect(todo.isStale()).toBe(false)
-
       todo.merge({ text: "Walk the dogs" })
-
-      expect(todo.isStale()).toBe(true)
-
       const reloaded = todo.reload()
 
-      expect(todo).not.toBe(store.state.abc)
-      expect(reloaded).toBe(store.state.abc)
+      expect(todo.uuid).toEqual(reloaded.uuid)
+      expect(todo.text).toEqual("Do the dishes")
+      expect(reloaded.text).toEqual("Walk the dogs")
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
@@ -301,7 +296,7 @@ describe("BaseNode", () => {
   })
 
   describe("#isStale", () => {
-    it("checks whether or not a node is out dated", () => {
+    it("checks whether or not a node is no longer valid", () => {
       const store = new Arbor(
         new Repository(
           Todo.from<Todo>({
@@ -320,7 +315,7 @@ describe("BaseNode", () => {
       const todo = store.state.abc
 
       expect(todo.isStale()).toBe(false)
-      todo.text = "Walk the dogs"
+      delete store.state.abc
       expect(todo.isStale()).toBe(true)
     })
 
