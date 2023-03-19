@@ -1,10 +1,9 @@
-import { v4 as uuid } from "uuid"
-import Logger from "@arborjs/plugins/Logger"
 import LocalStorage from "@arborjs/plugins/LocalStorage"
-import Arbor, { BaseNode, Repository } from "@arborjs/store"
+import Logger from "@arborjs/plugins/Logger"
 import useArbor from "@arborjs/react"
+import Arbor, { BaseNode, Repository } from "@arborjs/store"
+import { v4 as uuid } from "uuid"
 
-import { store as storeFilter } from "./useTodosFilter"
 import { watchTodosFilteredBy } from "./watchers/watchTodosFilteredBy"
 
 export type Status = "completed" | "active"
@@ -61,5 +60,5 @@ store.use(new Logger("[Todos]"))
 store.use(persistence)
 
 export default function useTodos() {
-  return useArbor(store.state, watchTodosFilteredBy(storeFilter.state.value))
+  return useArbor(store.state, watchTodosFilteredBy())
 }

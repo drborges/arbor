@@ -1,12 +1,14 @@
-import Path from "./Path"
+// eslint-disable-next-line max-classes-per-file
+import { NotAnArborNodeError, StaleNodeError } from "./errors"
 import isNode from "./isNode"
+import mutate, { Mutation, MutationMetadata } from "./mutate"
+import NodeArrayHandler from "./NodeArrayHandler"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import mutate, { Mutation, MutationMetadata } from "./mutate"
-import { NotAnArborNodeError } from "./errors"
-import NodeArrayHandler from "./NodeArrayHandler"
-import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
+import Path from "./Path"
+import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
+import { getUUID, setUUID } from "./uuid"
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
@@ -152,9 +154,9 @@ export default class Arbor<T extends object = object> {
   #handlers: Handler[]
 
   /**
-   * Retrieves the current state of the store
+   * Reference to the root node of the state tree
    */
-  #state: INode<T>
+  #root: INode<T>
 
   /**
    * Create a new Arbor instance.
@@ -205,29 +207,33 @@ export default class Arbor<T extends object = object> {
     pathOrNode: Path | INode<V>,
     mutation: Mutation<V>
   ): void {
-    const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    const result = mutate(this.#state, path, mutation)
-    const previous = this.#state.$unwrap()
     const node = isNode(pathOrNode)
       ? pathOrNode
-      : (path.walk(this.#state) as INode<V>)
+      : (pathOrNode.walk(this.#root) as INode<V>)
+
+    if (this.isStale(node)) {
+      throw new StaleNodeError()
+    }
+
+    const previous = this.#root.$unwrap()
+    const result = mutate(this.#root, node.$path, mutation)
 
     if (result?.root) {
       if (this.mode === MutationMode.FORGIVEN) {
         mutation(node.$unwrap())
       }
 
-      this.#state = result?.root
+      this.#root = result?.root
 
       notifyAffectedSubscribers({
         state: { current: result?.root, previous },
         metadata: result.metadata as MutationMetadata,
-        mutationPath: path,
+        mutationPath: node.$path,
       })
     } else if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(
-        `Could not mutate path ${path}. The path no longer exists within the state tree.`
+        `Could not mutate path ${node.$path}. The path no longer exists within the state tree.`
       )
     }
   }
@@ -250,7 +256,11 @@ export default class Arbor<T extends object = object> {
   ): INode<V> {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
-    return new Proxy<V>(value, handler) as INode<V>
+    const node = new Proxy<V>(value, handler) as INode<V>
+
+    setUUID(value)
+
+    return node
   }
 
   /**
@@ -260,7 +270,7 @@ export default class Arbor<T extends object = object> {
    * @returns the node at the given path.
    */
   getNodeAt<V extends object>(path: Path): INode<V> {
-    return path.walk(this.#state)
+    return path.walk(this.#root)
   }
 
   /**
@@ -270,14 +280,14 @@ export default class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): INode<T> {
-    const previous = this.#state?.$unwrap()
+    const previous = this.#root?.$unwrap()
     const current = this.createNode(
       Path.root,
       value,
-      this.#state?.$subscribers || new Subscribers()
+      this.#root?.$subscribers || new Subscribers()
     )
 
-    this.#state = current
+    this.#root = current
 
     notifyAffectedSubscribers({
       state: { current, previous },
@@ -298,7 +308,7 @@ export default class Arbor<T extends object = object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber): Unsubscribe {
-    return this.subscribeTo(this.#state as ArborNode<T>, subscriber)
+    return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
   }
 
   /**
@@ -315,6 +325,25 @@ export default class Arbor<T extends object = object> {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     return node.$subscribers.subscribe(subscriber)
+  }
+
+  isStale(node: object) {
+    if (!isNode(node)) return true
+
+    const reloadedNode = this.getNodeAt(node.$path)
+
+    // Node no longer exists within the state tree
+    if (!reloadedNode) return true
+
+    const reloadedValue = reloadedNode.$unwrap()
+    const value = node.$unwrap()
+    if (getUUID(value) === getUUID(reloadedValue)) return false
+    if (global.DEBUG) {
+      // eslint-disable-next-line no-console
+      console.warn(`Stale node pointing to path ${node.$path.toString()}`)
+    }
+
+    return true
   }
 
   /**
@@ -340,6 +369,6 @@ export default class Arbor<T extends object = object> {
    * Returns the current state of the store
    */
   get state(): ArborNode<T> {
-    return this.#state
+    return this.#root
   }
 }

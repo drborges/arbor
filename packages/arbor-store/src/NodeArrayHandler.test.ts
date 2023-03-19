@@ -2,6 +2,7 @@ import Path from "./Path"
 import { unwrap, warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
 import Arbor, { INode, MutationMode } from "./Arbor"
+import { StaleNodeError } from "./errors"
 
 interface Address {
   street: string
@@ -194,6 +195,28 @@ describe("NodeArrayHandler", () => {
       })
     })
 
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Alice" }
+        ],
+        users2: [
+          { name: "Bob" }
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+
+      expect(() => { delete users1[0] }).toThrowError(StaleNodeError)
+
+      expect(store.state.users1).toEqual(users2)
+    })
+
     describe("mode = 'forgiven'", () => {
       it("propates mutation side-effects to the original node's underlying value", () => {
         const state = [
@@ -222,6 +245,26 @@ describe("NodeArrayHandler", () => {
   })
 
   describe("#splice", () => {
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Alice" }
+        ],
+        users2: [
+          { name: "Bob" }
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+      expect(() => { users1.splice(0, 1) }).toThrowError(StaleNodeError)
+      expect(store.state.users1).toEqual(users2)
+    })
+
     it("generates a new state tree root node", () => {
       const state = [
         { name: "User 1", address: { street: "Street 1" } },
@@ -368,6 +411,26 @@ describe("NodeArrayHandler", () => {
   })
 
   describe("#push", () => {
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Alice" }
+        ],
+        users2: [
+          { name: "Bob" }
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+      expect(() => { users1.push({ name: "Carol" }) }).toThrowError(StaleNodeError)
+      expect(store.state.users1).toEqual(users2)
+    })
+
     it("generates a new state tree root node", () => {
       const state = [{ name: "User 1", address: { street: "Street 1" } }]
 
@@ -476,6 +539,27 @@ describe("NodeArrayHandler", () => {
   })
 
   describe("#reverse", () => {
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Alice" }
+        ],
+        users2: [
+          { name: "Carol" },
+          { name: "Bob" }
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+      expect(() => { users1.reverse() }).toThrowError(StaleNodeError)
+      expect(store.state.users1).toEqual(users2)
+    })
+
     it("generates a new state tree root node", () => {
       const state = [
         { name: "User 1", address: { street: "Street 1" } },
@@ -646,6 +730,26 @@ describe("NodeArrayHandler", () => {
   })
 
   describe("#pop", () => {
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Alice" }
+        ],
+        users2: [
+          { name: "Bob" }
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+      expect(() => { users1.pop() }).toThrowError(StaleNodeError)
+      expect(store.state.users1).toEqual(users2)
+    })
+
     it("generates a new state tree root node", () => {
       const state = [
         { name: "User 1", address: { street: "Street 1" } },
@@ -794,6 +898,26 @@ describe("NodeArrayHandler", () => {
   })
 
   describe("#shift", () => {
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Alice" }
+        ],
+        users2: [
+          { name: "Bob" }
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+      expect(() => { users1.shift() }).toThrowError(StaleNodeError)
+      expect(store.state.users1).toEqual(users2)
+    })
+
     it("generates a new state tree root node", () => {
       const state = [
         { name: "User 1", address: { street: "Street 1" } },
@@ -923,6 +1047,28 @@ describe("NodeArrayHandler", () => {
   })
 
   describe("#sort", () => {
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Carol" },
+          { name: "Alice" },
+        ],
+        users2: [
+          { name: "Carol" },
+          { name: "Bob" },
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+      expect(() => { users1.sort((a, b) => a.name.localeCompare(b.name)) }).toThrowError(StaleNodeError)
+      expect(store.state.users1).toEqual(users2)
+    })
+
     it("generates a new state tree root node", () => {
       const state = [
         { name: "User 2", address: { street: "Street 2" } },
@@ -1070,6 +1216,26 @@ describe("NodeArrayHandler", () => {
   })
 
   describe("#unshift", () => {
+    it("ignores mutations on stale array node", () => {
+      const store = new Arbor({
+        users1: [
+          { name: "Alice" },
+        ],
+        users2: [
+          { name: "Bob" },
+        ]
+      })
+
+      const users1 = store.state.users1
+      const users2 = store.state.users2
+
+      store.state.users1 = users2
+
+      expect(store.state.users1).toEqual(users2)
+      expect(() => { users1.unshift({ name: "Carol" }) }).toThrowError(StaleNodeError)
+      expect(store.state.users1).toEqual(users2)
+    })
+
     it("generates a new state tree root node", () => {
       const state = [{ name: "User 3", address: { street: "Street 3" } }]
 

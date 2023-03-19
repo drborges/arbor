@@ -6,6 +6,7 @@ import BaseNode from "./BaseNode"
 import Repository from "./Repository"
 import { warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
+import { StaleNodeError } from "./errors"
 
 describe("Arbor", () => {
   it("correctly updates the store when making sequential updates to a given node", () => {
@@ -333,13 +334,13 @@ describe("Arbor", () => {
       })
     })
 
-    it("ignores mutations to nodes no longer attached to the state tree", () => {
+    it("throws a stale node error when attempting to mutate a node that is no longer in the state tree", () => {
       const store = new Arbor(new Repository({ uuid: "1", name: "Alice" }, { uuid: "2", name: "Bob" }))
 
       const bob = store.state["2"]
       delete store.state["2"]
-      bob.name = "This should not break the app"
 
+      expect(() => { bob.name = "This should not break the app" }).toThrowError(StaleNodeError)
       expect(store.state["2"]).toBeUndefined()
     })
 
@@ -619,6 +620,40 @@ describe("Arbor", () => {
         expect(todos.$idFor(0)).toBeUndefined()
         expect(todos.$idFor(1)).toEqual("random-id-1")
       })
+    })
+
+    it("ignores mutations on stale nodes", () => {
+      const store = new Arbor({
+        users: {
+          a: { name: "Alice" },
+          b: { name: "Bob" },
+          c: { name: "Carol" },
+        }
+      })
+
+      const alice = store.state.users.a
+      store.state.users.a = store.state.users.b
+
+      expect(store.state.users.a).toEqual({ name: "Bob" })
+      expect(() => { alice.name = "Alice Doe" }).toThrowError(StaleNodeError)
+      expect(store.state.users.a).toEqual({ name: "Bob" })
+    })
+
+    it("ignores array deletions on stale nodes", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Alice" },
+          { name: "Bob" },
+          { name: "Carol" },
+        ]
+      })
+
+      const alice = store.state.users[0]
+      store.state.users[0] = store.state.users[1]
+
+      expect(store.state.users[0]).toEqual({ name: "Bob" })
+      expect(() => { alice.name = "Alice Doe" }).toThrowError(StaleNodeError)
+      expect(store.state.users[0]).toEqual({ name: "Bob" })
     })
 
     describe("Repository", () => {

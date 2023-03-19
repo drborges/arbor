@@ -88,7 +88,7 @@ export default class NodeArrayHandler<
     return shifted
   }
 
-  sort(compareFn: (a: T, b: T) => number): T[] {
+  sort(compareFn: (a: T, b: T) => number) {
     this.$tree.mutate(this, (node: T[]) => {
       node.sort(compareFn)
 

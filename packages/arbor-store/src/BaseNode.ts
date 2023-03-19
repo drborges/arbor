@@ -14,6 +14,7 @@ export default class BaseNode<T extends object> {
     return true
   }
 
+  // TODO: throw StaleNodeError when node is stale
   parent<K extends object>(): INode<K> {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
@@ -27,6 +28,7 @@ export default class BaseNode<T extends object> {
     return node.$tree.getNodeAt(parentPath)
   }
 
+  // TODO: throw StaleNodeError when node is stale
   detach() {
     const node = this
     if (!isNode(node)) throw new NotAnArborNodeError()
@@ -68,6 +70,7 @@ export default class BaseNode<T extends object> {
     return this.$tree.getNodeAt(this.$path)
   }
 
+  // TODO: throw StaleNodeError when node is stale
   reload(): BaseNode<T> {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
@@ -78,6 +81,7 @@ export default class BaseNode<T extends object> {
     return this.reload() != null
   }
 
+  // TODO: use Arbor#isStale instead
   isStale(): boolean {
     return this !== this.reload()
   }
