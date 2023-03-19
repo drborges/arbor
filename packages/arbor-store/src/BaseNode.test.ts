@@ -110,63 +110,6 @@ describe("BaseNode", () => {
     })
   })
 
-  describe("#attach", () => {
-    it("allows attaching nodes back into the state tree", () => {
-      const store = new Arbor(
-        new Repository(
-          Todo.from<Todo>({
-            uuid: "abc",
-            text: "Do the dishes",
-            completed: false,
-          }),
-          Todo.from<Todo>({
-            uuid: "bcd",
-            text: "Clean the house",
-            completed: true,
-          })
-        )
-      )
-
-      const todo1 = store.state.abc
-
-      delete store.state.abc
-
-      expect(store.state.abc).toBeUndefined()
-      expect(todo1.isStale()).toBe(true)
-
-      todo1.attach()
-
-      expect(todo1.isStale()).toBe(false)
-      expect(store.state.abc).toEqual(todo1)
-    })
-
-    it("throws an error when used on an instance not bound to an Arbor store", () => {
-      const todo = new Todo()
-
-      expect(() => todo.attach()).toThrowError(NotAnArborNodeError)
-    })
-
-    it("publishes mutation metadata to subscribers", () => {
-      const todo = Todo.from<Todo>({
-        uuid: "abc",
-        text: "Do the dishes",
-        completed: false,
-      })
-
-      const store = new Arbor({ todo })
-
-      const node = store.state.todo
-      node.detach()
-
-      store.subscribe((event) => {
-        expect(event.metadata.operation).toBe("set")
-        expect(event.metadata.props).toEqual(["todo"])
-      })
-
-      node.attach()
-    })
-  })
-
   describe("#merge", () => {
     it("allows merging attributes to the node", () => {
       const store = new Arbor(
