@@ -1,6 +1,6 @@
 import React, { memo } from "react"
 
-import useTodos from "../store/useTodos"
+import useTodos, { store } from "../store/useTodos"
 import useTodosFilter, { filterTodos } from "../store/useTodosFilter"
 import TodoView from "./TodoView"
 
