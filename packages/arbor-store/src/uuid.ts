@@ -17,11 +17,7 @@ export function getUUID(value: object): UUID | undefined {
 
 export function setUUID<T extends object>(value: T, uuid = new UUID()) {
   if (!(ArborUUID in value)) {
-    Object.defineProperty(value, ArborUUID, {
-      value: uuid,
-      enumerable: false,
-      configurable: false,
-    })
+    Object.defineProperty(value, ArborUUID, { value: uuid })
   }
 
   return value
