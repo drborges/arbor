@@ -1,14 +1,14 @@
 // eslint-disable-next-line max-classes-per-file
-import Path from "./Path"
+import { NotAnArborNodeError, StaleNodeError } from "./errors"
 import isNode from "./isNode"
+import mutate, { Mutation, MutationMetadata } from "./mutate"
+import NodeArrayHandler from "./NodeArrayHandler"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import NodeArrayHandler from "./NodeArrayHandler"
-import mutate, { Mutation, MutationMetadata } from "./mutate"
-import { NotAnArborNodeError, StaleNodeError } from "./errors"
-import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
-import { assignUUID, ArborUUID } from "./uuid"
+import Path from "./Path"
+import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
+import { getUUID, setUUID } from "./uuid"
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
@@ -258,7 +258,7 @@ export default class Arbor<T extends object = object> {
     const handler = new Handler(this, path, value, children, subscribers)
     const node = new Proxy<V>(value, handler) as INode<V>
 
-    assignUUID(value)
+    setUUID(value)
 
     return node
   }
@@ -337,7 +337,7 @@ export default class Arbor<T extends object = object> {
 
     const reloadedValue = reloadedNode.$unwrap()
     const value = node.$unwrap()
-    if (value[ArborUUID] === reloadedValue[ArborUUID]) return false
+    if (getUUID(value) === getUUID(reloadedValue)) return false
     if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(`Stale node pointing to path ${node.$path.toString()}`)

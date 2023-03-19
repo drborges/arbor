@@ -9,12 +9,20 @@
  * by Arbor to avoid overriding state with stale values.
  */
 class UUID { }
-export const ArborUUID = Symbol.for("ArborUUID");
-export function assignUUID(value: object, uuid = new UUID()) {
+const ArborUUID = Symbol.for("ArborUUID")
+
+export function getUUID(value: object): UUID | undefined {
+  return value?.[ArborUUID]
+}
+
+export function setUUID<T extends object>(value: T, uuid = new UUID()) {
   if (!(ArborUUID in value)) {
     Object.defineProperty(value, ArborUUID, {
       value: uuid,
       enumerable: false,
-    });
+      configurable: false,
+    })
   }
+
+  return value
 }
