@@ -71,15 +71,10 @@ export default class BaseNode<T extends object> {
     return this.$tree.getNodeAt(this.$path)
   }
 
-  // TODO: throw StaleNodeError when node is stale
   reload(): ArborNode<T> {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
     return this.$tree.getNodeAt(this.$path)
-  }
-
-  isAttached(): boolean {
-    return this.reload() != null
   }
 
   isStale(): boolean {

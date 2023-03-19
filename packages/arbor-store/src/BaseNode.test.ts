@@ -32,7 +32,7 @@ describe("BaseNode", () => {
       todo1.detach()
 
       expect(store.state.abc).toBeUndefined()
-      expect(todo1.isAttached()).toBe(false)
+      expect(todo1.isStale()).toBe(true)
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
@@ -132,11 +132,11 @@ describe("BaseNode", () => {
       delete store.state.abc
 
       expect(store.state.abc).toBeUndefined()
-      expect(todo1.isAttached()).toBe(false)
+      expect(todo1.isStale()).toBe(true)
 
       todo1.attach()
 
-      expect(todo1.isAttached()).toBe(true)
+      expect(todo1.isStale()).toBe(false)
       expect(store.state.abc).toEqual(todo1)
     })
 
@@ -261,37 +261,6 @@ describe("BaseNode", () => {
       const todo = new Todo()
 
       expect(() => todo.reload()).toThrowError(NotAnArborNodeError)
-    })
-  })
-
-  describe("#isAttached", () => {
-    it("checks whether or not a node belongs to the state tree", () => {
-      const store = new Arbor(
-        new Repository(
-          Todo.from<Todo>({
-            uuid: "abc",
-            text: "Do the dishes",
-            completed: false,
-          }),
-          Todo.from<Todo>({
-            uuid: "bcd",
-            text: "Clean the house",
-            completed: true,
-          })
-        )
-      )
-
-      const todo = store.state.abc
-
-      expect(todo.isAttached()).toBe(true)
-      delete store.state.abc
-      expect(todo.isAttached()).toBe(false)
-    })
-
-    it("throws an error when used on an instance not bound to an Arbor store", () => {
-      const todo = new Todo()
-
-      expect(() => todo.isAttached()).toThrowError(NotAnArborNodeError)
     })
   })
 

@@ -682,7 +682,7 @@ describe("Arbor", () => {
         expect(secondItem).toBe(secondItem2)
         expect(store.state.abc).toBeUndefined()
         expect(store.state.bcd).toBe(secondItem)
-        expect(firstItem.isAttached()).toBe(false)
+        expect(firstItem.isStale()).toBe(true)
       })
     })
   })
