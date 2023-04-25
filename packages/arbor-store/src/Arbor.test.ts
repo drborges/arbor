@@ -529,21 +529,6 @@ describe("Arbor", () => {
       expect(store.state[0].completed).toBe(false)
     })
 
-    it("can be refreshed", () => {
-      const store = new Arbor([
-        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
-        Todo.from<Todo>({ text: "Clean the house", completed: true }),
-      ])
-
-      const firstTodo = store.state[0]
-      firstTodo.complete()
-      firstTodo.text = "Updated content"
-
-      expect(firstTodo.reload()).toEqual(
-        Todo.from<Todo>({ text: "Updated content", completed: true })
-      )
-    })
-
     describe("#with", () => {
       it("allows for custom node proxy handlers", () => {
         class MyArrayHandler extends NodeArrayHandler {

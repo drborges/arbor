@@ -55,13 +55,6 @@ export default class BaseNode<T extends object> {
     return this.$tree.getNodeAt(this.$path)
   }
 
-  reload(): ArborNode<T> {
-    if (!isNode(this)) throw new NotAnArborNodeError()
-    if (this.isStale()) throw new StaleNodeError()
-
-    return this.$tree.getNodeAt(this.$path)
-  }
-
   isStale(): boolean {
     if (!isNode(this)) throw new NotAnArborNodeError()
 

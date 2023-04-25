@@ -174,39 +174,6 @@ describe("BaseNode", () => {
     })
   })
 
-  describe("#reload", () => {
-    it("allows retrieving a fresh reference of the node", () => {
-      const store = new Arbor(
-        new Repository(
-          Todo.from<Todo>({
-            uuid: "abc",
-            text: "Do the dishes",
-            completed: false,
-          }),
-          Todo.from<Todo>({
-            uuid: "bcd",
-            text: "Clean the house",
-            completed: true,
-          })
-        )
-      )
-
-      const todo = store.state.abc
-      todo.merge({ text: "Walk the dogs" })
-      const reloaded = todo.reload()
-
-      expect(todo.uuid).toEqual(reloaded.uuid)
-      expect(todo.text).toEqual("Do the dishes")
-      expect(reloaded.text).toEqual("Walk the dogs")
-    })
-
-    it("throws an error when used on an instance not bound to an Arbor store", () => {
-      const todo = new Todo()
-
-      expect(() => todo.reload()).toThrowError(NotAnArborNodeError)
-    })
-  })
-
   describe("#isStale", () => {
     it("checks whether or not a node is no longer valid", () => {
       const store = new Arbor(
