@@ -1,8 +1,8 @@
 import Path from "./Path"
 import isNode from "./isNode"
 import NodeCache from "./NodeCache"
+import Arbor, { INode } from "./Arbor"
 import NodeHandler from "./NodeHandler"
-import Arbor, { MutationMode, INode } from "./Arbor"
 import { children, toINode, unwrap, warmup } from "./test.helpers"
 
 interface Address {
@@ -323,43 +323,6 @@ describe("NodeHandler", () => {
       expect(subscriber).not.toHaveBeenCalled()
     })
 
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = {
-          users: [
-            { name: "User 1", address: { street: "Street 1" } },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        }
-
-        const tree = new Arbor(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.users[0].name = "User 1 Updated"
-
-        expect(state).toEqual({
-          users: [
-            { name: "User 1 Updated", address: { street: "Street 1" } },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        })
-
-        expect(root).toEqual({
-          users: [
-            { name: "User 1 Updated", address: { street: "Street 1" } },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        })
-
-        expect(tree.state).toEqual({
-          users: [
-            { name: "User 1 Updated", address: { street: "Street 1" } },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        })
-      })
-    })
-
     it("publishes mutation metadata to subscribers", () => {
       const subscriber = jest.fn()
       const state = {
@@ -501,62 +464,6 @@ describe("NodeHandler", () => {
           operation: "delete",
           props: ["name"],
         },
-      })
-    })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = {
-          users: [
-            { name: "User 1", address: { street: "Street 1" } },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        }
-
-        const tree = new Arbor(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        delete tree.state.users[0].address
-
-        expect(state).toEqual({
-          users: [
-            { name: "User 1" },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        })
-
-        expect(root).toEqual({
-          users: [
-            { name: "User 1" },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        })
-
-        expect(tree.state).toEqual({
-          users: [
-            { name: "User 1" },
-            { name: "User 2", address: { street: "Street 2" } },
-          ],
-        })
-      })
-
-      it("supports subsequent mutations to the same path when on forgiven mode", () => {
-        const user = {
-          name: "Alice",
-          age: 30,
-        }
-
-        const store = new Arbor(user, {
-          mode: MutationMode.FORGIVEN,
-        })
-
-        const alice = store.state
-        delete alice.name
-        delete alice.age
-
-        expect(user).toEqual({})
-        expect(alice).toEqual({})
-        expect(store.state).toEqual({})
       })
     })
   })

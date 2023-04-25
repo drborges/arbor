@@ -1,8 +1,8 @@
 import Path from "./Path"
+import Arbor, { INode } from "./Arbor"
+import { StaleNodeError } from "./errors"
 import { unwrap, warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
-import Arbor, { INode, MutationMode } from "./Arbor"
-import { StaleNodeError } from "./errors"
 
 interface Address {
   street: string
@@ -216,32 +216,6 @@ describe("NodeArrayHandler", () => {
 
       expect(store.state.users1).toEqual(users2)
     })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        delete tree.state[0]
-
-        expect(state).toEqual([
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-      })
-    })
   })
 
   describe("#splice", () => {
@@ -375,39 +349,6 @@ describe("NodeArrayHandler", () => {
         },
       })
     })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.splice(1, 2, {
-          name: "User 4",
-          address: { street: "Street 4" },
-        })
-
-        expect(state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 4", address: { street: "Street 4" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 4", address: { street: "Street 4" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 4", address: { street: "Street 4" } },
-        ])
-      })
-    })
   })
 
   describe("#push", () => {
@@ -505,35 +446,6 @@ describe("NodeArrayHandler", () => {
           operation: "push",
           props: ["1"],
         },
-      })
-    })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [{ name: "User 1", address: { street: "Street 1" } }]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.push({
-          name: "User 2",
-          address: { street: "Street 2" },
-        })
-
-        expect(state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
       })
     })
   })
@@ -694,39 +606,6 @@ describe("NodeArrayHandler", () => {
         },
       })
     })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.reverse()
-
-        expect(state).toEqual([
-          { name: "User 3", address: { street: "Street 3" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 1", address: { street: "Street 1" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 3", address: { street: "Street 3" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 1", address: { street: "Street 1" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 3", address: { street: "Street 3" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 1", address: { street: "Street 1" } },
-        ])
-      })
-    })
   })
 
   describe("#pop", () => {
@@ -865,36 +744,6 @@ describe("NodeArrayHandler", () => {
         },
       })
     })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.pop()
-
-        expect(state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ])
-      })
-    })
   })
 
   describe("#shift", () => {
@@ -1012,36 +861,6 @@ describe("NodeArrayHandler", () => {
           operation: "shift",
           props: [],
         },
-      })
-    })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.shift()
-
-        expect(state).toEqual([
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
       })
     })
   })
@@ -1178,41 +997,6 @@ describe("NodeArrayHandler", () => {
         },
       })
     })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-          { name: "User 1", address: { street: "Street 1" } },
-        ]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.sort((userA: User, userB: User) =>
-          userA.name.localeCompare(userB.name)
-        )
-
-        expect(state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
-      })
-    })
   })
 
   describe("#unshift", () => {
@@ -1319,38 +1103,6 @@ describe("NodeArrayHandler", () => {
           operation: "unshift",
           props: ["0", "1"],
         },
-      })
-    })
-
-    describe("mode = 'forgiven'", () => {
-      it("propates mutation side-effects to the original node's underlying value", () => {
-        const state = [{ name: "User 3", address: { street: "Street 3" } }]
-
-        const tree = new Arbor<User[]>(state, { mode: MutationMode.FORGIVEN })
-        const root = tree.state
-
-        tree.state.unshift(
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } }
-        )
-
-        expect(state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
-
-        expect(root).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
-
-        expect(tree.state).toEqual([
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-          { name: "User 3", address: { street: "Street 3" } },
-        ])
       })
     })
   })

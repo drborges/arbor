@@ -57,48 +57,7 @@ export type INode<T extends object = object, K extends object = T> = T & {
   readonly $subscribers: Subscribers
 }
 
-/**
- * Controls Arbor's mutation behavior.
- *
- * 1. `forgiven`: Tells Arbor to propagate mutation side-effects to the original
- * node underlying value, keeping the previous and next nodes state in sync, although
- * nodes will still rely on structural sharing in order to determine diffs between state
- * tree snapshops. This allows for multiple subsequent mutations to be triggered off of
- * the same node reference.
- *
- * @example
- *
- * ```ts
- * const store = new Arbor({ count: 0 }, { mode: MutationMode.FORGIVEN })
- * const counter = store.state
- * counter.count++
- * => 1
- * counter.count++
- * => 2
- * ```
- *
- * 2. `strict`: Prevents mutation side-effects from being propagated to the original
- * node underlying value. Subsequent mutations triggered off of the same node reference
- * will yield the same result.
- *
- * @example
- *
- * ```ts
- * const store = new Arbor({ count: 0 }, { mode: MutationMode.STRICT })
- * const counter = store.state
- * counter.count++
- * => 1
- * counter.count++
- * => 1
- * ```
- */
-export enum MutationMode {
-  STRICT,
-  FORGIVEN,
-}
-
 export type ArborConfig = {
-  mode?: MutationMode
   handlers?: Handler[]
 }
 
@@ -134,14 +93,6 @@ export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
  */
 export default class Arbor<T extends object = object> {
   /**
-   * Controls whether or not Arbor should propagate mutation side-effects
-   * to the original node underlying value.
-   *
-   * @see {@link MutationMode}
-   */
-  readonly mode: MutationMode
-
-  /**
    * List of proxy handlers used to determine at Runtime which handling strategy to use
    * for proxying a given node within the state tree.
    *
@@ -165,9 +116,8 @@ export default class Arbor<T extends object = object> {
    */
   constructor(
     initialState = {} as T,
-    { mode = MutationMode.STRICT, handlers = [] }: ArborConfig = {}
+    { handlers = [] }: ArborConfig = {}
   ) {
-    this.mode = mode
     this.#handlers = [...handlers, NodeArrayHandler, NodeHandler]
     this.setState(initialState)
   }
@@ -216,26 +166,18 @@ export default class Arbor<T extends object = object> {
     }
 
     const previous = this.#root.$unwrap()
+
     const result = mutate(this.#root, node.$path, mutation)
+    // TODO: Move this step into the `mutate` implementation
+    mutation(node.$unwrap())
 
-    if (result?.root) {
-      if (this.mode === MutationMode.FORGIVEN) {
-        mutation(node.$unwrap())
-      }
+    this.#root = result?.root
 
-      this.#root = result?.root
-
-      notifyAffectedSubscribers({
-        state: { current: result?.root, previous },
-        metadata: result.metadata as MutationMetadata,
-        mutationPath: node.$path,
-      })
-    } else if (global.DEBUG) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `Could not mutate path ${node.$path}. The path no longer exists within the state tree.`
-      )
-    }
+    notifyAffectedSubscribers({
+      state: { current: result?.root, previous },
+      metadata: result.metadata as MutationMetadata,
+      mutationPath: node.$path,
+    })
   }
 
   /**

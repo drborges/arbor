@@ -1,4 +1,4 @@
-import Arbor, { ArborNode, BaseNode, MutationMode, Path } from "@arborjs/store"
+import Arbor, { ArborNode, BaseNode, Path } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks/native"
 
 import useArbor, { Watcher } from "./useArbor"
@@ -38,21 +38,6 @@ describe("useArbor", () => {
     })
 
     expect(result.current.count).toBe(5)
-  })
-
-  it("when running forgiven mutation mode, subsequent mutations to the same path can be triggered off the same node reference", () => {
-    const state = { count: 0 }
-    const store = new Arbor(state, { mode: MutationMode.FORGIVEN })
-    const { result } = renderHook(() => useArbor(store))
-
-    expect(result.current.count).toBe(0)
-
-    act(() => {
-      result.current.count++
-      result.current.count++
-    })
-
-    expect(result.current.count).toBe(2)
   })
 
   it("unsubscribes from store when component is unmounted", () => {

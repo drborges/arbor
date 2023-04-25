@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
-import Arbor, { MutationMode, INode } from "./Arbor"
+import Arbor, { INode } from "./Arbor"
 import BaseNode from "./BaseNode"
 import Repository from "./Repository"
 import { warmup } from "./test.helpers"
@@ -57,36 +57,6 @@ describe("Arbor", () => {
     expect(alice).toEqual({
       name: "Alice",
       age: 30,
-    })
-
-    expect(store.state).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-  })
-
-  it("supports subsequent mutations to the same path when on forgiven mode", () => {
-    const user = {
-      name: "Alice",
-      age: 30,
-    }
-
-    const store = new Arbor(user, {
-      mode: MutationMode.FORGIVEN,
-    })
-
-    const alice = store.state
-    alice.name = "Alice Doe"
-    alice.age = 31
-
-    expect(user).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-
-    expect(alice).toEqual({
-      name: "Alice Doe",
-      age: 31,
     })
 
     expect(store.state).toEqual({
