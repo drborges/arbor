@@ -1,7 +1,7 @@
 import Path from "./Path"
 import Arbor, { INode } from "./Arbor"
 import { StaleNodeError } from "./errors"
-import { unwrap, warmup } from "./test.helpers"
+import { snapshot, unwrap, warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
 
 interface Address {
@@ -114,12 +114,10 @@ describe("NodeArrayHandler", () => {
       delete tree.state[0]
 
       expect(state).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
       ])
 
       expect(root).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
       ])
 
@@ -152,33 +150,13 @@ describe("NodeArrayHandler", () => {
       expect(root.$children.has(user3.$unwrap())).toBe(false)
     })
 
-    it("preserves underlying object reference of nodes not affected by the mutation path", () => {
-      const state = [
-        { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
-      ]
-
-      const tree = new Arbor<User[]>(state)
-
-      delete tree.state[1]
-
-      expect(unwrap(tree.state)).not.toBe(state)
-      expect(unwrap(tree.state[0])).toBe(state[0])
-      expect(unwrap(tree.state[0].address)).toBe(state[0].address)
-
-      expect(unwrap(tree.state[1])).not.toBe(state[1])
-      expect(unwrap(tree.state[1])).toBe(state[2])
-      expect(unwrap(tree.state[1].address)).toBe(state[2].address)
-    })
-
     it("publishes mutation metadata to subscribers", () => {
       const subscriber = jest.fn()
       const state = [
         { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
       ]
-
+      const previousState = snapshot(state)
       const tree = new Arbor<User[]>(state)
 
       tree.subscribe(subscriber)
@@ -186,7 +164,7 @@ describe("NodeArrayHandler", () => {
       delete tree.state[1]
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "delete",
@@ -256,14 +234,12 @@ describe("NodeArrayHandler", () => {
 
       expect(state).toEqual([
         { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
+        { name: "User 4", address: { street: "Street 4" } },
       ])
 
       expect(root).toEqual([
         { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
+        { name: "User 4", address: { street: "Street 4" } },
       ])
 
       expect(tree.state).toEqual([
@@ -299,30 +275,6 @@ describe("NodeArrayHandler", () => {
       expect(root.$children.has(user3.$unwrap())).toBe(false)
     })
 
-    it("preserves underlying object reference of nodes not affected by the mutation path", () => {
-      const state = [
-        { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
-      ]
-
-      const tree = new Arbor<User[]>(state)
-
-      tree.state.splice(1, 2, {
-        name: "User 4",
-        address: { street: "Street 4" },
-      })
-
-      expect(unwrap(tree.state)).not.toBe(state)
-      expect(unwrap(tree.state[0])).toBe(state[0])
-      expect(unwrap(tree.state[0].address)).toBe(state[0].address)
-
-      expect(unwrap(tree.state[1])).not.toBe(state[1])
-      expect(unwrap(tree.state[1])).not.toBe(state[2])
-      expect(unwrap(tree.state[1].address)).not.toBe(state[1].address)
-      expect(unwrap(tree.state[1].address)).not.toBe(state[2].address)
-    })
-
     it("publishes mutation metadata to subscribers", () => {
       const subscriber = jest.fn()
       const state = [
@@ -330,7 +282,7 @@ describe("NodeArrayHandler", () => {
         { name: "User 2", address: { street: "Street 2" } },
         { name: "User 3", address: { street: "Street 2" } },
       ]
-
+      const previousState = snapshot(state)
       const tree = new Arbor<User[]>(state)
 
       tree.subscribe(subscriber)
@@ -341,7 +293,7 @@ describe("NodeArrayHandler", () => {
       })
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "splice",
@@ -370,31 +322,6 @@ describe("NodeArrayHandler", () => {
       expect(store.state.users1).toEqual(users2)
       expect(() => { users1.push({ name: "Carol" }) }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
-    })
-
-    it("generates a new state tree root node", () => {
-      const state = [{ name: "User 1", address: { street: "Street 1" } }]
-
-      const tree = new Arbor<User[]>(state)
-      const root = tree.state
-
-      tree.state.push({
-        name: "User 2",
-        address: { street: "Street 2" },
-      })
-
-      expect(state).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
-      ])
-
-      expect(root).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
-      ])
-
-      expect(tree.state).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-      ])
     })
 
     it("applies structural sharing in order to compute the next state tree", () => {
@@ -432,7 +359,7 @@ describe("NodeArrayHandler", () => {
     it("publishes mutation metadata to subscribers", () => {
       const subscriber = jest.fn()
       const state = [{ name: "User 1", address: { street: "Street 1" } }]
-
+      const previousState = snapshot(state)
       const tree = new Arbor<User[]>(state)
 
       tree.subscribe(subscriber)
@@ -440,7 +367,7 @@ describe("NodeArrayHandler", () => {
       tree.state.push({ name: "User 2", address: { street: "Street 2" } })
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "push",
@@ -470,43 +397,6 @@ describe("NodeArrayHandler", () => {
       expect(store.state.users1).toEqual(users2)
       expect(() => { users1.reverse() }).toThrowError(StaleNodeError)
       expect(store.state.users1).toEqual(users2)
-    })
-
-    it("generates a new state tree root node", () => {
-      const state = [
-        { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
-      ]
-
-      const tree = new Arbor<User[]>(state)
-      const root = tree.state
-
-      const reversed = tree.state.reverse()
-
-      expect(reversed).toEqual([
-        { name: "User 3", address: { street: "Street 3" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 1", address: { street: "Street 1" } },
-      ])
-
-      expect(state).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
-      ])
-
-      expect(root).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
-      ])
-
-      expect(tree.state).toEqual([
-        { name: "User 3", address: { street: "Street 3" } },
-        { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 1", address: { street: "Street 1" } },
-      ])
     })
 
     it("invalidates node's children cache", () => {
@@ -572,16 +462,20 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
+      const root = tree.state
+      const user0 = tree.state[0]
+      const user1 = tree.state[1]
+      const user2 = tree.state[2]
 
       tree.state.reverse()
 
-      expect(unwrap(tree.state)).not.toBe(state)
-      expect(unwrap(tree.state[0])).toBe(state[2])
-      expect(unwrap(tree.state[0].address)).toBe(state[2].address)
-      expect(unwrap(tree.state[1])).toBe(state[1])
-      expect(unwrap(tree.state[1].address)).toBe(state[1].address)
-      expect(unwrap(tree.state[2])).toBe(state[0])
-      expect(unwrap(tree.state[2].address)).toBe(state[0].address)
+      expect(unwrap(tree.state)).not.toBe(root)
+      expect(unwrap(tree.state[0])).toBe(unwrap(user2))
+      expect(unwrap(tree.state[0].address)).toBe(unwrap(user2.address))
+      expect(unwrap(tree.state[1])).toBe(unwrap(user1))
+      expect(unwrap(tree.state[1].address)).toBe(unwrap(user1.address))
+      expect(unwrap(tree.state[2])).toBe(unwrap(user0))
+      expect(unwrap(tree.state[2].address)).toBe(unwrap(user0.address))
     })
 
     it("publishes mutation metadata to subscribers", () => {
@@ -590,7 +484,7 @@ describe("NodeArrayHandler", () => {
         { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
       ]
-
+      const previousState = snapshot(state)
       const tree = new Arbor<User[]>(state)
 
       tree.subscribe(subscriber)
@@ -598,7 +492,7 @@ describe("NodeArrayHandler", () => {
       tree.state.reverse()
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "reverse",
@@ -638,21 +532,20 @@ describe("NodeArrayHandler", () => {
 
       const tree = new Arbor<User[]>(state)
       const root = tree.state
+      const user2 = root[2]
 
       const popped = tree.state.pop()
 
-      expect(popped).toBe(state[2])
+      expect(popped).toBe(unwrap(user2))
 
       expect(state).toEqual([
         { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
       ])
 
       expect(root).toEqual([
         { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
-        { name: "User 3", address: { street: "Street 3" } },
       ])
 
       expect(tree.state).toEqual([
@@ -728,7 +621,7 @@ describe("NodeArrayHandler", () => {
         { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
       ]
-
+      const previousState = snapshot(state)
       const tree = new Arbor<User[]>(state)
 
       tree.subscribe(subscriber)
@@ -736,7 +629,7 @@ describe("NodeArrayHandler", () => {
       tree.state.pop()
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "pop",
@@ -776,19 +669,18 @@ describe("NodeArrayHandler", () => {
 
       const tree = new Arbor<User[]>(state)
       const root = tree.state
+      const user0 = state[0]
 
       const shifted = tree.state.shift()
 
-      expect(shifted).toBe(state[0])
+      expect(shifted).toBe(user0)
 
       expect(state).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
         { name: "User 3", address: { street: "Street 3" } },
       ])
 
       expect(root).toEqual([
-        { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
         { name: "User 3", address: { street: "Street 3" } },
       ])
@@ -831,14 +723,16 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
+      const user1 = state[1]
+      const user2 = state[2]
 
       tree.state.shift()
 
       expect(unwrap(tree.state)).not.toBe(state)
-      expect(unwrap(tree.state[0])).toBe(state[1])
-      expect(unwrap(tree.state[0].address)).toBe(state[1].address)
-      expect(unwrap(tree.state[1])).toBe(state[2])
-      expect(unwrap(tree.state[1].address)).toBe(state[2].address)
+      expect(unwrap(tree.state[0])).toBe(user1)
+      expect(unwrap(tree.state[0].address)).toBe(user1.address)
+      expect(unwrap(tree.state[1])).toBe(user2)
+      expect(unwrap(tree.state[1].address)).toBe(user2.address)
     })
 
     it("publishes mutation metadata to subscribers", () => {
@@ -848,6 +742,8 @@ describe("NodeArrayHandler", () => {
         { name: "User 2", address: { street: "Street 2" } },
       ]
 
+      const previousState = snapshot(state)
+
       const tree = new Arbor<User[]>(state)
 
       tree.subscribe(subscriber)
@@ -855,7 +751,7 @@ describe("NodeArrayHandler", () => {
       tree.state.shift()
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "shift",
@@ -909,15 +805,15 @@ describe("NodeArrayHandler", () => {
       ])
 
       expect(state).toEqual([
+        { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
         { name: "User 3", address: { street: "Street 3" } },
-        { name: "User 1", address: { street: "Street 1" } },
       ])
 
       expect(root).toEqual([
+        { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
         { name: "User 3", address: { street: "Street 3" } },
-        { name: "User 1", address: { street: "Street 1" } },
       ])
 
       expect(tree.state).toEqual([
@@ -961,18 +857,21 @@ describe("NodeArrayHandler", () => {
       ]
 
       const tree = new Arbor<User[]>(state)
+      const user0 = state[0]
+      const user1 = state[1]
+      const user2 = state[2]
 
       tree.state.sort((userA: User, userB: User) =>
         userA.name.localeCompare(userB.name)
       )
 
       expect(unwrap(tree.state)).not.toBe(state)
-      expect(unwrap(tree.state[0])).toBe(state[2])
-      expect(unwrap(tree.state[0].address)).toBe(state[2].address)
-      expect(unwrap(tree.state[1])).toBe(state[0])
-      expect(unwrap(tree.state[1].address)).toBe(state[0].address)
-      expect(unwrap(tree.state[2])).toBe(state[1])
-      expect(unwrap(tree.state[2].address)).toBe(state[1].address)
+      expect(unwrap(tree.state[0])).toBe(user2)
+      expect(unwrap(tree.state[0].address)).toBe(user2.address)
+      expect(unwrap(tree.state[1])).toBe(user0)
+      expect(unwrap(tree.state[1].address)).toBe(user0.address)
+      expect(unwrap(tree.state[2])).toBe(user1)
+      expect(unwrap(tree.state[2].address)).toBe(user1.address)
     })
 
     it("publishes mutation metadata to subscribers", () => {
@@ -1034,10 +933,14 @@ describe("NodeArrayHandler", () => {
       expect(newLength).toBe(3)
 
       expect(state).toEqual([
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
         { name: "User 3", address: { street: "Street 3" } },
       ])
 
       expect(root).toEqual([
+        { name: "User 1", address: { street: "Street 1" } },
+        { name: "User 2", address: { street: "Street 2" } },
         { name: "User 3", address: { street: "Street 3" } },
       ])
 
@@ -1069,6 +972,7 @@ describe("NodeArrayHandler", () => {
       const state = [{ name: "User 3", address: { street: "Street 3" } }]
 
       const tree = new Arbor<User[]>(state)
+      const user0 = state[0]
 
       tree.state.unshift(
         { name: "User 1", address: { street: "Street 1" } },
@@ -1076,8 +980,8 @@ describe("NodeArrayHandler", () => {
       )
 
       expect(unwrap(tree.state)).not.toBe(state)
-      expect(unwrap(tree.state[2])).toBe(state[0])
-      expect(unwrap(tree.state[2].address)).toBe(state[0].address)
+      expect(unwrap(tree.state[2])).toBe(user0)
+      expect(unwrap(tree.state[2].address)).toBe(user0.address)
     })
 
     it("publishes mutation metadata to subscribers", () => {
@@ -1086,6 +990,7 @@ describe("NodeArrayHandler", () => {
         { name: "User 1", address: { street: "Street 1" } },
         { name: "User 2", address: { street: "Street 2" } },
       ]
+      const previousState = snapshot(state)
 
       const tree = new Arbor<User[]>(state)
 
@@ -1097,7 +1002,7 @@ describe("NodeArrayHandler", () => {
       )
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "unshift",

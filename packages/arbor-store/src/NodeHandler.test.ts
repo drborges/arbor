@@ -3,7 +3,7 @@ import isNode from "./isNode"
 import NodeCache from "./NodeCache"
 import Arbor, { INode } from "./Arbor"
 import NodeHandler from "./NodeHandler"
-import { children, toINode, unwrap, warmup } from "./test.helpers"
+import { children, snapshot, toINode, unwrap, warmup } from "./test.helpers"
 
 interface Address {
   street: string
@@ -141,21 +141,6 @@ describe("NodeHandler", () => {
   })
 
   describe("set trap", () => {
-    it("does not affect underlying proxied data", () => {
-      const state = {
-        users: [
-          { name: "User 1", address: { street: "Street 1" } },
-          { name: "User 2", address: { street: "Street 2" } },
-        ],
-      }
-
-      const tree = new Arbor(state)
-
-      tree.state.users[0].name = "User 1 Updated"
-
-      expect(state.users[0].name).toEqual("User 1")
-    })
-
     it("generates a new state tree root node", () => {
       const state = {
         users: [
@@ -166,19 +151,27 @@ describe("NodeHandler", () => {
 
       const tree = new Arbor(state)
       const root = tree.state
+      const users = tree.state.users
+      const user0 = tree.state.users[0]
+      const user1 = tree.state.users[1]
 
       tree.state.users[0].name = "User 1 Updated"
 
+      expect(root).not.toBe(tree.state)
+      expect(users).not.toBe(tree.state.users)
+      expect(user0).not.toBe(tree.state.users[0])
+      expect(user1).toBe(tree.state.users[1])
+
       expect(state).toEqual({
         users: [
-          { name: "User 1", address: { street: "Street 1" } },
+          { name: "User 1 Updated", address: { street: "Street 1" } },
           { name: "User 2", address: { street: "Street 2" } },
         ],
       })
 
       expect(root).toEqual({
         users: [
-          { name: "User 1", address: { street: "Street 1" } },
+          { name: "User 1 Updated", address: { street: "Street 1" } },
           { name: "User 2", address: { street: "Street 2" } },
         ],
       })
@@ -329,6 +322,8 @@ describe("NodeHandler", () => {
         users: [{ name: "User 1", address: { street: "Street 1" } }],
       }
 
+      const previousState = snapshot(state)
+
       const tree = new Arbor<State>(state)
 
       tree.subscribe(subscriber)
@@ -336,7 +331,7 @@ describe("NodeHandler", () => {
       tree.state.users[0].name = "User Updated"
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/users/0"),
         metadata: {
           operation: "set",
@@ -362,14 +357,14 @@ describe("NodeHandler", () => {
 
       expect(state).toEqual({
         users: [
-          { name: "User 1", address: { street: "Street 1" } },
+          { name: "User 1" },
           { name: "User 2", address: { street: "Street 2" } },
         ],
       })
 
       expect(root).toEqual({
         users: [
-          { name: "User 1", address: { street: "Street 1" } },
+          { name: "User 1" },
           { name: "User 2", address: { street: "Street 2" } },
         ],
       })
@@ -451,6 +446,8 @@ describe("NodeHandler", () => {
         ],
       }
 
+      const previousState = snapshot(state)
+
       const tree = new Arbor<State>(state)
 
       tree.subscribe(subscriber)
@@ -458,7 +455,7 @@ describe("NodeHandler", () => {
       delete tree.state.users[0].name
 
       expect(subscriber).toHaveBeenCalledWith({
-        state: { current: tree.state, previous: state },
+        state: { current: tree.state, previous: previousState },
         mutationPath: Path.parse("/users/0"),
         metadata: {
           operation: "delete",

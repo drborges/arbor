@@ -4,7 +4,7 @@ import Path from "./Path"
 import Arbor, { INode } from "./Arbor"
 import BaseNode from "./BaseNode"
 import Repository from "./Repository"
-import { warmup } from "./test.helpers"
+import { snapshot, warmup } from "./test.helpers"
 import NodeArrayHandler from "./NodeArrayHandler"
 import { StaleNodeError } from "./errors"
 
@@ -22,13 +22,13 @@ describe("Arbor", () => {
     alice.age = 31
 
     expect(user).toEqual({
-      name: "Alice",
-      age: 30,
+      name: "Alice Doe",
+      age: 31,
     })
 
     expect(alice).toEqual({
-      name: "Alice",
-      age: 30,
+      name: "Alice Doe",
+      age: 31,
     })
 
     expect(store.state).toEqual({
@@ -50,13 +50,13 @@ describe("Arbor", () => {
     alice.age = 31
 
     expect(user).toEqual({
-      name: "Alice",
-      age: 30,
+      name: "Alice Doe",
+      age: 31,
     })
 
     expect(alice).toEqual({
-      name: "Alice",
-      age: 30,
+      name: "Alice Doe",
+      age: 31,
     })
 
     expect(store.state).toEqual({
@@ -244,6 +244,7 @@ describe("Arbor", () => {
         users: [{ name: "User 1" }],
       }
 
+      const previousState = snapshot(initialState)
       const subscriber1 = jest.fn()
       const subscriber2 = jest.fn()
       const store = new Arbor<{ users: { name: string }[] }>(initialState)
@@ -260,7 +261,7 @@ describe("Arbor", () => {
         },
         state: {
           current: store.state,
-          previous: initialState,
+          previous: previousState,
         },
       })
 
@@ -272,7 +273,7 @@ describe("Arbor", () => {
         },
         state: {
           current: store.state,
-          previous: initialState,
+          previous: previousState,
         },
       })
     })
@@ -287,12 +288,10 @@ describe("Arbor", () => {
       const store = new Arbor(initialState)
 
       return new Promise((resolve) => {
-        store.subscribe(({ state }) => {
-          expect(initialState).toBe(state.previous)
-          expect(state.previous).toEqual({
-            users: [{ name: "User 1" }],
-          })
+        const previousState = snapshot(initialState)
 
+        store.subscribe(({ state }) => {
+          expect(state.previous).toEqual(previousState)
           expect(state.current).toEqual({
             users: [{ name: "User 1" }, { name: "User 2" }],
           })
@@ -331,6 +330,8 @@ describe("Arbor", () => {
         ],
       }
 
+      const initialStateSnapshot = snapshot(initialState)
+
       const firstUpdateExpectedState = {
         users: [
           {
@@ -360,7 +361,7 @@ describe("Arbor", () => {
           props: ["content"],
         },
         state: {
-          previous: initialState,
+          previous: initialStateSnapshot,
           current: store.state,
         },
       })
@@ -372,7 +373,7 @@ describe("Arbor", () => {
           props: ["content"],
         },
         state: {
-          previous: initialState,
+          previous: initialStateSnapshot,
           current: store.state,
         },
       })

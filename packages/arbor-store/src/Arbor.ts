@@ -165,8 +165,7 @@ export default class Arbor<T extends object = object> {
       throw new StaleNodeError()
     }
 
-    const previous = this.#root.$unwrap()
-
+    const previousState = JSON.stringify(this.#root.$unwrap())
     const result = mutate(this.#root, node.$path, mutation)
     // TODO: Move this step into the `mutate` implementation
     mutation(node.$unwrap())
@@ -174,7 +173,12 @@ export default class Arbor<T extends object = object> {
     this.#root = result?.root
 
     notifyAffectedSubscribers({
-      state: { current: result?.root, previous },
+      state: {
+        current: result?.root,
+        get previous() {
+          return JSON.parse(previousState)
+        }
+      },
       metadata: result.metadata as MutationMetadata,
       mutationPath: node.$path,
     })

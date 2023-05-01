@@ -24,3 +24,7 @@ export function toINode<
 
   throw new Error("The value provided is not an Arbor node")
 }
+
+export function snapshot<T extends object>(value: T) {
+  return JSON.parse(JSON.stringify(value))
+}
