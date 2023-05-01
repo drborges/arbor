@@ -755,7 +755,7 @@ describe("NodeArrayHandler", () => {
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "shift",
-          props: [],
+          props: ["0"],
         },
       })
     })
@@ -1006,7 +1006,7 @@ describe("NodeArrayHandler", () => {
         mutationPath: Path.parse("/"),
         metadata: {
           operation: "unshift",
-          props: ["0", "1"],
+          props: [],
         },
       })
     })

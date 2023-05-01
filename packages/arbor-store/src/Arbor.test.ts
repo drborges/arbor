@@ -1,645 +1,463 @@
 /* eslint-disable max-classes-per-file */
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 import Path from "./Path"
-import Arbor, { INode } from "./Arbor"
+import Arbor from "./Arbor"
 import BaseNode from "./BaseNode"
-import Repository from "./Repository"
-import { snapshot, warmup } from "./test.helpers"
-import NodeArrayHandler from "./NodeArrayHandler"
-import { StaleNodeError } from "./errors"
+import { ArborProxiable } from "./isProxiable"
 
 describe("Arbor", () => {
-  it("correctly updates the store when making sequential updates to a given node", () => {
-    const user = {
-      name: "Alice",
-      age: 30,
-    }
-
-    const store = new Arbor(user)
-
-    const alice = store.state
-    alice.name = "Alice Doe"
-    alice.age = 31
-
-    expect(user).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-
-    expect(alice).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-
-    expect(store.state).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-  })
-
-  it("supports subsequent mutations to the same path", () => {
-    const user = {
-      name: "Alice",
-      age: 30,
-    }
-
-    const store = new Arbor(user)
-
-    const alice = store.state
-    alice.name = "Alice Doe"
-    alice.age = 31
-
-    expect(user).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-
-    expect(alice).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-
-    expect(store.state).toEqual({
-      name: "Alice Doe",
-      age: 31,
-    })
-  })
-
-  it("allows passing custom node handlers to the store via configuration", () => {
-    interface Todo {
-      text: string
-    }
-
-    class MyArrayHandler extends NodeArrayHandler {
-      $ids = new Map<number, string>()
-
-      $idFor(index: number) {
-        return this.$ids.get(index)
-      }
-
-      get(target: object[], prop: string, receiver: INode<object[], object[]>) {
-        const index = parseInt(prop, 10)
-
-        if (!Number.isNaN(index) && !this.$ids.has(index)) {
-          this.$ids.set(index, `random-id-${index}`)
-        }
-
-        return super.get(target, prop, receiver)
-      }
-    }
-
-    const store = new Arbor<Todo[]>(
-      [{ text: "Walk the dogs" }, { text: "Document Arbor" }],
-      { handlers: [MyArrayHandler] }
-    )
-
-    // traverses the tree forcing Arbor to proxy and
-    // cache store.state and store.state[1] nodes
-    store.state[1].text
-    const todos = store.state as any
-
-    // Arbor lazily proxies nodes in the state tree, since store.state[0]
-    // was never proxied no custom $id was generated for that node.
-    expect(todos.$idFor(0)).toBeUndefined()
-    expect(todos.$idFor(1)).toEqual("random-id-1")
-  })
-
-  describe("#root", () => {
-    it("retrieves the root node", () => {
-      const initialState = {
-        users: [{ name: "User 1" }, { name: "User 2" }],
-      }
-      const store = new Arbor(initialState)
-
-      const node = store.state as INode<{ users: { name: string }[] }>
-
-      expect(node.$unwrap()).toBe(initialState)
-    })
-  })
-
-  describe("#setState", () => {
-    interface IUser {
-      name: string
-    }
-
-    it("sets a value as the root of the store", () => {
-      const initialState = {
-        users: [{ name: "User 1" }, { name: "User 2" }],
-      }
-
-      const store = new Arbor<{ users: IUser[] }>()
-      const node = store.setState(initialState)
-
-      const nodeFromCache = store.state
-
-      expect(nodeFromCache).toBe(node)
-      expect(nodeFromCache.users[1].name).toEqual("User 2")
-    })
-
-    it("notifies subscribers about the new state", () => {
-      const initialState = {
-        users: [{ name: "User 1" }],
-      }
-
-      const newState = {
-        users: [{ name: "User 1" }, { name: "User 2" }],
-      }
-
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
-      const store = new Arbor<{ users: IUser[] }>(initialState)
-      store.subscribe(subscriber1)
-      store.subscribe(subscriber2)
-
-      const newRoot = store.setState(newState)
-
-      expect(subscriber1).toHaveBeenCalledWith({
-        mutationPath: Path.root,
-        metadata: {
-          operation: "set",
-          props: [],
-        },
-        state: {
-          current: newRoot,
-          previous: initialState,
-        },
-      })
-
-      expect(subscriber2).toHaveBeenCalledWith({
-        mutationPath: Path.root,
-        metadata: {
-          operation: "set",
-          props: [],
-        },
-        state: {
-          current: newRoot,
-          previous: initialState,
-        },
-      })
-    })
-  })
-
-  describe("Path walking", () => {
-    it("walks a proxied path", () => {
+  describe("Example: Counter", () => {
+    it("keeps track of a counter's state", () => {
       const store = new Arbor({
-        users: [{ name: "User 1" }, { name: "User 2" }],
+        count: 0
       })
 
-      expect(Path.root.walk(store.state)).toBe(store.state)
-      expect(Path.parse("/users/1").walk(store.state)).toBe(store.state.users[1])
-    })
-  })
+      store.state.count++
 
-  describe("#mutate", () => {
-    it("mutates a given path within the state tree", () => {
-      const initialState = {
-        users: [{ name: "Bob" }, { name: "Alice" }],
-      }
-
-      const store = new Arbor(initialState)
-      const initialRoot = store.state
-      const initialUsers = store.state.users
-      const initialUser0 = store.state.users[0]
-      const initialUser1 = store.state.users[1]
-
-      store.mutate<{ name: string }>(Path.parse("/users/0"), (user) => {
-        user.name = "Bob 2"
-      })
-
-      expect(store.state).not.toBe(initialRoot)
-      expect(store.state.users).not.toBe(initialUsers)
-      expect(store.state.users[0]).not.toBe(initialUser0)
-      expect(store.state.users[1]).toBe(initialUser1)
-      expect(store.state).toEqual({
-        users: [{ name: "Bob 2" }, { name: "Alice" }],
-      })
+      expect(store.state.count).toBe(1)
     })
 
-    it("mutates a given node within the state tree", () => {
-      const initialState = {
-        users: [{ name: "Bob" }, { name: "Alice" }],
-      }
-
-      const store = new Arbor(initialState)
-      const initialRoot = store.state
-      const initialUsers = store.state.users
-      const initialUser0 = store.state.users[0] as INode<{ name: string }>
-      const initialUser1 = store.state.users[1]
-
-      store.mutate(initialUser0, (user) => {
-        user.name = "Bob 2"
+    it("allows subsequent mutations to the same state tree node reference", () => {
+      const store = new Arbor({
+        count: 0
       })
 
-      expect(store.state).not.toBe(initialRoot)
-      expect(store.state.users).not.toBe(initialUsers)
-      expect(store.state.users[0]).not.toBe(initialUser0)
-      expect(store.state.users[1]).toBe(initialUser1)
-      expect(store.state).toEqual({
-        users: [{ name: "Bob 2" }, { name: "Alice" }],
-      })
+      const counter = store.state
+      counter.count++
+      counter.count++
+
+      expect(store.state.count).toBe(2)
     })
 
-    it("notifies subscribers with mutation metadata", () => {
-      const initialState = {
-        users: [{ name: "User 1" }],
-      }
-
-      const previousState = snapshot(initialState)
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
-      const store = new Arbor<{ users: { name: string }[] }>(initialState)
-      store.subscribe(subscriber1)
-      store.subscribe(subscriber2)
-
-      store.state.users[0].name = "User"
-
-      expect(subscriber1).toHaveBeenCalledWith({
-        mutationPath: Path.parse("/users/0"),
-        metadata: {
-          operation: "set",
-          props: ["name"],
-        },
-        state: {
-          current: store.state,
-          previous: previousState,
-        },
+    it("subscribes to store mutations", () => {
+      const store = new Arbor({
+        count: 0
       })
-
-      expect(subscriber2).toHaveBeenCalledWith({
-        mutationPath: Path.parse("/users/0"),
-        metadata: {
-          operation: "set",
-          props: ["name"],
-        },
-        state: {
-          current: store.state,
-          previous: previousState,
-        },
-      })
-    })
-  })
-
-  describe("State Change Subscriptions", () => {
-    it("subscribes to any state changes", () => {
-      const initialState = {
-        users: [{ name: "User 1" }],
-      }
-
-      const store = new Arbor(initialState)
 
       return new Promise((resolve) => {
-        const previousState = snapshot(initialState)
-
-        store.subscribe(({ state }) => {
-          expect(state.previous).toEqual(previousState)
-          expect(state.current).toEqual({
-            users: [{ name: "User 1" }, { name: "User 2" }],
-          })
-
-          resolve(state.current)
+        store.subscribe(event => {
+          expect(event.mutationPath.toString()).toEqual("/")
+          expect(event.metadata.props).toEqual(["count"])
+          expect(event.metadata.operation).toEqual("set")
+          expect(event.state.previous).toEqual({ count: 0 })
+          expect(event.state.current).toEqual({ count: -1 })
+          resolve(null)
         })
 
-        store.state.users.push({ name: "User 2" })
-      })
-    })
-
-    it("throws a stale node error when attempting to mutate a node that is no longer in the state tree", () => {
-      const store = new Arbor(new Repository({ uuid: "1", name: "Alice" }, { uuid: "2", name: "Bob" }))
-
-      const bob = store.state["2"]
-      delete store.state["2"]
-
-      expect(() => { bob.name = "This should not break the app" }).toThrowError(StaleNodeError)
-      expect(store.state["2"]).toBeUndefined()
-    })
-
-    it("only notifies subscribers affected by the mutation path", () => {
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
-      const subscriber3 = jest.fn()
-      const initialState = {
-        users: [
-          {
-            name: "Alice",
-            posts: [{ content: "Post 1" }, { content: "Post 2" }],
-          },
-          {
-            name: "Bob",
-            posts: [{ content: "Post 3" }, { content: "Post 4" }],
-          },
-        ],
-      }
-
-      const initialStateSnapshot = snapshot(initialState)
-
-      const firstUpdateExpectedState = {
-        users: [
-          {
-            name: "Alice",
-            posts: [{ content: "Post 1" }, { content: "Post 2 updated" }],
-          },
-          {
-            name: "Bob",
-            posts: [{ content: "Post 3" }, { content: "Post 4" }],
-          },
-        ],
-      }
-
-      const store = new Arbor(initialState)
-
-      store.subscribe(subscriber1)
-      store.subscribeTo(store.state.users[1], subscriber2)
-      store.subscribeTo(store.state.users[0].posts, subscriber3)
-
-      store.state.users[0].posts[1].content = "Post 2 updated"
-
-      expect(subscriber2).not.toHaveBeenCalled()
-      expect(subscriber1).toHaveBeenCalledWith({
-        mutationPath: Path.parse("/users/0/posts/1"),
-        metadata: {
-          operation: "set",
-          props: ["content"],
-        },
-        state: {
-          previous: initialStateSnapshot,
-          current: store.state,
-        },
-      })
-
-      expect(subscriber3).toHaveBeenCalledWith({
-        mutationPath: Path.parse("/users/0/posts/1"),
-        metadata: {
-          operation: "set",
-          props: ["content"],
-        },
-        state: {
-          previous: initialStateSnapshot,
-          current: store.state,
-        },
-      })
-
-      store.state.users[0].posts[1].content = "Post 2 updated again"
-
-      expect(subscriber2).not.toHaveBeenCalled()
-      expect(subscriber1).toHaveBeenCalledWith({
-        mutationPath: Path.parse("/users/0/posts/1"),
-        metadata: {
-          operation: "set",
-          props: ["content"],
-        },
-        state: {
-          previous: firstUpdateExpectedState,
-          current: store.state,
-        },
-      })
-
-      expect(subscriber3).toHaveBeenCalledWith({
-        mutationPath: Path.parse("/users/0/posts/1"),
-        metadata: {
-          operation: "set",
-          props: ["content"],
-        },
-        state: {
-          previous: firstUpdateExpectedState,
-          current: store.state,
-        },
+        store.state.count--
       })
     })
   })
 
-  describe("Array use cases", () => {
-    it("Keeps state tree paths in sync when reversing an array", () => {
+  describe("Example: Todo List", () => {
+    it("keeps track of a todo list state", () => {
       const store = new Arbor([
-        { name: "User 1" },
-        { name: "User 2" },
-        { name: "User 3" },
+        { text: "Do the dishes", status: "todo" },
+        { text: "Clean the house", status: "doing" },
       ])
 
-      warmup(store.state[0])
-      warmup(store.state[1])
-      warmup(store.state[2])
+      store.state.push({ text: "Walk the dogs", status: "done" })
 
-      store.state.reverse()
-
-      warmup(store.state[0])
-      warmup(store.state[1])
-      warmup(store.state[2])
-
-      store.state[0].name = "User 3 Updated"
-
-      const user1 = warmup(store.state[0])
-      const user2 = warmup(store.state[1])
-      const user3 = warmup(store.state[2])
-
-      expect(user1.$path.toString()).toEqual("/0")
-      expect(user2.$path.toString()).toEqual("/1")
-      expect(user3.$path.toString()).toEqual("/2")
-
-      expect(user1.name).toEqual("User 3 Updated")
-      expect(user2.name).toEqual("User 2")
-      expect(user3.name).toEqual("User 1")
       expect(store.state).toEqual([
-        { name: "User 3 Updated" },
-        { name: "User 2" },
-        { name: "User 1" },
+        { text: "Do the dishes", status: "todo" },
+        { text: "Clean the house", status: "doing" },
+        { text: "Walk the dogs", status: "done" },
       ])
     })
 
-    it("deleting items keep paths up-to-date", () => {
+    it("allows subsequent mutations to the same state tree node reference", () => {
       const store = new Arbor([
-        { name: "User 1" },
-        { name: "User 2" },
-        { name: "User 3" },
+        { text: "Do the dishes", status: "todo" },
+        { text: "Clean the house", status: "doing" },
       ])
 
-      warmup(store.state[0])
-      warmup(store.state[1])
-      warmup(store.state[2])
+      const todo = store.state[0]
+      todo.status = "doing"
+      todo.text = "Doing the dishes"
 
-      delete store.state[0]
-
-      const user1 = warmup(store.state[0])
-      const user2 = warmup(store.state[1])
-
-      expect(user1.$path.toString()).toEqual("/0")
-      expect(user2.$path.toString()).toEqual("/1")
-
-      expect(user1.name).toEqual("User 2")
-      expect(user2.name).toEqual("User 3")
-      expect(store.state).toEqual([{ name: "User 2" }, { name: "User 3" }])
+      expect(store.state).toEqual([
+        { text: "Doing the dishes", status: "doing" },
+        { text: "Clean the house", status: "doing" },
+      ])
     })
-  })
 
-  describe("custom data model", () => {
-    class Todo extends BaseNode<Todo> {
-      uuid!: string
-      text!: string
-      completed: boolean
-
-      complete() {
-        this.completed = true
-      }
-
-      activate() {
-        this.completed = false
-      }
-
-      get status() {
-        return this.completed ? "Completed" : "Active"
-      }
-    }
-
-    it("supports user defined data models", () => {
+    it("subscribes to store mutations", () => {
       const store = new Arbor([
-        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
-        Todo.from<Todo>({ text: "Clean the house", completed: true }),
+        { text: "Do the dishes", status: "todo" },
+        { text: "Clean the house", status: "doing" },
+      ])
+
+      const todo = store.state[0]
+
+      return new Promise((resolve) => {
+        store.subscribe(event => {
+          expect(event.mutationPath.toString()).toEqual("/0")
+          expect(event.metadata.props).toEqual(["status"])
+          expect(event.metadata.operation).toEqual("set")
+          expect(event.state.previous).toEqual([
+            { text: "Do the dishes", status: "todo" },
+            { text: "Clean the house", status: "doing" },
+          ])
+
+          expect(event.state.current).toEqual([
+            { text: "Do the dishes", status: "doing" },
+            { text: "Clean the house", status: "doing" },
+          ])
+
+          resolve(null)
+        })
+
+        todo.status = "doing"
+      })
+    })
+
+    it("subscribes to any store mutations", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Clean the house", status: "doing" },
       ])
 
       const todo1 = store.state[0]
       const todo2 = store.state[1]
 
-      expect(todo1.status).toEqual("Active")
-      expect(todo2.status).toEqual("Completed")
+      store.subscribe(subscriber)
 
-      todo1.text = "Walk the dog"
+      todo1.status = "doing"
+      todo2.status = "done"
 
+      expect(subscriber.mock.calls.length).toBe(2)
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.parse("/0"))
+      expect(subscriber.mock.calls[1][0].mutationPath).toEqual(Path.parse("/1"))
+    })
+
+    it("subscribes to mutations on a specific state tree node", () => {
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Clean the house", status: "doing" },
+      ])
+
+      const todo1 = store.state[0]
+      const todo2 = store.state[1]
+
+      store.subscribeTo(todo1, subscriber1)
+      store.subscribeTo(todo2, subscriber2)
+
+      todo1.status = "doing"
+      todo2.status = "done"
+
+      expect(subscriber1.mock.calls.length).toBe(1)
+      expect(subscriber1.mock.calls[0][0].mutationPath).toEqual(Path.parse("/0"))
+      expect(subscriber2.mock.calls.length).toBe(1)
+      expect(subscriber2.mock.calls[0][0].mutationPath).toEqual(Path.parse("/1"))
+    })
+
+    it("mutations cause a new state tree to be generated via structural sharing", () => {
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Clean the house", status: "doing" },
+      ])
+
+      const root = store.state
+      const todo1 = store.state[0]
+      const todo2 = store.state[1]
+
+      todo1.status = "doing"
+
+      expect(root).not.toBe(store.state)
       expect(todo1).not.toBe(store.state[0])
       expect(todo2).toBe(store.state[1])
-      expect(store.state).toEqual([
-        Todo.from<Todo>({ text: "Walk the dog", completed: false }),
-        Todo.from<Todo>({ text: "Clean the house", completed: true }),
-      ])
     })
+  })
 
-    it("can encasulate mutation logic", () => {
+  describe("Example: Business logic encapsulation", () => {
+    it("supports encapsulating logic within method definitions", () => {
       const store = new Arbor([
-        Todo.from<Todo>({ text: "Do the dishes", completed: false }),
-        Todo.from<Todo>({ text: "Clean the house", completed: true }),
+        {
+          text: "Do the dishes",
+          status: "todo",
+          complete() {
+            this.status = "done"
+          }
+        }
       ])
 
-      let todo = store.state[0]
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
       store.state[0].complete()
 
-      expect(store.state[0]).not.toBe(todo)
-      expect(store.state[0].completed).toBe(true)
-
-      todo = store.state[0]
-      store.state[0].activate()
-
-      expect(store.state[0]).not.toBe(todo)
-      expect(store.state[0].completed).toBe(false)
+      expect(subscriber).toHaveBeenCalled()
+      expect(store.state[0].status).toBe("done")
+      expect(store.state[0].complete).toBeDefined()
     })
 
-    describe("#with", () => {
-      it("allows for custom node proxy handlers", () => {
-        class MyArrayHandler extends NodeArrayHandler {
-          $ids = new Map<number, string>()
-
-          $idFor(index: number) {
-            return this.$ids.get(index)
-          }
-
-          get(
-            target: object[],
-            prop: string,
-            receiver: INode<object[], object[]>
-          ) {
-            const index = parseInt(prop, 10)
-
-            if (!Number.isNaN(index) && !this.$ids.has(index)) {
-              this.$ids.set(index, `random-id-${index}`)
-            }
-
-            return super.get(target, prop, receiver)
-          }
+    it("allows for custom types as long as they are 'ArborProxiable'", () => {
+      class Todo {
+        [ArborProxiable] = true
+        constructor(public text: string, public status = "todo") {}
+        complete() {
+          this.status = "done"
         }
+      }
 
-        const store = new Arbor<Todo[]>([])
+      const todo = new Todo("Do the dishes")
+      const store = new Arbor([todo])
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
 
-        // Overrides the default behavior for proxying array values
-        store.with(MyArrayHandler)
+      store.state[0].complete()
 
-        // Initializes the store after registering a new node handler
-        // so that the root node can be proxyied with the correct handler
-        store.setState([
-          Todo.from<Todo>({ text: "Walk the dogs" }),
-          Todo.from<Todo>({ text: "Document Arbor" }),
-        ])
-
-        // traverses the tree forcing Arbor to proxy and
-        // cache store.state and store.state[1] nodes
-        store.state[1].text
-        const todos = store.state as any
-
-        // Arbor lazily proxies nodes in the state tree, since store.state[0]
-        // was never proxied no custom $id was generated for that node.
-        expect(todos.$idFor(0)).toBeUndefined()
-        expect(todos.$idFor(1)).toEqual("random-id-1")
-      })
+      expect(subscriber).toHaveBeenCalled()
+      expect(store.state[0].status).toBe("done")
+      expect(store.state[0].complete).toBeDefined()
     })
 
-    it("ignores mutations on stale nodes", () => {
-      const store = new Arbor({
-        users: {
-          a: { name: "Alice" },
-          b: { name: "Bob" },
-          c: { name: "Carol" },
+    it("allows for custom node types that inherit from BaseNode", () => {
+      class Todo extends BaseNode<Todo> {
+        text: string
+        status = "todo"
+
+        complete() {
+          this.status = "done"
         }
-      })
+      }
 
-      const alice = store.state.users.a
-      store.state.users.a = store.state.users.b
+      const todo = Todo.from<Todo>({ text: "Do the dishes" })
+      const store = new Arbor([todo])
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
 
-      expect(store.state.users.a).toEqual({ name: "Bob" })
-      expect(() => { alice.name = "Alice Doe" }).toThrowError(StaleNodeError)
-      expect(store.state.users.a).toEqual({ name: "Bob" })
+      store.state[0].complete()
+
+      expect(subscriber).toHaveBeenCalled()
+      expect(store.state[0].status).toBe("done")
+      expect(store.state[0]).toBeInstanceOf(Todo)
+    })
+  })
+
+  describe("Example: Reactive Array API", () => {
+    it("makes Array#push reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+      ])
+
+      store.subscribe(subscriber)
+      store.state.push({ text: "Walk the dogs", status: "todo" })
+
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["1"])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("push")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Do the dishes", status: "todo" },
+      ])
+
+      expect(store.state).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
     })
 
-    it("ignores array deletions on stale nodes", () => {
-      const store = new Arbor({
-        users: [
-          { name: "Alice" },
-          { name: "Bob" },
-          { name: "Carol" },
-        ]
-      })
+    it("makes Array#splice reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
 
-      const alice = store.state.users[0]
-      store.state.users[0] = store.state.users[1]
+      store.subscribe(subscriber)
+      store.state.splice(0, 2)
 
-      expect(store.state.users[0]).toEqual({ name: "Bob" })
-      expect(() => { alice.name = "Alice Doe" }).toThrowError(StaleNodeError)
-      expect(store.state.users[0]).toEqual({ name: "Bob" })
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0", "1"])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("splice")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
+
+      expect(store.state).toEqual([
+        { text: "Clean the house", status: "todo" }
+      ])
     })
 
-    describe("Repository", () => {
-      it("allows managing Repository of items", () => {
-        const store = new Arbor(
-          new Repository(
-            Todo.from<Todo>({
-              uuid: "abc",
-              text: "Do the dishes",
-              completed: false,
-            }),
-            Todo.from<Todo>({
-              uuid: "bcd",
-              text: "Clean the house",
-              completed: true,
-            })
-          )
-        )
+    it("makes 'delete' reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
 
-        const [firstItem, secondItem] = store.state
+      store.subscribe(subscriber)
+      delete store.state[0]
 
-        delete store.state.abc
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0"])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
 
-        const secondItem2 = store.state.bcd
+      expect(store.state).toEqual([
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
+    })
 
-        expect(secondItem).toBe(secondItem2)
-        expect(store.state.abc).toBeUndefined()
-        expect(store.state.bcd).toBe(secondItem)
-        expect(firstItem.isStale()).toBe(true)
-      })
+    it("makes Array#shift reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
+
+      store.subscribe(subscriber)
+      const shiftedTodo = store.state.shift()
+
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0"])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("shift")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
+
+      expect(shiftedTodo).toEqual({ text: "Do the dishes", status: "todo" })
+      expect(store.state).toEqual([
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
+    })
+
+    it("makes Array#pop reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
+
+      store.subscribe(subscriber)
+      const poppedTodo = store.state.pop()
+
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("pop")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" }
+      ])
+
+      expect(poppedTodo).toEqual({ text: "Clean the house", status: "todo" })
+      expect(store.state).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
+    })
+
+    it("makes Array#unshift reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
+
+      store.subscribe(subscriber)
+      const length = store.state.unshift({ text: "Clean the house", status: "todo" })
+
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("unshift")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
+
+      expect(length).toEqual(3)
+      expect(store.state).toEqual([
+        { text: "Clean the house", status: "todo" },
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
+    })
+
+    it("makes Array#reverse reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
+
+      store.subscribe(subscriber)
+      const reversed = store.state.reverse()
+
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("reverse")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
+
+      expect(reversed).toBe(store.state)
+      expect(store.state).toEqual([
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Do the dishes", status: "todo" },
+      ])
+    })
+
+    it("makes Array#sort reactive", () => {
+      const subscriber = jest.fn()
+      const store = new Arbor([
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" },
+        { text: "Do the dishes", status: "todo" },
+      ])
+
+      store.subscribe(subscriber)
+      const sorted = store.state.sort((a, b) => a.text.localeCompare(b.text))
+
+      expect(subscriber.mock.calls.length).toEqual(1)
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("sort")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
+        { text: "Walk the dogs", status: "todo" },
+        { text: "Clean the house", status: "todo" },
+        { text: "Do the dishes", status: "todo" },
+      ])
+
+      expect(sorted).toBe(store.state)
+      expect(store.state).toEqual([
+        { text: "Clean the house", status: "todo" },
+        { text: "Do the dishes", status: "todo" },
+        { text: "Walk the dogs", status: "todo" },
+      ])
     })
   })
 })
