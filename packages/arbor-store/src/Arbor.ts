@@ -164,8 +164,7 @@ export default class Arbor<T extends object = object> {
     // Nodes that are no longer in the state tree or were moved into a different
     // path are considered detatched nodes and cannot be mutated otherwise we risk
     // computing incorrect state trees with values that are no longer valid.
-    // TODO: rename Arbor#isStale to Arbor#isDetatched
-    if (this.isStale(node)) {
+    if (this.isDetached(node)) {
       throw new StaleNodeError()
     }
 
@@ -275,7 +274,7 @@ export default class Arbor<T extends object = object> {
     return node.$subscribers.subscribe(subscriber)
   }
 
-  isStale(node: object) {
+  isDetached(node: object) {
     if (!isNode(node)) return true
 
     const reloadedNode = this.getNodeAt(node.$path)

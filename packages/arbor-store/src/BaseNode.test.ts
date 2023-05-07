@@ -32,7 +32,7 @@ describe("BaseNode", () => {
       todo1.detach()
 
       expect(store.state.abc).toBeUndefined()
-      expect(todo1.isStale()).toBe(true)
+      expect(todo1.isDetached()).toBe(true)
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
@@ -174,7 +174,7 @@ describe("BaseNode", () => {
     })
   })
 
-  describe("#isStale", () => {
+  describe("#isDetached", () => {
     it("checks whether or not a node is no longer valid", () => {
       const store = new Arbor(
         new Repository(
@@ -193,15 +193,15 @@ describe("BaseNode", () => {
 
       const todo = store.state.abc
 
-      expect(todo.isStale()).toBe(false)
+      expect(todo.isDetached()).toBe(false)
       delete store.state.abc
-      expect(todo.isStale()).toBe(true)
+      expect(todo.isDetached()).toBe(true)
     })
 
     it("throws an error when used on an instance not bound to an Arbor store", () => {
       const todo = new Todo()
 
-      expect(() => todo.isStale()).toThrowError(NotAnArborNodeError)
+      expect(() => todo.isDetached()).toThrowError(NotAnArborNodeError)
     })
   })
 

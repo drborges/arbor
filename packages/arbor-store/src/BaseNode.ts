@@ -16,7 +16,7 @@ export default class BaseNode<T extends object> {
 
   parent<K extends object>(): INode<K> {
     if (!isNode(this)) throw new NotAnArborNodeError()
-    if (this.isStale()) throw new StaleNodeError()
+    if (this.isDetached()) throw new StaleNodeError()
 
     const node = this
     const parentPath = node.$path.parent
@@ -30,7 +30,7 @@ export default class BaseNode<T extends object> {
 
   detach() {
     if (!isNode(this)) throw new NotAnArborNodeError()
-    if (this.isStale()) throw new StaleNodeError()
+    if (this.isDetached()) throw new StaleNodeError()
 
     const node = this
     if (node.$path.isRoot())
@@ -42,7 +42,7 @@ export default class BaseNode<T extends object> {
 
   merge(attributes: Partial<AttributesOf<T>>): ArborNode<T> {
     if (!isNode(this)) throw new NotAnArborNodeError()
-    if (this.isStale()) throw new StaleNodeError()
+    if (this.isDetached()) throw new StaleNodeError()
 
     this.$tree.mutate(this, (value) => {
       Object.assign(value, attributes)
@@ -55,15 +55,15 @@ export default class BaseNode<T extends object> {
     return this.$tree.getNodeAt(this.$path)
   }
 
-  isStale(): boolean {
+  isDetached(): boolean {
     if (!isNode(this)) throw new NotAnArborNodeError()
 
-    return this.$tree.isStale(this)
+    return this.$tree.isDetached(this)
   }
 
   get path(): Path {
     if (!isNode(this)) throw new NotAnArborNodeError()
-    if (this.isStale()) throw new StaleNodeError()
+    if (this.isDetached()) throw new StaleNodeError()
 
     return this.$path
   }
