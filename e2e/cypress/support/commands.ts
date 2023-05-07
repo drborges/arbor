@@ -1,8 +1,9 @@
 /// <reference types="cypress" />
+/// <reference types="@testing-library/cypress" />
 
-import '@testing-library/cypress/add-commands'
+import "@testing-library/cypress/add-commands"
 
-import { mount } from 'cypress/react'
+import { mount } from "cypress/react"
 
 declare global {
   namespace Cypress {
@@ -12,7 +13,7 @@ declare global {
   }
 }
 
-Cypress.Commands.add('mount', mount)
+Cypress.Commands.add("mount", mount)
 
 // ***********************************************
 // This example commands.ts shows you how to
@@ -26,19 +27,19 @@ Cypress.Commands.add('mount', mount)
 //
 //
 // -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
+// Cypress.Commands.add("login", (email, password) => { ... })
 //
 //
 // -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
+// Cypress.Commands.add("drag", { prevSubject: "element"}, (subject, options) => { ... })
 //
 //
 // -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
+// Cypress.Commands.add("dismiss", { prevSubject: "optional"}, (subject, options) => { ... })
 //
 //
 // -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 //
 // declare global {
 //   namespace Cypress {
