@@ -29,7 +29,8 @@
   },
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "e2e"
   ],
   "scripts": {
     "clean": "yarn workspaces foreach run clean",
