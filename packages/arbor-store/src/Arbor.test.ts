@@ -60,6 +60,34 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[1][0].state.previous.count).toBe(1)
       expect(subscriber.mock.calls[1][0].state.current.count).toBe(2)
     })
+
+    it("allows refreshing state tree nodes", () => {
+      const store = new Arbor({
+        count: 0
+      })
+
+      const counter = store.state
+      // this mutation causes "counter" to become "stale"
+      // it's a reference to a node belonging to the previous
+      // state tree, e.g., it's count value will no longer be
+      // in sync with the count value in the current and future
+      // versions of the state tree.
+      counter.count++
+      // Updates the state tree generating a new one
+      store.state.count++
+
+      const refreshedCounter = store.getRefreshed(counter)
+
+      // counter is not affected by the last mutation since it's
+      // a stale node.
+      expect(counter.count).toBe(1)
+      // refreshing the node we get the new node at that same state
+      // tree path holding the current counter state
+      expect(refreshedCounter.count).toBe(2)
+      // Accessing state tree nodes from the store always yields the
+      // current node state
+      expect(store.state.count).toBe(2)
+    })
   })
 
   describe("Example: Counter", () => {

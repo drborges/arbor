@@ -220,6 +220,19 @@ export default class Arbor<T extends object = object> {
   }
 
   /**
+   * Retrieves the current state tree node at the same path
+   * as the given node.
+   *
+   * @param node stale state tree node to be refreshed
+   * @returns refreshed state tree node
+   */
+  getRefreshed<V extends object>(node: ArborNode<V>): ArborNode<V> {
+    if (!isNode(node)) return node
+
+    return this.getNodeAt(node.$path)
+  }
+
+  /**
    * Sets a given value as the root node of the state tree.
    *
    * @param value the value to be used as the root of the state tree.
