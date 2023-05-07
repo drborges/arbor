@@ -1,7 +1,10 @@
+import React from "react"
 import { mount } from "cypress/react"
 
-describe('TodoList.cy.ts', () => {
-  it('playground', () => {
-    mount(<h1>Hello!</h1>)
+import App from "react-todo"
+
+describe("TodoList", () => {
+  it("successfully manages the state of a Todo List app via Arbor", () => {
+    mount(<App />)
   })
 })

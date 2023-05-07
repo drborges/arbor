@@ -47,7 +47,7 @@ h1 {
 }
 
 .todo-form button {
-  width: 74px;
+  width: 70px;
 }
 
 form {
@@ -81,7 +81,7 @@ form > input[type="text"] {
 }
 
 .todo-view button {
-  width: 35px;
+  width: 60px;
   height: 35px;
 }
 
@@ -144,8 +144,4 @@ input[type="radio"]:checked ~ label {
   flex-grow: 1;
   display: flex;
   justify-content: flex-end;
-}
-
-.edit-btn {
-  transform: rotateY(180deg);
 }

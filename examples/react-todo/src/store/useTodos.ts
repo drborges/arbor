@@ -32,8 +32,6 @@ export class Todo extends BaseNode<Todo> {
 
   like() {
     this.likes++
-    this.likes++
-    this.likes++
   }
 
   get completed() {

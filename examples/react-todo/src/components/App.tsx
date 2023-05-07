@@ -5,6 +5,8 @@ import Summary from "./Summary"
 import TodoList from "./TodoList"
 import NewTodoForm from "./NewTodoForm"
 
+import "../index.css"
+
 export default function App() {
   return (
     <div className="app">

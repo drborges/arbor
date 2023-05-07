@@ -4,6 +4,8 @@ import { defineConfig as defineViteConfig } from "vite"
 
 export default defineConfig({
   component: {
+    viewportWidth: 1024,
+    viewportHeight: 764,
     devServer: {
       framework: "react",
       bundler: "vite",

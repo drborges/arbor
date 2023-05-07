@@ -3766,6 +3766,7 @@ __metadata:
     "@testing-library/cypress": ^9.0.0
     "@vitejs/plugin-react-swc": ^3.3.0
     cypress: ^12.11.0
+    react-todo: "workspace:^"
     typescript: ^4.3.5
     vite: ^4.3.5
   languageName: unknown
@@ -8868,7 +8869,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-todo@workspace:examples/react-todo":
+"react-todo@workspace:^, react-todo@workspace:examples/react-todo":
   version: 0.0.0-use.local
   resolution: "react-todo@workspace:examples/react-todo"
   dependencies:

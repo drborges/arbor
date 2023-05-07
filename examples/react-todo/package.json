@@ -2,6 +2,7 @@
   "name": "react-todo",
   "version": "0.0.0",
   "private": true,
+  "main": "./src/components/App.tsx",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -4,7 +4,12 @@
     "@testing-library/cypress": "^9.0.0",
     "@vitejs/plugin-react-swc": "^3.3.0",
     "cypress": "^12.11.0",
+    "react-todo": "workspace:^",
     "typescript": "^4.3.5",
     "vite": "^4.3.5"
+  },
+  "scripts": {
+    "cy:dev": "cypress open --component --browser=electron -C ./cypress.config.ts",
+    "cy:ci": "cypress run --component -C ./cypress.config.ts"
   }
 }

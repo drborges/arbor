@@ -19,6 +19,7 @@ export default memo(function TodoView({ id }: TodoProps) {
         type="checkbox"
         checked={todo.completed}
         onChange={todo.toggle}
+        data-cy="toggle-todo"
       />
       {editing && (
         <input
@@ -27,21 +28,22 @@ export default memo(function TodoView({ id }: TodoProps) {
           value={todo.text}
           onBlur={() => setEditing(false)}
           onChange={(e) => (todo.text = e.target.value)}
+          data-cy="edit-todo-input"
         />
       )}
       {!editing && <label htmlFor={todo.id}>{todo.text}</label>}
       <span>Likes: {todo.likes}</span>
       <button
-        className="edit-btn"
         type="button"
         onClick={() => setEditing(!editing)}
+        data-cy="edit-todo"
       >
-        ✏️
+        Edit
       </button>
       <button type="button" onClick={todo.detach}>
-        ❌
+        Delete
       </button>
-      <button onClick={todo.like}>👍🏼</button>
+      <button onClick={todo.like}>Like</button>
     </div>
   )
 })
