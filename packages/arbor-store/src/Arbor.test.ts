@@ -5,6 +5,7 @@ import BaseNode from "./BaseNode"
 import Repository from "./Repository"
 import { ArborProxiable } from "./isProxiable"
 import { StaleNodeError } from "./errors"
+import { unwrap } from "./test.helpers"
 
 describe("Arbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -86,6 +87,34 @@ describe("Arbor", () => {
       // current node state
       expect(store.state.counter.count).toBe(2)
     })
+
+    it("Keeps object references when assigning to node properties", () => {
+      const store = new Arbor({
+        todos: [
+          { text: "Clean the house" }
+        ]
+      })
+
+      const todo = { text: "Walk the dogs" }
+      store.state[0] = todo
+
+      expect(unwrap(store.state[0])).toBe(todo)
+    })
+
+    it("automatically unwrap node values during assignments", () => {
+      const alice = { name: "Alice" }
+      const bob = { name: "Bob" }
+      const store = new Arbor({
+        user1: alice,
+        user2: bob,
+      })
+
+      const aliceNode = store.state.user1
+
+      store.state.user2 = aliceNode
+
+      expect(unwrap(store.state.user2)).toBe(alice)
+    })
   })
 
   describe("Example: Subscriptions", () => {
@@ -148,6 +177,22 @@ describe("Arbor", () => {
       expect(() => user0.age++).toThrow(StaleNodeError)
       expect(subscriber1).not.toHaveBeenCalled()
       expect(subscriber2).not.toHaveBeenCalled()
+    })
+
+    it("ignores assignments when new value is the current value", () => {
+      const alice = { name: "Alice" }
+      const store = new Arbor({
+        user: alice,
+      })
+
+      const aliceNode = store.state.user
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state.user = alice
+      store.state.user = aliceNode
+
+      expect(subscriber).not.toHaveBeenCalled()
     })
   })
 

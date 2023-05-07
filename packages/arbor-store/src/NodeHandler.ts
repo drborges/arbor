@@ -1,10 +1,9 @@
+import Arbor, { INode } from "./Arbor"
+import NodeCache from "./NodeCache"
 import Path from "./Path"
-import clone from "./clone"
+import Subscribers from "./Subscribers"
 import isNode from "./isNode"
 import isProxiable from "./isProxiable"
-import NodeCache from "./NodeCache"
-import Arbor, { INode } from "./Arbor"
-import Subscribers from "./Subscribers"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
@@ -40,7 +39,6 @@ export default class NodeHandler<
   $clone(): INode<T> {
     return this.$tree.createNode(
       this.$path,
-      // clone(this.$value),
       this.$value,
       this.$subscribers,
       this.$children
@@ -89,19 +87,13 @@ export default class NodeHandler<
   }
 
   set(target: T, prop: string, newValue: any, proxy: INode<T>): boolean {
-    // Ignores the mutation if new value is the current value
-    if (proxy[prop] === newValue || target[prop] === newValue) return true
+    // Automatically unwraps values when they are already Arbor nodes,
+    // this prevents proxying proxies and thus forcing stale node references
+    // to be kept in memmory unnecessarily.
+    const value = isNode(newValue) ? newValue.$unwrap() : newValue
 
-    // Since Arbor automatically computes the path of nodes within the state tree
-    // based on the reference of their value, assignment operations must automatically
-    // clone assigned values to force Arbor to recompute that new value's path, otherwise
-    // different nodes pointing to the same value would have the same path, and paths must
-    // always be unique within the state tree.
-    //
-    // TODO: revisit the clonning bit.
-    // This will likely prevent reference assignments from happening
-    // which may not be intuitive.
-    const value = isProxiable(newValue) ? clone(newValue) : newValue
+    // Ignores the mutation if new value is already the current value
+    if (target[prop] === value) return true
 
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value

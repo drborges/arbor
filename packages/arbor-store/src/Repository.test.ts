@@ -17,8 +17,7 @@ describe("Repository", () => {
 
     const node = store.state["123"] as INode<User>
 
-    expect(node.$unwrap()).toEqual(user)
-    expect(node.$unwrap()).not.toBe(user)
+    expect(node.$unwrap()).toBe(user)
   })
 
   it("initializes the repository with items", () => {
