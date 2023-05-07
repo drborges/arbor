@@ -1,14 +1,14 @@
 import { Repository } from "@arborjs/store"
 import React from "react"
 
-import TodoListApp, { store } from "react-todo"
+import TodoListApp, { store } from "../../react-todo/App"
 
 describe("TodoList", () => {
   beforeEach(() => {
     store.setState(new Repository())
   })
 
-  it("successfully manages the state of a Todo List app via Arbor", async () => {
+  it("successfully manages the state of a Todo List app via Arbor", () => {
     cy.mount(<TodoListApp />)
 
     cy.findByTestId("add-todo-input").type("Clean the house")

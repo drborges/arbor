@@ -1,11 +1,14 @@
 {
   "private": true,
   "devDependencies": {
+    "@arborjs/react": "workspace:^",
+    "@arborjs/store": "workspace:^",
     "@testing-library/cypress": "^9.0.0",
     "@vitejs/plugin-react-swc": "^3.3.0",
+    "classnames": "^2.3.2",
     "cypress": "^12.11.0",
-    "react-todo": "workspace:^",
-    "react-counter": "workspace:^",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "typescript": "^4.3.5",
     "vite": "^4.3.5"
   },

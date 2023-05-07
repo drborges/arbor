@@ -1,13 +1,13 @@
 import React from "react"
 
-import CounterApp, { store } from "react-counter"
+import CounterApp, { store } from "../../react-counter/Counter"
 
-describe("Conter", () => {
+describe("Counter", () => {
   beforeEach(() => {
     store.setState({ count: 0 })
   })
 
-  it("successfully manages the state of a Counter app with memoized components", async () => {
+  it("successfully manages the state of a Counter app with memoized components", () => {
     cy.mount(<CounterApp />)
 
     cy.findByText("Count: 0").should("exist")
