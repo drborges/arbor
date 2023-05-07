@@ -3,8 +3,6 @@ import ReactDOM from "react-dom"
 
 import Counter from "./Counter"
 
-import "./styles.css"
-
 ReactDOM.render(
   <React.StrictMode>
     <Counter />

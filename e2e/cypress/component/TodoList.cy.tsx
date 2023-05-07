@@ -1,8 +1,7 @@
 import { Repository } from "@arborjs/store"
 import React from "react"
 
-import App from "react-todo"
-import { store } from "react-todo/src/store/useTodos"
+import TodoListApp, { store } from "react-todo"
 
 describe("TodoList", () => {
   beforeEach(() => {
@@ -10,7 +9,7 @@ describe("TodoList", () => {
   })
 
   it("successfully manages the state of a Todo List app via Arbor", async () => {
-    cy.mount(<App />)
+    cy.mount(<TodoListApp />)
 
     cy.findByTestId("add-todo-input").type("Clean the house")
     cy.findByText("Add").click()

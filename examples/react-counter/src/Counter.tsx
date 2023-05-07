@@ -1,19 +1,37 @@
-import React from "react"
+import React, { memo } from "react"
 import Arbor from "@arborjs/store"
 import useArbor from "@arborjs/react"
 
-const store = new Arbor({
-  count: 0,
-})
+import "./styles.css"
 
-export default function Counter() {
-  const counter = useArbor(store)
+export const store = new Arbor({
+  count: 0
+});
 
+const DecrementButton = memo(() => {
+  const counter = store.state;
+
+  return <button onClick={() => counter.count--}>-1</button>;
+});
+
+const IncrementButton = memo(() => {
+  const counter = store.state;
+
+  return <button onClick={() => counter.count++}>+1</button>;
+});
+
+const Counter = memo(() => {
+  const counter = useArbor(store);
+
+  return <span>Count: {counter.count}</span>;
+});
+
+export default function CounterApp() {
   return (
     <div>
-      <button onClick={() => counter.count--}>Decrement</button>
-      <span>{counter.count}</span>
-      <button onClick={() => counter.count++}>Increment</button>
+      <Counter />
+      <DecrementButton />
+      <IncrementButton />
     </div>
-  )
+  );
 }

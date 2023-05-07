@@ -5,6 +5,7 @@
     "@vitejs/plugin-react-swc": "^3.3.0",
     "cypress": "^12.11.0",
     "react-todo": "workspace:^",
+    "react-counter": "workspace:^",
     "typescript": "^4.3.5",
     "vite": "^4.3.5"
   },

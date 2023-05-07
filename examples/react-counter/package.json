@@ -2,6 +2,7 @@
   "name": "react-counter",
   "private": true,
   "version": "0.0.0",
+  "main": "./src/Counter.tsx",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
