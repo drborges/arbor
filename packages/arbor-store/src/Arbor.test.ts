@@ -4,6 +4,7 @@ import Arbor from "./Arbor"
 import BaseNode from "./BaseNode"
 import Repository from "./Repository"
 import { ArborProxiable } from "./isProxiable"
+import { StaleNodeError } from "./errors"
 
 describe("Arbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -88,6 +89,69 @@ describe("Arbor", () => {
       // Accessing state tree nodes from the store always yields the
       // current node state
       expect(store.state.count).toBe(2)
+    })
+  })
+
+  describe("Example: Subscriptions", () => {
+    it("subscribes to any store mutations (any mutations to any node in the state tree)", () => {
+      const store = new Arbor([
+        { name: "Alice", age: 30 },
+        { name: "Bob", age: 25 },
+      ])
+
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+
+      store.subscribe(subscriber1)
+      store.subscribe(subscriber2)
+
+      store.state[0].age++
+      store.state.push({ name: "Carol", age: 20 })
+
+      expect(subscriber1).toHaveBeenCalledTimes(2)
+      expect(subscriber2).toHaveBeenCalledTimes(2)
+    })
+
+    it("subscribes to mutations to a specific state tree node", () => {
+      const store = new Arbor([
+        { name: "Alice", age: 30 },
+        { name: "Bob", age: 25 },
+      ])
+
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      const subscriber3 = jest.fn()
+
+      store.subscribeTo(store.state, subscriber1)
+      store.subscribeTo(store.state[0], subscriber2)
+      store.subscribeTo(store.state[1], subscriber3)
+
+      store.state[0].age++
+      store.state[1].age++
+      store.state.push({ name: "Carol", age: 20 })
+
+      expect(subscriber1).toHaveBeenCalledTimes(3)
+      expect(subscriber2).toHaveBeenCalledTimes(1)
+      expect(subscriber3).toHaveBeenCalledTimes(1)
+    })
+
+    it("does not trigger notifications when mutations are performed on stale nodes", () => {
+      const store = new Arbor([
+        { name: "Alice", age: 30 },
+        { name: "Bob", age: 25 },
+      ])
+
+      const user0 = store.state[0]
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+      delete store.state[0]
+
+      store.subscribe(subscriber1)
+      store.subscribeTo(user0, subscriber2)
+
+      expect(() => user0.age++).toThrow(StaleNodeError)
+      expect(subscriber1).not.toHaveBeenCalled()
+      expect(subscriber2).not.toHaveBeenCalled()
     })
   })
 
