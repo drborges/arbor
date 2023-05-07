@@ -27,11 +27,7 @@ export function watchPaths(...patterns: string[]) {
       if (!matches) return false
       if (!prop) return true
 
-      const previousNodeValue = event.mutationPath.walk(
-        event.state.previous
-      ) as T
-      const currentNodeValue = event.mutationPath.walk(event.state.current) as T
-      return previousNodeValue[prop] !== currentNodeValue[prop]
+      return event.metadata.props.includes(prop)
     })
   }
 }
