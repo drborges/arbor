@@ -2,6 +2,7 @@
 import Path from "./Path"
 import Arbor from "./Arbor"
 import BaseNode from "./BaseNode"
+import Repository from "./Repository"
 import { ArborProxiable } from "./isProxiable"
 
 describe("Arbor", () => {
@@ -87,6 +88,74 @@ describe("Arbor", () => {
       // Accessing state tree nodes from the store always yields the
       // current node state
       expect(store.state.count).toBe(2)
+    })
+  })
+
+  describe("Example: Deleting nodes from the state tree", () => {
+    it("allows deleting nodes using the 'delete' keyword", () => {
+      type Todo = {
+        text: string
+      }
+
+      type Todos = {
+        [key: string]: Todo
+      }
+
+      const store = new Arbor<Todos>({
+        "1": { text: "Clean the house" },
+        "2": { text: "Walk the dogs" },
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      delete store.state["2"]
+
+      expect(store.state["2"]).toBeUndefined()
+      expect(subscriber.mock.calls.length).toBe(1)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
+      expect(subscriber.mock.calls[0][0].state.current).toEqual({
+        "1": { text: "Clean the house" }
+      })
+
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
+        "1": { text: "Clean the house" },
+        "2": { text: "Walk the dogs" },
+      })
+    })
+
+    it("allows deleting nodes by detaching them from the state tree when extending from BaseNode class", () => {
+      class Todo extends BaseNode<Todo> {
+        text: string
+      }
+
+      type Todos = {
+        [key: string]: Todo
+      }
+
+      const store = new Arbor<Todos>({
+        "1": Todo.from<Todo>({ text: "Clean the house" }),
+        "2": Todo.from<Todo>({ text: "Walk the dogs" }),
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state["2"].detach()
+
+      expect(store.state["2"]).toBeUndefined()
+      expect(subscriber.mock.calls.length).toBe(1)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
+      expect(subscriber.mock.calls[0][0].state.current).toEqual({
+        "1": { text: "Clean the house" }
+      })
+
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
+        "1": { text: "Clean the house" },
+        "2": { text: "Walk the dogs" },
+      })
     })
   })
 
@@ -546,70 +615,34 @@ describe("Arbor", () => {
     })
   })
 
-  describe("Example: Deleting nodes from the state tree", () => {
-    it("allows deleting nodes using the 'delete' keyword", () => {
-      type Todo = {
-        text: string
-      }
-
-      type Todos = {
-        [key: string]: Todo
-      }
-
-      const store = new Arbor<Todos>({
-        "1": { text: "Clean the house" },
-        "2": { text: "Walk the dogs" },
-      })
-
-      const subscriber = jest.fn()
-      store.subscribe(subscriber)
-
-      delete store.state["2"]
-
-      expect(store.state["2"]).toBeUndefined()
-      expect(subscriber.mock.calls.length).toBe(1)
-      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
-      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
-      expect(subscriber.mock.calls[0][0].state.current).toEqual({
-        "1": { text: "Clean the house" }
-      })
-
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
-        "1": { text: "Clean the house" },
-        "2": { text: "Walk the dogs" },
-      })
-    })
-
-    it("allows deleting nodes by detaching them from the state tree when extending from BaseNode class", () => {
+  describe("Example: Repository of nodes", () => {
+    it("provides an iteratable key value store to make it easier to track nodes", () => {
       class Todo extends BaseNode<Todo> {
+        uuid: string
         text: string
       }
 
-      type Todos = {
-        [key: string]: Todo
-      }
+      const store = new Arbor(new Repository(
+        Todo.from<Todo>({ uuid: "1", text: "Clean the house" }),
+        Todo.from<Todo>({ uuid: "2", text: "Walk the dogs" }),
+      ))
 
-      const store = new Arbor<Todos>({
-        "1": Todo.from<Todo>({ text: "Clean the house" }),
-        "2": Todo.from<Todo>({ text: "Walk the dogs" }),
-      })
+      const todo1 = store.state["1"]
+      // A Repository even though is a key-value store, it is also
+      // iterable just like arrays, thus destructuring repositories
+      // will yield an array
+      const todos = [...store.state]
 
-      const subscriber = jest.fn()
-      store.subscribe(subscriber)
+      expect(todos[0]).toBe(store.state["1"])
+      expect(todos[1]).toBe(store.state["2"])
 
-      store.state["2"].detach()
+      todos[0].text = "Clean the living room"
 
-      expect(store.state["2"]).toBeUndefined()
-      expect(subscriber.mock.calls.length).toBe(1)
-      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
-      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
-      expect(subscriber.mock.calls[0][0].state.current).toEqual({
-        "1": { text: "Clean the house" }
-      })
-
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
-        "1": { text: "Clean the house" },
-        "2": { text: "Walk the dogs" },
+      expect(todo1.text).toEqual("Clean the living room")
+      expect(store.state).toBeInstanceOf(Repository)
+      expect(store.state["1"]).toEqual({
+        uuid: "1",
+        text: "Clean the living room"
       })
     })
   })
