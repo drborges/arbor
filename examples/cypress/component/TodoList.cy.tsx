@@ -14,13 +14,19 @@ describe("TodoList", () => {
     cy.findByTestId("add-todo-input").type("Clean the house")
     cy.findByText("Add").click()
 
+    cy.findByText("0 of 1 completed").should("exist")
+
     cy.findByTestId("add-todo-input").type("Walk the dogs")
     cy.findByText("Add").click()
+
+    cy.findByText("0 of 2 completed").should("exist")
 
     cy.findByText("Clean the house").should("exist")
     cy.findByText("Walk the dogs").should("exist")
 
     cy.findByText("Clean the house").click()
+
+    cy.findByText("1 of 2 completed").should("exist")
 
     cy.findByText("Completed").click()
 
@@ -68,6 +74,7 @@ describe("TodoList", () => {
       })
 
       cy.findByText("Clean the house... again...").should("not.exist")
+      cy.findByText("0 of 1 completed").should("exist")
     })
   })
 })
