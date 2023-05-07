@@ -1,7 +1,7 @@
 {
   "name": "@arborjs/store",
   "sideEffects": false,
-  "version": "0.0.1-alpha.47",
+  "version": "0.0.1-alpha.48",
   "description": "A fully typed, minimalistic proxy-based state tree library with very little boilerplate.",
   "keywords": [
     "arbor",
