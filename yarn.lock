@@ -5,7 +5,7 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@arborjs/plugins@workspace:packages/arbor-plugins":
+"@arborjs/plugins@workspace:^, @arborjs/plugins@workspace:packages/arbor-plugins":
   version: 0.0.0-use.local
   resolution: "@arborjs/plugins@workspace:packages/arbor-plugins"
   dependencies:
@@ -4105,6 +4105,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "examples-1f5c57@workspace:examples"
   dependencies:
+    "@arborjs/plugins": "workspace:^"
     "@arborjs/react": "workspace:^"
     "@arborjs/store": "workspace:^"
     "@testing-library/cypress": ^9.0.0

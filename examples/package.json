@@ -1,6 +1,7 @@
 {
   "private": true,
   "devDependencies": {
+    "@arborjs/plugins": "workspace:^",
     "@arborjs/react": "workspace:^",
     "@arborjs/store": "workspace:^",
     "@testing-library/cypress": "^9.0.0",
