@@ -5,6 +5,63 @@ import BaseNode from "./BaseNode"
 import { ArborProxiable } from "./isProxiable"
 
 describe("Arbor", () => {
+  describe("Example: State Tree and Structural Sharing", () => {
+    it("generates a new state tree by reusing nodes unaffected by the mutation (structural sharing)", () => {
+      const store = new Arbor({
+        todos: [
+          { text: "Clean the house" },
+          { text: "Walk the dogs" },
+        ],
+        users: [
+          { name: "Alice" },
+          { name: "Bob" },
+        ]
+      })
+
+      const root = store.state
+      const todos = store.state.todos
+      const todo0 = store.state.todos[0]
+      const todo1 = store.state.todos[1]
+      const users = store.state.users
+      const user0 = store.state.users[0]
+      const user1 = store.state.users[1]
+
+      todo0.text = "Clean the living room"
+
+      expect(store.state).not.toBe(root)
+      expect(store.state.todos).not.toBe(todos)
+      expect(store.state.todos[0]).not.toBe(todo0)
+      expect(store.state.todos[1]).toBe(todo1)
+      expect(store.state.users).toBe(users)
+      expect(store.state.users[0]).toBe(user0)
+      expect(store.state.users[1]).toBe(user1)
+    })
+
+    it("ensures stale node references are also updated", () => {
+      const store = new Arbor({
+        count: 0
+      })
+
+      const counter = store.state
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      counter.count++
+
+      expect(counter.count).toBe(1)
+      expect(store.state.count).toBe(1)
+      expect(subscriber.mock.calls[0][0].state.previous.count).toBe(0)
+      expect(subscriber.mock.calls[0][0].state.current.count).toBe(1)
+
+      counter.count++
+
+      expect(counter.count).toBe(2)
+      expect(store.state.count).toBe(2)
+      expect(subscriber.mock.calls[1][0].state.previous.count).toBe(1)
+      expect(subscriber.mock.calls[1][0].state.current.count).toBe(2)
+    })
+  })
+
   describe("Example: Counter", () => {
     it("keeps track of a counter's state", () => {
       const store = new Arbor({
@@ -458,6 +515,74 @@ describe("Arbor", () => {
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
       ])
+    })
+  })
+
+  describe("Example: Deleting nodes from the state tree", () => {
+    it("allows deleting nodes using the 'delete' keyword", () => {
+      type Todo = {
+        text: string
+      }
+
+      type Todos = {
+        [key: string]: Todo
+      }
+
+      const store = new Arbor<Todos>({
+        "1": { text: "Clean the house" },
+        "2": { text: "Walk the dogs" },
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      delete store.state["2"]
+
+      expect(store.state["2"]).toBeUndefined()
+      expect(subscriber.mock.calls.length).toBe(1)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
+      expect(subscriber.mock.calls[0][0].state.current).toEqual({
+        "1": { text: "Clean the house" }
+      })
+
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
+        "1": { text: "Clean the house" },
+        "2": { text: "Walk the dogs" },
+      })
+    })
+
+    it("allows deleting nodes by detaching them from the state tree when extending from BaseNode class", () => {
+      class Todo extends BaseNode<Todo> {
+        text: string
+      }
+
+      type Todos = {
+        [key: string]: Todo
+      }
+
+      const store = new Arbor<Todos>({
+        "1": Todo.from<Todo>({ text: "Clean the house" }),
+        "2": Todo.from<Todo>({ text: "Walk the dogs" }),
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state["2"].detach()
+
+      expect(store.state["2"]).toBeUndefined()
+      expect(subscriber.mock.calls.length).toBe(1)
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
+      expect(subscriber.mock.calls[0][0].state.current).toEqual({
+        "1": { text: "Clean the house" }
+      })
+
+      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
+        "1": { text: "Clean the house" },
+        "2": { text: "Walk the dogs" },
+      })
     })
   })
 })

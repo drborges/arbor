@@ -1,5 +1,5 @@
-import NodeCache from "./NodeCache"
 import { ArborNode, INode } from "./Arbor"
+import NodeCache from "./NodeCache"
 import isNode from "./isNode"
 
 export function unwrap<T extends object>(value: T): T {
