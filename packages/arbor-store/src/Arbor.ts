@@ -161,14 +161,16 @@ export default class Arbor<T extends object = object> {
       ? pathOrNode
       : (pathOrNode.walk(this.#root) as INode<V>)
 
+    // Nodes that are no longer in the state tree or were moved into a different
+    // path are considered detatched nodes and cannot be mutated otherwise we risk
+    // computing incorrect state trees with values that are no longer valid.
+    // TODO: rename Arbor#isStale to Arbor#isDetatched
     if (this.isStale(node)) {
       throw new StaleNodeError()
     }
 
     const previousState = JSON.stringify(this.#root.$unwrap())
     const result = mutate(this.#root, node.$path, mutation)
-    // TODO: Move this step into the `mutate` implementation
-    mutation(node.$unwrap())
 
     this.#root = result?.root
 

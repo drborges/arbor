@@ -63,32 +63,28 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[1][0].state.current.count).toBe(2)
     })
 
-    it("allows refreshing state tree nodes", () => {
+    it("keeps stale node references in sync with the current state tree", () => {
       const store = new Arbor({
-        count: 0
+        counter: {
+          count: 0
+        }
       })
 
-      const counter = store.state
-      // this mutation causes "counter" to become "stale"
-      // it's a reference to a node belonging to the previous
-      // state tree, e.g., it's count value will no longer be
-      // in sync with the count value in the current and future
-      // versions of the state tree.
+      const counter = store.state.counter
+
+      // Mutates the state tree path /counter via the node reference "counter"
       counter.count++
-      // Updates the state tree generating a new one
-      store.state.count++
+      // Triggers another mutation against the state tree path /counter
+      // via a different reference, causing Arbor to create a new state tree and
+      // rendering the "counter" reference "stale", e.g, it's a node belonging to
+      // a previous state tree version.
+      store.state.counter.count++
 
-      const refreshedCounter = store.getRefreshed(counter)
-
-      // counter is not affected by the last mutation since it's
-      // a stale node.
-      expect(counter.count).toBe(1)
-      // refreshing the node we get the new node at that same state
-      // tree path holding the current counter state
-      expect(refreshedCounter.count).toBe(2)
+      // Arbor can still keep the stale reference in sync with the state tree updates
+      expect(counter.count).toBe(2)
       // Accessing state tree nodes from the store always yields the
       // current node state
-      expect(store.state.count).toBe(2)
+      expect(store.state.counter.count).toBe(2)
     })
   })
 

@@ -40,7 +40,8 @@ export default class NodeHandler<
   $clone(): INode<T> {
     return this.$tree.createNode(
       this.$path,
-      clone(this.$value),
+      // clone(this.$value),
+      this.$value,
       this.$subscribers,
       this.$children
     )

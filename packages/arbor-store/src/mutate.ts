@@ -33,8 +33,6 @@ export default function mutate<T extends object, K extends object>(
       const childNodeCopy = childNode.$clone()
       const childNodeValue = childNodeCopy.$unwrap()
 
-      parent.$unwrap()[prop] = childNodeValue
-      // Preemptively warms up the parent's children cache
       parent.$children.set(childNodeValue, childNodeCopy)
 
       return childNodeCopy
