@@ -1,5 +1,5 @@
-import NodeCache from "./NodeCache"
 import { ArborNode, INode } from "./Arbor"
+import NodeCache from "./NodeCache"
 import isNode from "./isNode"
 
 export function unwrap<T extends object>(value: T): T {
@@ -23,4 +23,8 @@ export function toINode<
   if (isNode(value)) return value as unknown as INode<K>
 
   throw new Error("The value provided is not an Arbor node")
+}
+
+export function snapshot<T extends object>(value: T) {
+  return JSON.parse(JSON.stringify(value))
 }

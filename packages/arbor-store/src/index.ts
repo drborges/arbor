@@ -1,7 +1,6 @@
 
-export { default, MutationMode } from "./Arbor"
+export { default } from "./Arbor"
 export { default as Path } from "./Path"
-export { default as clone } from "./clone"
 export { default as isNode } from "./isNode"
 export { default as BaseNode } from "./BaseNode"
 export { default as NodeCache } from "./NodeCache"

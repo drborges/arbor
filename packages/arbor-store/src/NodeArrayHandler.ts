@@ -79,7 +79,7 @@ export default class NodeArrayHandler<
 
       return {
         operation: "shift",
-        props: [],
+        props: ["0"],
       }
     })
 
@@ -130,7 +130,7 @@ export default class NodeArrayHandler<
 
       return {
         operation: "unshift",
-        props: items.map((_, i) => String(i)),
+        props: [],
       }
     })
 
