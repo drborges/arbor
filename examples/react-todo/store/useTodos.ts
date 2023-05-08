@@ -32,8 +32,6 @@ export class Todo extends BaseNode<Todo> {
 
   like() {
     this.likes++
-    this.likes++
-    this.likes++
   }
 
   get completed() {
@@ -57,7 +55,7 @@ const persistence = new LocalStorage<Repository<Todo>>({
   },
 })
 
-store.use(new Logger("[Todos]"))
+// store.use(new Logger("[Todos]"))
 store.use(persistence)
 
 export default function useTodos() {

@@ -1,9 +1,13 @@
 import React from "react"
 
-import Filters from "./Filters"
-import Summary from "./Summary"
-import TodoList from "./TodoList"
-import NewTodoForm from "./NewTodoForm"
+import Filters from "./components/Filters"
+import Summary from "./components/Summary"
+import TodoList from "./components/TodoList"
+import NewTodoForm from "./components/NewTodoForm"
+
+export { store } from "./store/useTodos"
+
+import "./index.css"
 
 export default function App() {
   return (

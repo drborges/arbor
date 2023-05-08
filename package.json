@@ -19,6 +19,12 @@
         ],
         "outputs": []
       },
+      "cy:ci": {
+        "dependsOn": [
+          "^build"
+        ],
+        "outputs": []
+      },
       "lint": {
         "outputs": []
       },
@@ -29,11 +35,11 @@
   },
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples"
   ],
   "scripts": {
     "clean": "yarn workspaces foreach run clean",
-    "build": "npx turbo run lint build test",
+    "build": "npx turbo run lint build test cy:ci",
     "build:dev": "npx turbo run lint build:dev test",
     "publish": "yarn workspaces foreach --topological-dev --no-private npm publish --tolerate-republish"
   },

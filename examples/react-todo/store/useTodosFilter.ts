@@ -15,7 +15,7 @@ export const store = new Arbor<TodosFilter>({
   value: "all",
 })
 
-store.use(new Logger("[TodosFilter]"))
+// store.use(new Logger("[TodosFilter]"))
 store.use(
   new LocalStorage<TodosFilter>({
     key: "TodoApp.filter",

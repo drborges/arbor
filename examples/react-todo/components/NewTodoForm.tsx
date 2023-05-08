@@ -20,6 +20,7 @@ export default memo(function NewTodoForm() {
           type="text"
           value={input.value}
           onChange={(e) => (input.value = e.target.value)}
+          data-testid="add-todo-input"
         />
         <button disabled={input.value === ""}>Add</button>
       </form>
