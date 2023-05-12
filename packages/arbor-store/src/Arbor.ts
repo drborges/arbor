@@ -114,10 +114,7 @@ export default class Arbor<T extends object = object> {
    *
    * @param initialState the initial state tree value
    */
-  constructor(
-    initialState = {} as T,
-    { handlers = [] }: ArborConfig = {}
-  ) {
+  constructor(initialState = {} as T, { handlers = [] }: ArborConfig = {}) {
     this.#handlers = [...handlers, NodeArrayHandler, NodeHandler]
     this.setState(initialState)
   }
@@ -151,15 +148,18 @@ export default class Arbor<T extends object = object> {
    * @param mutation a function responsible for mutating the target node at the given path.
    */
   mutate<V extends object>(path: Path, mutation: Mutation<V>): void
-  mutate<V extends object>(node: INode<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(arborNode: NodeHandler<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(node: ArborNode<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
   mutate<V extends object>(
-    pathOrNode: Path | INode<V>,
+    pathOrNode: ArborNode<V> | Path,
     mutation: Mutation<V>
   ): void {
-    const node = isNode(pathOrNode)
-      ? pathOrNode
-      : (pathOrNode.walk(this.#root) as INode<V>)
+    const node =
+      pathOrNode instanceof Path
+        ? (pathOrNode.walk(this.#root) as INode<V>)
+        : (pathOrNode as INode<V>)
+
+    if (!isNode(pathOrNode)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different
     // path are considered detatched nodes and cannot be mutated otherwise we risk
@@ -178,7 +178,7 @@ export default class Arbor<T extends object = object> {
         current: result?.root,
         get previous() {
           return JSON.parse(previousState)
-        }
+        },
       },
       metadata: result.metadata as MutationMetadata,
       mutationPath: node.$path,
@@ -274,7 +274,13 @@ export default class Arbor<T extends object = object> {
     return node.$subscribers.subscribe(subscriber)
   }
 
-  isDetached(node: object) {
+  /**
+   * Checks if a given node is still attached to the decision tree.
+   *
+   * @param node node to check if no longer attached to the state tree.
+   * @returns true if the node no longer exists within the decision tree, false otherwise.
+   */
+  isDetached(node: ArborNode<object>) {
     if (!isNode(node)) return true
 
     const reloadedNode = this.getNodeAt(node.$path)
