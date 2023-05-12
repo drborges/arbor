@@ -1,5 +1,8 @@
-
+/**
+ * @deprecated default exports will be removed from Arbor in the next release
+ */
 export { default } from "./Arbor"
+export { default as Arbor } from "./Arbor"
 export { default as Path } from "./Path"
 export { default as isNode } from "./isNode"
 export { default as BaseNode } from "./BaseNode"
