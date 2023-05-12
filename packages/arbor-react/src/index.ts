@@ -1,3 +1,5 @@
+export * from "@arborjs/store"
+
 /**
  * @deprecated default export will be removed in the next release
  */
