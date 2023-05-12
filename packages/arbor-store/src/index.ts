@@ -7,14 +7,12 @@ export { default as NodeCache } from "./NodeCache"
 export { default as Subscribers } from "./Subscribers"
 export { default as NodeHandler } from "./NodeHandler"
 export { default as NodeArrayHandler } from "./NodeArrayHandler"
-export { default as isClonable } from "./isClonable"
 export { default as Repository } from "./Repository"
 export { default as isProxiable, ArborProxiable } from "./isProxiable"
 export { ArborError, NotAnArborNodeError, MissingUUIDError } from "./errors"
 
 export type { Mutation } from "./mutate"
 export type { Record } from "./Repository"
-export type { Clonable } from "./isClonable"
 export type { MutationEvent, Subscriber, Unsubscribe } from "./Subscribers"
 export type {
   ArborConfig,
