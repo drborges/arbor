@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import Path from "./Path"
-import Arbor from "./Arbor"
+import Arbor, { Proxiable } from "./Arbor"
 import BaseNode from "./BaseNode"
 import Repository from "./Repository"
 import { ArborProxiable } from "./isProxiable"
@@ -493,6 +493,27 @@ describe("Arbor", () => {
       expect(subscriber).toHaveBeenCalled()
       expect(store.state[0].status).toBe("done")
       expect(store.state[0]).toBeInstanceOf(Todo)
+    })
+
+    it("marks a custom type as proxiable via decorator", () => {
+      @Proxiable()
+      class Todo {
+        constructor(public text: string, public status = "todo") {}
+        complete() {
+          this.status = "done"
+        }
+      }
+
+      const todo = new Todo("Do the dishes")
+      const store = new Arbor([todo])
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state[0].complete()
+
+      expect(subscriber).toHaveBeenCalled()
+      expect(store.state[0].status).toBe("done")
+      expect(store.state[0].complete).toBeDefined()
     })
   })
 

@@ -1,4 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
+import { ArborProxiable } from "./isProxiable"
 import { NotAnArborNodeError, StaleNodeError } from "./errors"
 import isNode from "./isNode"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
@@ -9,6 +10,18 @@ import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { getUUID, setUUID } from "./uuid"
+
+/**
+ * Decorates a class marking it as Arbor proxiable, allowing
+ * Arbor to use it as Node type.
+ *
+ * @returns Arbor compatiby type.
+ */
+export function Proxiable() {
+  return <T extends Function>(target: T, _context: any) => {
+    target.prototype[ArborProxiable] = true
+  }
+}
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
