@@ -11,5 +11,6 @@
     "emitDeclarationOnly": true,
     "lib": ["es2021", "dom", "dom.iterable"],
     "jsx": "react"
-  }
+  },
+  "exclude": ["examples"]
 }

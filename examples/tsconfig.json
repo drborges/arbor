@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "include": [
+    "react-todo/**/*",
+    "react-counter/**/*",
+    "cypress/component/**/*"
+  ],
+  "exclude": []
+}
