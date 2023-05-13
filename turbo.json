@@ -20,6 +20,9 @@
     },
     "dev": {
       "cache": false
+    },
+    "prettier": {
+      "outputs": []
     }
   }
 }

@@ -28,6 +28,7 @@
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
   "license": "MIT",
+  "prettier": "@arborjs/config-prettier",
   "files": [
     "./dist",
     "./README",
@@ -42,10 +43,12 @@
     "eslint": "^8.40.0",
     "immer": "^9.0.12",
     "jest": "^29.5.0",
+    "prettier": "^2.8.8",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.4"
   },
   "scripts": {
+    "prettier": "prettier -w . ",
     "clean": "rm -rf dist",
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest --passWithNoTests",
