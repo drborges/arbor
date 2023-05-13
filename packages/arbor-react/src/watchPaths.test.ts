@@ -1,5 +1,5 @@
 import Arbor from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks/native"
+import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
 import { watchPaths } from "./watchPaths"
@@ -24,10 +24,12 @@ describe("watchPaths", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/0", "/users/1/posts")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchPaths("/users/0", "/users/1/posts"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -48,10 +50,12 @@ describe("watchPaths", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/0", "/users/1/posts")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchPaths("/users/0", "/users/1/posts"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -85,10 +89,12 @@ describe("watchPaths", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/0/#name", "/users/1/#age")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchPaths("/users/0/#name", "/users/1/#age"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -134,10 +140,15 @@ describe("watchPaths", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchPaths("/users/:any/#name", "/users/1/#age")))
+    const { result } = renderHook(() =>
+      useArbor(
+        store.state.users,
+        watchPaths("/users/:any/#name", "/users/1/#age")
+      )
+    )
 
     expect(result.all.length).toBe(1)
 

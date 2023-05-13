@@ -1,5 +1,5 @@
 import Arbor, { BaseNode } from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks/native"
+import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
 import { watchNode } from "./watchNode"
@@ -24,10 +24,12 @@ describe("watchNode", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users[0], watchNode("name")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users[0], watchNode("name"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -48,10 +50,12 @@ describe("watchNode", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users[0], watchNode("name", "age")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users[0], watchNode("name", "age"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -67,10 +71,12 @@ describe("watchNode", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users[0], watchNode("name", "age")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users[0], watchNode("name", "age"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -86,7 +92,6 @@ describe("watchNode", () => {
 
     expect(result.all.length).toBe(3)
   })
-
 
   it("watches a BseNode value", () => {
     class User extends BaseNode<User> {
@@ -117,10 +122,12 @@ describe("watchNode", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "some post" }] },
         { name: "Bob", age: 30, posts: [] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users[0], watchNode()))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users[0], watchNode())
+    )
 
     expect(result.all.length).toBe(1)
 
