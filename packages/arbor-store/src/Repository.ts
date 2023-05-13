@@ -8,7 +8,7 @@ export default class Repository<T extends Record> {
   [uuid: string]: T
 
   constructor(...items: T[]) {
-    items.forEach(item => {
+    items.forEach((item) => {
       this[item.uuid] = item
     })
   }

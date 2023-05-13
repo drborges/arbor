@@ -1,5 +1,9 @@
 {
-  "extends": ["../../.eslintrc.json", "plugin:react/recommended", "plugin:react-hooks/recommended"],
+  "extends": [
+    "../../.eslintrc.json",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
   "ignorePatterns": ["jest.config.js"],
   "parserOptions": {
     "project": ["./tsconfig.eslint.json"]

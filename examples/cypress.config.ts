@@ -11,10 +11,8 @@ export default defineConfig({
       framework: "react",
       bundler: "vite",
       viteConfig: defineViteConfig({
-        plugins: [
-          react()
-        ]
-      })
+        plugins: [react()],
+      }),
     },
   },
 })

@@ -102,7 +102,10 @@ function useArbor<T extends object>(
     [state, store, targetPath, watcher]
   )
 
-  useEffect(() => store.subscribeTo(state as ArborNode<T>, update), [state, store, update])
+  useEffect(
+    () => store.subscribeTo(state as ArborNode<T>, update),
+    [state, store, update]
+  )
 
   return state as ArborNode<T>
 }

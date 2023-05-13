@@ -29,7 +29,9 @@ export const select = (filter: FilterValue) => (store.state.value = filter)
 
 export const filterTodos = (repo: Repository<Todo>, filter: FilterValue) => {
   const todos = Object.values(repo)
-  return filter === "all" ? todos : todos.filter((todo) => todo.status === filter)
+  return filter === "all"
+    ? todos
+    : todos.filter((todo) => todo.status === filter)
 }
 
 export default function useTodosFilter() {

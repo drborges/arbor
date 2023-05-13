@@ -5,26 +5,26 @@ import useArbor from "@arborjs/react"
 import "./styles.css"
 
 export const store = new Arbor({
-  count: 0
-});
+  count: 0,
+})
 
 const DecrementButton = memo(() => {
-  const counter = store.state;
+  const counter = store.state
 
-  return <button onClick={() => counter.count--}>-1</button>;
-});
+  return <button onClick={() => counter.count--}>-1</button>
+})
 
 const IncrementButton = memo(() => {
-  const counter = store.state;
+  const counter = store.state
 
-  return <button onClick={() => counter.count++}>+1</button>;
-});
+  return <button onClick={() => counter.count++}>+1</button>
+})
 
 const Counter = memo(() => {
-  const counter = useArbor(store);
+  const counter = useArbor(store)
 
-  return <span>Count: {counter.count}</span>;
-});
+  return <span>Count: {counter.count}</span>
+})
 
 export default function CounterApp() {
   return (
@@ -33,5 +33,5 @@ export default function CounterApp() {
       <DecrementButton />
       <IncrementButton />
     </div>
-  );
+  )
 }

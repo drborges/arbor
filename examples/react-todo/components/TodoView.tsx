@@ -13,7 +13,10 @@ export default memo(function TodoView({ id }: TodoProps) {
   const todo = useArbor(store.state[id], watchNode())
 
   return (
-    <div className={classnames("todo-view", { completed: todo.completed })} data-testid={`todo-${todo.id}`}>
+    <div
+      className={classnames("todo-view", { completed: todo.completed })}
+      data-testid={`todo-${todo.id}`}
+    >
       <input
         id={todo.id}
         type="checkbox"
@@ -42,7 +45,9 @@ export default memo(function TodoView({ id }: TodoProps) {
       <button type="button" onClick={todo.detach}>
         Delete
       </button>
-      <button onClick={todo.like} data-testid={`like-todo-${todo.uuid}`}>Like</button>
+      <button onClick={todo.like} data-testid={`like-todo-${todo.uuid}`}>
+        Like
+      </button>
     </div>
   )
 })
