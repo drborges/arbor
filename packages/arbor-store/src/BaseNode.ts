@@ -18,25 +18,23 @@ export default class BaseNode<T extends object> {
     if (!isNode(this)) throw new NotAnArborNodeError()
     if (this.isDetached()) throw new StaleNodeError()
 
-    const node = this
-    const parentPath = node.$path.parent
+    const parentPath = this.$path.parent
 
     if (parentPath === null) {
       return undefined
     }
 
-    return node.$tree.getNodeAt(parentPath)
+    return this.$tree.getNodeAt(parentPath)
   }
 
   detach() {
     if (!isNode(this)) throw new NotAnArborNodeError()
     if (this.isDetached()) throw new StaleNodeError()
 
-    const node = this
-    if (node.$path.isRoot())
+    if (this.$path.isRoot())
       throw new ArborError("Cannot detach store's root node")
 
-    const id = node.$path.props[node.$path.props.length - 1]
+    const id = this.$path.props[this.$path.props.length - 1]
     delete this.parent()[id]
   }
 

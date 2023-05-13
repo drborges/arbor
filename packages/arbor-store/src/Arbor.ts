@@ -18,7 +18,7 @@ import { getUUID, setUUID } from "./uuid"
  * @returns Arbor compatiby type.
  */
 export function Proxiable() {
-  return <T extends Function>(target: T, _context: any) => {
+  return <T extends Function>(target: T, _context: unknown) => {
     target.prototype[ArborProxiable] = true
   }
 }
@@ -32,19 +32,19 @@ export interface Handler {
    * Creates a new instance of the node handling strategy.
    */
   new (
-    $tree: Arbor<any>,
+    $tree: Arbor,
     $path: Path,
-    $value: any,
+    $value: unknown,
     $children: NodeCache,
     $subscribers: Subscribers
-  ): NodeHandler<any, any>
+  ): NodeHandler
 
   /**
    * Checks if the strategy can handle the given value.
    *
    * @param value a potential node in the state tree.
    */
-  accepts(value: any): boolean
+  accepts(value: unknown): boolean
 }
 
 /**
@@ -167,9 +167,9 @@ export default class Arbor<T extends object = object> {
     pathOrNode: ArborNode<V> | Path,
     mutation: Mutation<V>
   ): void {
-    const node =
+    const node: INode<V> =
       pathOrNode instanceof Path
-        ? (pathOrNode.walk(this.#root) as INode<V>)
+        ? pathOrNode.walk(this.#root)
         : (pathOrNode as INode<V>)
 
     if (!isNode(pathOrNode)) throw new NotAnArborNodeError()
@@ -190,7 +190,7 @@ export default class Arbor<T extends object = object> {
       state: {
         current: result?.root,
         get previous() {
-          return JSON.parse(previousState)
+          return JSON.parse(previousState) as T
         },
       },
       metadata: result.metadata as MutationMetadata,

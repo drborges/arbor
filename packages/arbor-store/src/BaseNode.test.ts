@@ -1,3 +1,5 @@
+import { expect, describe, it } from "@jest/globals"
+
 import Arbor from "./Arbor"
 import BaseNode from "./BaseNode"
 import Repository from "./Repository"
@@ -38,7 +40,7 @@ describe("BaseNode", () => {
     it("throws an error when used on an instance not bound to an Arbor store", () => {
       const todo = new Todo()
 
-      expect(() => todo.detach()).toThrowError(NotAnArborNodeError)
+      expect(() => todo.detach()).toThrow(NotAnArborNodeError)
     })
 
     it("throws an error when trying to detach root node", () => {
@@ -50,7 +52,7 @@ describe("BaseNode", () => {
 
       const store = new Arbor(todo)
 
-      expect(() => store.state.detach()).toThrowError(ArborError)
+      expect(() => store.state.detach()).toThrow(ArborError)
     })
 
     it("publishes mutation metadata to subscribers", () => {
@@ -148,7 +150,7 @@ describe("BaseNode", () => {
     it("throws an error when used on an instance not bound to an Arbor store", () => {
       const todo = new Todo()
 
-      expect(() => todo.merge({})).toThrowError(NotAnArborNodeError)
+      expect(() => todo.merge({})).toThrow(NotAnArborNodeError)
     })
 
     it("publishes mutation metadata to subscribers", () => {
@@ -201,7 +203,7 @@ describe("BaseNode", () => {
     it("throws an error when used on an instance not bound to an Arbor store", () => {
       const todo = new Todo()
 
-      expect(() => todo.isDetached()).toThrowError(NotAnArborNodeError)
+      expect(() => todo.isDetached()).toThrow(NotAnArborNodeError)
     })
   })
 
@@ -230,7 +232,7 @@ describe("BaseNode", () => {
     it("throws an error when used on an instance not bound to an Arbor store", () => {
       const todo = new Todo()
 
-      expect(() => todo.path).toThrowError(NotAnArborNodeError)
+      expect(() => todo.path).toThrow(NotAnArborNodeError)
     })
   })
 })

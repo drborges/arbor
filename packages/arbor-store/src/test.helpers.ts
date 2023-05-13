@@ -4,7 +4,7 @@ import isNode from "./isNode"
 
 export function unwrap<T extends object>(value: T): T {
   const node = value as INode<T>
-  return node.$unwrap() as T
+  return node.$unwrap()
 }
 
 export function children<T extends object>(value: T): NodeCache {
@@ -26,5 +26,5 @@ export function toINode<
 }
 
 export function snapshot<T extends object>(value: T) {
-  return JSON.parse(JSON.stringify(value))
+  return JSON.parse(JSON.stringify(value)) as T
 }
