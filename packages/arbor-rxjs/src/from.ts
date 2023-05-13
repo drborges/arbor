@@ -16,10 +16,6 @@ export function from<T extends object>(
 
 export function from<T extends object>(
   storeOrNode: Arbor<T> | ArborNode<T>
-): Observable<MutationEvent>
-
-export function from<T extends object>(
-  storeOrNode: any
 ): Observable<MutationEvent> {
   if (!isNode(storeOrNode) && !(storeOrNode instanceof Arbor))
     throw new ArborError(
