@@ -5,15 +5,14 @@ export default function debounce(
 ) {
   let timeout: NodeJS.Timeout
 
-  return function debounced(...args: any[]) {
-    const context = this
+  return function debounced(...args: unknown[]) {
     const callNow = immediate && !timeout
     const later = function delayed() {
       timeout = null
-      if (!immediate) func.apply(context, args)
+      if (!immediate) func.apply(this, args)
     }
     clearTimeout(timeout)
     timeout = setTimeout(later, wait)
-    if (callNow) func.apply(context, args)
+    if (callNow) func.apply(this, args)
   }
 }

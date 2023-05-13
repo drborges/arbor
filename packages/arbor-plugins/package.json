@@ -83,11 +83,6 @@
       "import": "./dist/LocalStorage.esm.js",
       "require": "./dist/LocalStorage.cjs.js",
       "default": "./dist/LocalStorage.mjs"
-    },
-    "./idb": {
-      "import": "./dist/IndexedDB.esm.js",
-      "require": "./dist/IndexedDB.cjs.js",
-      "default": "./dist/IndexedDB.mjs"
     }
   }
 }

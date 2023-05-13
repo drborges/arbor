@@ -55,7 +55,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
 
     store.subscribe(({ state }) => {
       const node = state.current as INode<T>
-      this.update(node.$unwrap())
+      void this.update(node.$unwrap())
     })
   }
 
@@ -68,7 +68,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
     return new Promise<T>((resolve, reject) => {
       try {
         resolve(
-          JSON.parse(window.localStorage.getItem(this.config.key) || null)
+          JSON.parse(window.localStorage.getItem(this.config.key) || null) as T
         )
       } catch (e) {
         reject(e)
