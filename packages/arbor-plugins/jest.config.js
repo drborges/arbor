@@ -1,4 +1,6 @@
+const defaultConfig = require("../../jest.config")
+
 module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "jsdom",
+  ...defaultConfig,
+  testEnvironment: "jsdom"
 }

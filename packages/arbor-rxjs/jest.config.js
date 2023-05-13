@@ -1,4 +1,3 @@
-module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
-}
+const defaultConfig = require("../../jest.config")
+
+module.exports = defaultConfig
