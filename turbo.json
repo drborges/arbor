@@ -1,15 +1,24 @@
 {
-  "baseBranch": "origin/main",
+  "$schema": "https://turbo.build/schema.json",
   "pipeline": {
+    "prettier": {},
     "build": {
-      "dependsOn": ["prettier", "lint", "test", "cy:ci"]
+      "dependsOn": ["^build"]
     },
     "build:dev": {
-      "dependsOn": ["prettier", "lint", "test", "cy:ci"]
+      "dependsOn": ["^build"]
     },
-    "test": {},
-    "cy:ci": {},
-    "lint": {},
-    "prettier": {}
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "cy:ci": {
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "dependsOn": ["build", "prettier"]
+    },
+    "publish": {
+      "dependsOn": ["build", "test", "cy:ci", "lint", "prettier"]
+    }
   }
 }

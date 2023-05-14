@@ -9,8 +9,8 @@
   "scripts": {
     "perf": "yarn workspace @arborjs/store-perf run test:perf",
     "clean": "yarn workspaces foreach run clean",
-    "build": "npx turbo run build",
-    "build:dev": "npx turbo run build:dev",
+    "build": "npx turbo run build lint test cy:ci",
+    "build:dev": "npx turbo run build:dev lint test cy:ci",
     "publish": "yarn workspaces foreach --topological-dev --no-private npm publish --tolerate-republish"
   },
   "devDependencies": {
