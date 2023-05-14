@@ -3,6 +3,7 @@
   "sideEffects": false,
   "main": "index.mjs",
   "type": "module",
+  "private": true,
   "dependencies": {
     "@arborjs/store": "0.0.1-alpha.49",
     "immer": "^9.0.12"
