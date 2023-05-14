@@ -1,5 +1,5 @@
+import { useArbor, watchChildren } from "@arborjs/react"
 import React, { memo } from "react"
-import useArbor, { watchChildren } from "@arborjs/react"
 
 import { store } from "../store/useTodos"
 

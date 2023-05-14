@@ -62,7 +62,7 @@ function useArbor<T extends object>(
  * @returns the current state of the Arbor state tree.
  */
 function useArbor<T extends object>(
-  target: Arbor<T> | ArborNode<T> | T,
+  target: ArborNode<T> | Arbor | T,
   watcher: Watcher<T> = watchAny()
 ): ArborNode<T> {
   if (!(target instanceof Arbor) && !isNode(target) && !isProxiable(target)) {
