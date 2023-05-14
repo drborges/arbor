@@ -1,4 +1,4 @@
-import Arbor from "@arborjs/store"
+import { Arbor } from "@arborjs/store"
 
 import LocalStorage from "./LocalStorage"
 

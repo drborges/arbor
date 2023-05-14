@@ -1,6 +1,6 @@
 import { memoryUsage } from "process"
 
-import Arbor from "../dist/index.mjs"
+import { Arbor } from "../dist/index.mjs"
 import {
   createDeeplyNestedState,
   defaultDepth,

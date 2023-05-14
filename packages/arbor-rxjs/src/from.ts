@@ -1,5 +1,6 @@
 import { Observable } from "rxjs"
-import Arbor, {
+import {
+  Arbor,
   ArborError,
   ArborNode,
   isNode,

@@ -1,4 +1,4 @@
-import Arbor, { INode, Plugin } from "@arborjs/store"
+import { Arbor, INode, Plugin } from "@arborjs/store"
 
 import debounce from "./debounce"
 

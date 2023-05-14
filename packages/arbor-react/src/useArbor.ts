@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import Arbor, {
+import {
+  Arbor,
   ArborNode,
   INode,
-  isNode,
   MutationEvent,
+  isNode,
   isProxiable,
 } from "@arborjs/store"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { watchAny } from "./watchAny"
 
@@ -42,7 +43,7 @@ function useArbor<T extends object>(
  * counter app that demonstrates its usage:
  *
  * ```ts
- * import Arbor, { useArbor } from "@arborjs/react"
+ * import { Arbor, useArbor } from "@arborjs/react"
  *
  * const store = new Arbor({
  *    count: 0

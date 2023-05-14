@@ -13,8 +13,8 @@ Here's a simple Counter example:
 [![Edit counter-example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/counter-example-yj26xb?fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.tsx&theme=dark)
 
 ```tsx
-import Arbor from "@arborjs/store"
-import useArbor from "@arborjs/react"
+import { Arbor } from "@arborjs/store"
+import { useArbor } from "@arborjs/react"
 
 /*
  * Create a store to hold the counter state

@@ -1,7 +1,5 @@
-import useArbor from "@arborjs/react"
-import { Logger } from "@arborjs/plugins"
-import { LocalStorage } from "@arborjs/plugins"
-import Arbor, { Repository } from "@arborjs/store"
+import { LocalStorage, Logger } from "@arborjs/plugins"
+import { Arbor, Repository, useArbor } from "@arborjs/react"
 
 import { Todo } from "./useTodos"
 

@@ -1,4 +1,4 @@
-import Arbor from "@arborjs/store"
+import { Arbor } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"

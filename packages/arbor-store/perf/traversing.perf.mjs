@@ -1,6 +1,6 @@
 import { performance } from "perf_hooks"
 
-import Arbor from "../dist/index.mjs"
+import { Arbor } from "../dist/index.mjs"
 import {
   createDeeplyNestedState,
   defaultDepth,

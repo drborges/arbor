@@ -1,4 +1,4 @@
-import Arbor, { ArborNode, BaseNode, Path } from "@arborjs/store"
+import { Arbor, ArborNode, BaseNode, Path } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor, { Watcher } from "./useArbor"

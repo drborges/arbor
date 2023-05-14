@@ -1,6 +1,5 @@
 import { LocalStorage, Logger } from "@arborjs/plugins"
-import useArbor from "@arborjs/react"
-import Arbor, { BaseNode, Repository } from "@arborjs/store"
+import { Arbor, BaseNode, Repository, useArbor } from "@arborjs/react"
 import { v4 as uuid } from "uuid"
 
 import { store as storeFilter } from "./useTodosFilter"

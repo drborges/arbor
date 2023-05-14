@@ -1,6 +1,5 @@
+import { Arbor, useArbor } from "@arborjs/react"
 import React, { memo } from "react"
-import Arbor from "@arborjs/store"
-import useArbor from "@arborjs/react"
 
 import "./styles.css"
 
