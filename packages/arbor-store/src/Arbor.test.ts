@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import Path from "./Path"
-import Arbor from "./Arbor"
+import Arbor, { Proxiable } from "./Arbor"
 import BaseNode from "./BaseNode"
 import Repository from "./Repository"
 import { ArborProxiable } from "./isProxiable"
@@ -11,14 +11,8 @@ describe("Arbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
     it("generates a new state tree by reusing nodes unaffected by the mutation (structural sharing)", () => {
       const store = new Arbor({
-        todos: [
-          { text: "Clean the house" },
-          { text: "Walk the dogs" },
-        ],
-        users: [
-          { name: "Alice" },
-          { name: "Bob" },
-        ]
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+        users: [{ name: "Alice" }, { name: "Bob" }],
       })
 
       const root = store.state
@@ -42,7 +36,7 @@ describe("Arbor", () => {
 
     it("ensures stale node references are also updated", () => {
       const store = new Arbor({
-        count: 0
+        count: 0,
       })
 
       const counter = store.state
@@ -67,8 +61,8 @@ describe("Arbor", () => {
     it("keeps stale node references in sync with the current state tree", () => {
       const store = new Arbor({
         counter: {
-          count: 0
-        }
+          count: 0,
+        },
       })
 
       const counter = store.state.counter
@@ -90,9 +84,7 @@ describe("Arbor", () => {
 
     it("Keeps object references when assigning to node properties", () => {
       const store = new Arbor({
-        todos: [
-          { text: "Clean the house" }
-        ]
+        todos: [{ text: "Clean the house" }],
       })
 
       const todo = { text: "Walk the dogs" }
@@ -221,7 +213,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
       expect(subscriber.mock.calls[0][0].state.current).toEqual({
-        "1": { text: "Clean the house" }
+        "1": { text: "Clean the house" },
       })
 
       expect(subscriber.mock.calls[0][0].state.previous).toEqual({
@@ -254,7 +246,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
       expect(subscriber.mock.calls[0][0].state.current).toEqual({
-        "1": { text: "Clean the house" }
+        "1": { text: "Clean the house" },
       })
 
       expect(subscriber.mock.calls[0][0].state.previous).toEqual({
@@ -267,7 +259,7 @@ describe("Arbor", () => {
   describe("Example: Counter", () => {
     it("keeps track of a counter's state", () => {
       const store = new Arbor({
-        count: 0
+        count: 0,
       })
 
       store.state.count++
@@ -277,7 +269,7 @@ describe("Arbor", () => {
 
     it("allows subsequent mutations to the same state tree node reference", () => {
       const store = new Arbor({
-        count: 0
+        count: 0,
       })
 
       const counter = store.state
@@ -289,11 +281,11 @@ describe("Arbor", () => {
 
     it("subscribes to store mutations", () => {
       const store = new Arbor({
-        count: 0
+        count: 0,
       })
 
       return new Promise((resolve) => {
-        store.subscribe(event => {
+        store.subscribe((event) => {
           expect(event.mutationPath.toString()).toEqual("/")
           expect(event.metadata.props).toEqual(["count"])
           expect(event.metadata.operation).toEqual("set")
@@ -348,7 +340,7 @@ describe("Arbor", () => {
       const todo = store.state[0]
 
       return new Promise((resolve) => {
-        store.subscribe(event => {
+        store.subscribe((event) => {
           expect(event.mutationPath.toString()).toEqual("/0")
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
@@ -407,9 +399,13 @@ describe("Arbor", () => {
       todo2.status = "done"
 
       expect(subscriber1.mock.calls.length).toBe(1)
-      expect(subscriber1.mock.calls[0][0].mutationPath).toEqual(Path.parse("/0"))
+      expect(subscriber1.mock.calls[0][0].mutationPath).toEqual(
+        Path.parse("/0")
+      )
       expect(subscriber2.mock.calls.length).toBe(1)
-      expect(subscriber2.mock.calls[0][0].mutationPath).toEqual(Path.parse("/1"))
+      expect(subscriber2.mock.calls[0][0].mutationPath).toEqual(
+        Path.parse("/1")
+      )
     })
 
     it("mutations cause a new state tree to be generated via structural sharing", () => {
@@ -438,8 +434,8 @@ describe("Arbor", () => {
           status: "todo",
           complete() {
             this.status = "done"
-          }
-        }
+          },
+        },
       ])
 
       const subscriber = jest.fn()
@@ -494,14 +490,33 @@ describe("Arbor", () => {
       expect(store.state[0].status).toBe("done")
       expect(store.state[0]).toBeInstanceOf(Todo)
     })
+
+    it("marks a custom type as proxiable via decorator", () => {
+      @Proxiable()
+      class Todo {
+        constructor(public text: string, public status = "todo") {}
+        complete() {
+          this.status = "done"
+        }
+      }
+
+      const todo = new Todo("Do the dishes")
+      const store = new Arbor([todo])
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state[0].complete()
+
+      expect(subscriber).toHaveBeenCalled()
+      expect(store.state[0].status).toBe("done")
+      expect(store.state[0].complete).toBeDefined()
+    })
   })
 
   describe("Example: Reactive Array API", () => {
     it("makes Array#push reactive", () => {
       const subscriber = jest.fn()
-      const store = new Arbor([
-        { text: "Do the dishes", status: "todo" },
-      ])
+      const store = new Arbor([{ text: "Do the dishes", status: "todo" }])
 
       store.subscribe(subscriber)
       store.state.push({ text: "Walk the dogs", status: "todo" })
@@ -526,7 +541,7 @@ describe("Arbor", () => {
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
       store.subscribe(subscriber)
@@ -540,12 +555,10 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].state.previous).toEqual([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
-      expect(store.state).toEqual([
-        { text: "Clean the house", status: "todo" }
-      ])
+      expect(store.state).toEqual([{ text: "Clean the house", status: "todo" }])
     })
 
     it("makes 'delete' reactive", () => {
@@ -553,7 +566,7 @@ describe("Arbor", () => {
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
       store.subscribe(subscriber)
@@ -567,12 +580,12 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].state.previous).toEqual([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
       expect(store.state).toEqual([
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
     })
 
@@ -581,7 +594,7 @@ describe("Arbor", () => {
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
       store.subscribe(subscriber)
@@ -595,13 +608,13 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].state.previous).toEqual([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
       expect(shiftedTodo).toEqual({ text: "Do the dishes", status: "todo" })
       expect(store.state).toEqual([
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
     })
 
@@ -610,7 +623,7 @@ describe("Arbor", () => {
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
       store.subscribe(subscriber)
@@ -624,7 +637,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].state.previous).toEqual([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" }
+        { text: "Clean the house", status: "todo" },
       ])
 
       expect(poppedTodo).toEqual({ text: "Clean the house", status: "todo" })
@@ -642,7 +655,10 @@ describe("Arbor", () => {
       ])
 
       store.subscribe(subscriber)
-      const length = store.state.unshift({ text: "Clean the house", status: "todo" })
+      const length = store.state.unshift({
+        text: "Clean the house",
+        status: "todo",
+      })
 
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
@@ -727,10 +743,12 @@ describe("Arbor", () => {
         text: string
       }
 
-      const store = new Arbor(new Repository(
-        Todo.from<Todo>({ uuid: "1", text: "Clean the house" }),
-        Todo.from<Todo>({ uuid: "2", text: "Walk the dogs" }),
-      ))
+      const store = new Arbor(
+        new Repository(
+          Todo.from<Todo>({ uuid: "1", text: "Clean the house" }),
+          Todo.from<Todo>({ uuid: "2", text: "Walk the dogs" })
+        )
+      )
 
       const todo1 = store.state["1"]
       // A Repository even though is a key-value store, it is also
@@ -747,7 +765,7 @@ describe("Arbor", () => {
       expect(store.state).toBeInstanceOf(Repository)
       expect(store.state["1"]).toEqual({
         uuid: "1",
-        text: "Clean the living room"
+        text: "Clean the living room",
       })
     })
   })

@@ -1,4 +1,6 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-};
+import defaultConfig from "../../jest.config.js"
+
+export default {
+  ...defaultConfig,
+  testEnvironment: "jsdom",
+}

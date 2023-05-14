@@ -13,22 +13,22 @@ Here's a simple Counter example:
 [![Edit counter-example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/counter-example-yj26xb?fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.tsx&theme=dark)
 
 ```tsx
-import Arbor from "@arborjs/store";
-import useArbor from "@arborjs/react";
+import { Arbor } from "@arborjs/store"
+import { useArbor } from "@arborjs/react"
 
 /*
  * Create a store to hold the counter state
  */
 const store = new Arbor({
-  count: 0
-});
+  count: 0,
+})
 
 /*
  * Component encapsulating the action buttons used to increment or decrement the counter
  */
 function Actions() {
   // Connect the component to the store. Connected components will re-render whenever the store state changes
-  const counter = useArbor(store);
+  const counter = useArbor(store)
 
   // Mutate the state using plain Javascript APIs
   return (
@@ -40,7 +40,7 @@ function Actions() {
         +1
       </button>
     </div>
-  );
+  )
 }
 
 /*
@@ -48,9 +48,9 @@ function Actions() {
  */
 function Counter() {
   // Easily share state across components, no need for context providers!
-  const counter = useArbor(store);
+  const counter = useArbor(store)
 
-  return <h1>Count: {counter.count}</h1>;
+  return <h1>Count: {counter.count}</h1>
 }
 
 export default function App() {
@@ -59,7 +59,7 @@ export default function App() {
       <Counter />
       <Actions />
     </div>
-  );
+  )
 }
 ```
 
@@ -79,6 +79,7 @@ Help us improve our docs, PRs are very welcome!
 ## Support This Project
 
 [<img src="https://pics.paypal.com/00/s/MzUxMWFiZWUtMzU3Zi00MzgxLTg2YmUtNjRhM2U1YWUwMDg0/file.PNG" width="15%" />](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=E7PXJC6WW6M4S)
+
 ## License
 
 Arbor is [MIT licensed](./LICENSE).

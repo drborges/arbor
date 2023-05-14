@@ -1,5 +1,5 @@
 import { filter } from "rxjs/operators"
-import Arbor, { ArborError, MutationEvent } from "@arborjs/store"
+import { Arbor, ArborError, MutationEvent } from "@arborjs/store"
 import { from } from "./from"
 
 describe("from", () => {
@@ -19,6 +19,7 @@ describe("from", () => {
       .forEach((event) => {
         mutationEvents.push(event)
       })
+      .catch(console.error)
 
     store.state.users[0].name = "Alice Updated"
     store.state.users[0].age++
@@ -44,6 +45,7 @@ describe("from", () => {
       .forEach((event) => {
         mutationEvents.push(event)
       })
+      .catch(console.error)
 
     store.state.users[0].name = "Alice Updated"
     store.state.users[0].age++

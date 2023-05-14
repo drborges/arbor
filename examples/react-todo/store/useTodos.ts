@@ -1,8 +1,6 @@
+import { LocalStorage, Logger } from "@arborjs/plugins"
+import { Arbor, BaseNode, Repository, useArbor } from "@arborjs/react"
 import { v4 as uuid } from "uuid"
-import Logger from "@arborjs/plugins/Logger"
-import LocalStorage from "@arborjs/plugins/LocalStorage"
-import Arbor, { BaseNode, Repository } from "@arborjs/store"
-import useArbor from "@arborjs/react"
 
 import { store as storeFilter } from "./useTodosFilter"
 import { watchTodosFilteredBy } from "./watchers/watchTodosFilteredBy"
@@ -55,7 +53,7 @@ const persistence = new LocalStorage<Repository<Todo>>({
   },
 })
 
-// store.use(new Logger("[Todos]"))
+store.use(new Logger("[Todos]"))
 store.use(persistence)
 
 export default function useTodos() {

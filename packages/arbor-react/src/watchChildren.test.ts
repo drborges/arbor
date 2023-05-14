@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
-import Arbor, { BaseNode, Repository } from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks/native"
+import { Arbor, BaseNode, Repository } from "@arborjs/store"
+import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
 import { watchChildren } from "./watchChildren"
@@ -25,10 +25,12 @@ describe("watchChildren", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchChildren("name", "age")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchChildren("name", "age"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -45,11 +47,13 @@ describe("watchChildren", () => {
   })
 
   it("allow watching props of a given object", () => {
-    const store = new Arbor(new Repository({
-      uuid: "123",
-      name: "Alice",
-      age: 30
-    }))
+    const store = new Arbor(
+      new Repository({
+        uuid: "123",
+        name: "Alice",
+        age: 30,
+      })
+    )
 
     const { result } = renderHook(() => useArbor(store, watchChildren("name")))
 
@@ -102,10 +106,12 @@ describe("watchChildren", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchChildren("name", "age")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchChildren("name", "age"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -121,10 +127,12 @@ describe("watchChildren", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchChildren("name", "age")))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchChildren("name", "age"))
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -158,10 +166,12 @@ describe("watchChildren", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchChildren()))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchChildren())
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -177,10 +187,12 @@ describe("watchChildren", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchChildren()))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchChildren())
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -188,7 +200,7 @@ describe("watchChildren", () => {
       store.state.users.push({
         name: "Carol",
         age: 20,
-        posts: []
+        posts: [],
       })
     })
 
@@ -200,10 +212,12 @@ describe("watchChildren", () => {
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
         { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users, watchChildren()))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users, watchChildren())
+    )
 
     expect(result.all.length).toBe(1)
 

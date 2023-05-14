@@ -39,7 +39,7 @@ describe("Repository", () => {
     delete store.state[user1.uuid]
 
     expect(store.state).toEqual({
-      "2": user2
+      "2": user2,
     })
   })
 
@@ -55,18 +55,17 @@ describe("Repository", () => {
 
     expect(items[0]).toBe(store.state["1"])
     expect(items[1]).toBe(store.state["2"])
-    expect(items).toEqual([
-      user1,
-      user2,
-    ])
+    expect(items).toEqual([user1, user2])
   })
 
   it("destructs repository into an array ordered by the items' insertion order", () => {
-    const store = new Arbor(new Repository(
-      User.from<User>({ uuid: "c", name: "User 1" }),
-      User.from<User>({ uuid: "b", name: "User 2" }),
-      User.from<User>({ uuid: "a", name: "User 3" }),
-    ))
+    const store = new Arbor(
+      new Repository(
+        User.from<User>({ uuid: "c", name: "User 1" }),
+        User.from<User>({ uuid: "b", name: "User 2" }),
+        User.from<User>({ uuid: "a", name: "User 3" })
+      )
+    )
 
     const user1 = store.state.c
     const user2 = store.state.b

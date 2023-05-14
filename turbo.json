@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "prettier": {},
+    "build": {
+      "dependsOn": ["^build"]
+    },
+    "build:dev": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "cy:ci": {
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "dependsOn": ["build", "prettier"]
+    },
+    "publish": {
+      "dependsOn": ["build", "test", "cy:ci", "lint", "prettier"]
+    }
+  }
+}

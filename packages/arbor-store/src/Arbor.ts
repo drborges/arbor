@@ -1,4 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
+import { ArborProxiable } from "./isProxiable"
 import { NotAnArborNodeError, StaleNodeError } from "./errors"
 import isNode from "./isNode"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
@@ -11,6 +12,18 @@ import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { getUUID, setUUID } from "./uuid"
 
 /**
+ * Decorates a class marking it as Arbor proxiable, allowing
+ * Arbor to use it as Node type.
+ *
+ * @returns Arbor compatiby type.
+ */
+export function Proxiable() {
+  return <T extends Function>(target: T, _context: unknown) => {
+    target.prototype[ArborProxiable] = true
+  }
+}
+
+/**
  * Describes a Node Hnalder constructor capable of determining which
  * kinds of nodes it is able to handle.
  */
@@ -19,19 +32,19 @@ export interface Handler {
    * Creates a new instance of the node handling strategy.
    */
   new (
-    $tree: Arbor<any>,
+    $tree: Arbor,
     $path: Path,
-    $value: any,
+    $value: unknown,
     $children: NodeCache,
     $subscribers: Subscribers
-  ): NodeHandler<any, any>
+  ): NodeHandler
 
   /**
    * Checks if the strategy can handle the given value.
    *
    * @param value a potential node in the state tree.
    */
-  accepts(value: any): boolean
+  accepts(value: unknown): boolean
 }
 
 /**
@@ -114,10 +127,7 @@ export default class Arbor<T extends object = object> {
    *
    * @param initialState the initial state tree value
    */
-  constructor(
-    initialState = {} as T,
-    { handlers = [] }: ArborConfig = {}
-  ) {
+  constructor(initialState = {} as T, { handlers = [] }: ArborConfig = {}) {
     this.#handlers = [...handlers, NodeArrayHandler, NodeHandler]
     this.setState(initialState)
   }
@@ -151,15 +161,18 @@ export default class Arbor<T extends object = object> {
    * @param mutation a function responsible for mutating the target node at the given path.
    */
   mutate<V extends object>(path: Path, mutation: Mutation<V>): void
-  mutate<V extends object>(node: INode<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(arborNode: NodeHandler<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(node: ArborNode<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
   mutate<V extends object>(
-    pathOrNode: Path | INode<V>,
+    pathOrNode: ArborNode<V> | Path,
     mutation: Mutation<V>
   ): void {
-    const node = isNode(pathOrNode)
-      ? pathOrNode
-      : (pathOrNode.walk(this.#root) as INode<V>)
+    const node: INode<V> =
+      pathOrNode instanceof Path
+        ? pathOrNode.walk(this.#root)
+        : (pathOrNode as INode<V>)
+
+    if (!isNode(pathOrNode)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different
     // path are considered detatched nodes and cannot be mutated otherwise we risk
@@ -177,8 +190,8 @@ export default class Arbor<T extends object = object> {
       state: {
         current: result?.root,
         get previous() {
-          return JSON.parse(previousState)
-        }
+          return JSON.parse(previousState) as T
+        },
       },
       metadata: result.metadata as MutationMetadata,
       mutationPath: node.$path,
@@ -274,7 +287,13 @@ export default class Arbor<T extends object = object> {
     return node.$subscribers.subscribe(subscriber)
   }
 
-  isDetached(node: object) {
+  /**
+   * Checks if a given node is still attached to the decision tree.
+   *
+   * @param node node to check if no longer attached to the state tree.
+   * @returns true if the node no longer exists within the decision tree, false otherwise.
+   */
+  isDetached(node: ArborNode<object>) {
     if (!isNode(node)) return true
 
     const reloadedNode = this.getNodeAt(node.$path)

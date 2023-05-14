@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import Path from "./Path"
 import { ArborNode } from "./Arbor"
 import { InvalidArgumentError } from "./errors"
@@ -103,12 +104,12 @@ describe("Path", () => {
       const node1 = {
         $unwrap() {},
         $path: Path.parse("/users"),
-      } as ArborNode<any>
+      } as ArborNode<object>
 
       const node2 = {
         $unwrap() {},
         $path: Path.parse("/users/123"),
-      } as ArborNode<any>
+      } as ArborNode<object>
 
       expect(Path.parse("/").targets(node1)).toBe(false)
       expect(Path.parse("/").targets(node2)).toBe(false)
@@ -121,7 +122,7 @@ describe("Path", () => {
     it("throws an error if the argument passed in is not a Path nor an ArborNode", () => {
       expect(() =>
         Path.parse(".").targets("Not a path nor node" as unknown as Path)
-      ).toThrowError(InvalidArgumentError)
+      ).toThrow(InvalidArgumentError)
     })
   })
 
@@ -130,12 +131,12 @@ describe("Path", () => {
       const node1 = {
         $unwrap() {},
         $path: Path.parse("/users"),
-      } as ArborNode<any>
+      } as ArborNode<object>
 
       const node2 = {
         $unwrap() {},
         $path: Path.parse("/users/123"),
-      } as ArborNode<any>
+      } as ArborNode<object>
 
       expect(Path.parse("/users").affects(node1)).toBe(true)
       expect(Path.parse("/users/321").affects(node1)).toBe(true)
@@ -152,8 +153,12 @@ describe("Path", () => {
       expect(Path.parse("/users").affects(Path.parse("/"))).toBe(true)
       expect(Path.parse("/users").affects(Path.parse("/users"))).toBe(true)
       expect(Path.parse("/users/123").affects(Path.parse("/users"))).toBe(true)
-      expect(Path.parse("/users/123/preferences").affects(Path.parse("/users"))).toBe(true)
-      expect(Path.parse("/users/123/preferences").affects(Path.parse("/users/123"))).toBe(true)
+      expect(
+        Path.parse("/users/123/preferences").affects(Path.parse("/users"))
+      ).toBe(true)
+      expect(
+        Path.parse("/users/123/preferences").affects(Path.parse("/users/123"))
+      ).toBe(true)
       expect(Path.parse("/").affects(Path.parse("/users"))).toBe(false)
       expect(Path.parse("/users").affects(Path.parse("/posts"))).toBe(false)
       expect(Path.parse("/users").affects(Path.parse("/users/123"))).toBe(false)

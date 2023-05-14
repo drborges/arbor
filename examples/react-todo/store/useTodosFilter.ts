@@ -1,7 +1,5 @@
-import useArbor from "@arborjs/react"
-import Logger from "@arborjs/plugins/Logger"
-import LocalStorage from "@arborjs/plugins/LocalStorage"
-import Arbor, { Repository } from "@arborjs/store"
+import { LocalStorage, Logger } from "@arborjs/plugins"
+import { Arbor, Repository, useArbor } from "@arborjs/react"
 
 import { Todo } from "./useTodos"
 
@@ -15,7 +13,7 @@ export const store = new Arbor<TodosFilter>({
   value: "all",
 })
 
-// store.use(new Logger("[TodosFilter]"))
+store.use(new Logger("[TodosFilter]"))
 store.use(
   new LocalStorage<TodosFilter>({
     key: "TodoApp.filter",
@@ -29,7 +27,9 @@ export const select = (filter: FilterValue) => (store.state.value = filter)
 
 export const filterTodos = (repo: Repository<Todo>, filter: FilterValue) => {
   const todos = Object.values(repo)
-  return filter === "all" ? todos : todos.filter((todo) => todo.status === filter)
+  return filter === "all"
+    ? todos
+    : todos.filter((todo) => todo.status === filter)
 }
 
 export default function useTodosFilter() {

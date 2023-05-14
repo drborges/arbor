@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import Arbor, {
+import {
+  Arbor,
   ArborNode,
   INode,
-  isNode,
   MutationEvent,
+  isNode,
   isProxiable,
 } from "@arborjs/store"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { watchAny } from "./watchAny"
 
@@ -42,7 +43,7 @@ function useArbor<T extends object>(
  * counter app that demonstrates its usage:
  *
  * ```ts
- * import Arbor, { useArbor } from "@arborjs/react"
+ * import { Arbor, useArbor } from "@arborjs/react"
  *
  * const store = new Arbor({
  *    count: 0
@@ -62,7 +63,7 @@ function useArbor<T extends object>(
  * @returns the current state of the Arbor state tree.
  */
 function useArbor<T extends object>(
-  target: Arbor<T> | ArborNode<T> | T,
+  target: ArborNode<T> | Arbor | T,
   watcher: Watcher<T> = watchAny()
 ): ArborNode<T> {
   if (!(target instanceof Arbor) && !isNode(target) && !isProxiable(target)) {
@@ -102,7 +103,10 @@ function useArbor<T extends object>(
     [state, store, targetPath, watcher]
   )
 
-  useEffect(() => store.subscribeTo(state as ArborNode<T>, update), [state, store, update])
+  useEffect(
+    () => store.subscribeTo(state as ArborNode<T>, update),
+    [state, store, update]
+  )
 
   return state as ArborNode<T>
 }

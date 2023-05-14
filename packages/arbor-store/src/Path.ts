@@ -80,7 +80,7 @@ export default class Path {
    */
   walk<T extends object, V extends object>(obj: T): V {
     return this.props.reduce<T>(
-      (parent, part) => parent[part],
+      (parent, part) => parent[part] as T,
       obj
     ) as unknown as V
   }
@@ -110,7 +110,7 @@ export default class Path {
    * @param path a path to compare to
    * @returns true if both paths have the same value, false otherwise
    */
-  targets(pathOrNode: Path | ArborNode<any>) {
+  targets(pathOrNode: Path | ArborNode<object>) {
     if (pathOrNode instanceof Path) {
       return this.toString() === pathOrNode.toString()
     }
@@ -130,7 +130,7 @@ export default class Path {
    * @param node the ArborNode to check for
    * @returns true if mutations to this path affects the given node, false otherwise
    */
-  affects(pathOrNode: Path | ArborNode<any>): boolean {
+  affects(pathOrNode: Path | ArborNode<object>): boolean {
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
     return this.toString().startsWith(path.toString())
   }

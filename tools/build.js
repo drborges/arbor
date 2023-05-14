@@ -22,7 +22,7 @@ const config = {
   outdir: dist,
   external: Object.keys(dependencies).concat(Object.keys(peerDependencies)),
   define: {
-    "global.DEBUG": !isProduction,
+    "global.DEBUG": JSON.stringify(!isProduction),
   },
 }
 

@@ -1,4 +1,4 @@
-import Arbor, { INode, Plugin } from "@arborjs/store"
+import { Arbor, INode, Plugin } from "@arborjs/store"
 
 const sliceObject = (obj: object, props: string[]) =>
   Object.fromEntries(
@@ -46,8 +46,8 @@ export default class Logger<T extends object> implements Plugin<T> {
             console.table(
               props.map((prop) => ({
                 prop,
-                previous: previous[prop],
-                current: current[prop],
+                previous: previous[prop] as T,
+                current: current[prop] as T,
               }))
             )
           } else {
@@ -62,5 +62,7 @@ export default class Logger<T extends object> implements Plugin<T> {
 
       console.groupEnd()
     })
+
+    return Promise.resolve()
   }
 }

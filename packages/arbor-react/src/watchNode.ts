@@ -6,6 +6,8 @@ export function watchNode<T extends object>(...props: NodeProps<T>[]) {
     if (!event.mutationPath.targets(node)) return false
     if (props.length === 0) return true
 
-    return event.metadata.props.some(prop => props.includes(prop as NodeProps<T>))
+    return event.metadata.props.some((prop) =>
+      props.includes(prop as NodeProps<T>)
+    )
   }
 }

@@ -4,7 +4,7 @@ export default class NodeArrayHandler<
   T extends object = object,
   K extends object = object
 > extends NodeHandler<T[], K> {
-  static accepts(value: any) {
+  static accepts(value: unknown) {
     return Array.isArray(value)
   }
 

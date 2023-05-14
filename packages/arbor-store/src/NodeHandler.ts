@@ -28,7 +28,7 @@ export default class NodeHandler<
     readonly $subscribers = new Subscribers()
   ) {}
 
-  static accepts(_value: any) {
+  static accepts(_value: unknown) {
     return true
   }
 
@@ -55,7 +55,7 @@ export default class NodeHandler<
       return handlerApiAccess
     }
 
-    let childValue = Reflect.get(target, prop, proxy) as any
+    let childValue = Reflect.get(target, prop, proxy) as unknown
 
     // Automatically unwrap proxied values that may have been used to initialize the store
     // either via new Arbor(...) or store.setState(...).
@@ -74,19 +74,19 @@ export default class NodeHandler<
         this.$bindings.set(childValue, childValue.bind(proxy))
       }
 
-      return this.$bindings.get(childValue)
+      return this.$bindings.get(childValue) as unknown
     }
 
     if (!isProxiable(childValue)) {
       return childValue
     }
 
-    return this.$children.has(childValue)
-      ? this.$children.get(childValue)
-      : this.$createChildNode(prop, childValue)
+    return this.$children.has(childValue as object)
+      ? this.$children.get(childValue as object)
+      : this.$createChildNode(prop, childValue as object)
   }
 
-  set(target: T, prop: string, newValue: any, proxy: INode<T>): boolean {
+  set(target: T, prop: string, newValue: unknown, proxy: INode<T>): boolean {
     // Automatically unwraps values when they are already Arbor nodes,
     // this prevents proxying proxies and thus forcing stale node references
     // to be kept in memmory unnecessarily.
@@ -109,7 +109,7 @@ export default class NodeHandler<
 
   deleteProperty(target: T, prop: string): boolean {
     if (prop in target) {
-      const childValue = Reflect.get(target, prop) as any
+      const childValue = Reflect.get(target, prop) as unknown
 
       this.$tree.mutate(this, (t: T) => {
         delete t[prop]
@@ -126,7 +126,7 @@ export default class NodeHandler<
       // however, we could leave it to the gargabe collector to free up the
       // unused objects given that $children is a WeakMap. I'd rather shoot
       // for simplicity if this line isn't providing any actual value
-      this.$children.delete(childValue)
+      this.$children.delete(childValue as object)
     }
 
     return true

@@ -1,12 +1,10 @@
-export { default } from "./useArbor"
-
+export * from "@arborjs/store"
+export { default as useArbor } from "./useArbor"
+export type { Watcher } from "./useArbor"
 export { watchAny } from "./watchAny"
+export { watchChild } from "./watchChild"
+export type { ObjectProps, WatchableProps } from "./watchChild"
+export { watchChildren } from "./watchChildren"
+export type { ChildrenNodeProps, NodeProps } from "./watchChildren"
 export { watchNode } from "./watchNode"
 export { watchPaths } from "./watchPaths"
-export { watchChild } from "./watchChild"
-export { watchChildren } from "./watchChildren"
-
-export type { Watcher } from "./useArbor"
-
-export type { WatchableProps, ObjectProps } from "./watchChild"
-export type { ChildrenNodeProps, NodeProps } from "./watchChildren"

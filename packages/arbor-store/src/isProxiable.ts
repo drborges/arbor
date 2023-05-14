@@ -1,11 +1,11 @@
 export const ArborProxiable = Symbol.for("ArborProxiable")
 
-export default function isProxiable(value: any): boolean {
+export default function isProxiable(value: unknown): boolean {
+  if (value == null) return false
+
   return (
-    value != null &&
-    (Array.isArray(value) ||
-      value[ArborProxiable] === true ||
-      value.constructor === Object ||
-      typeof value.$clone === "function")
+    Array.isArray(value) ||
+    value[ArborProxiable] === true ||
+    value.constructor === Object
   )
 }

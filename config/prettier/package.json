@@ -1,0 +1,6 @@
+{
+  "name": "@arborjs/config-prettier",
+  "sideEffects": false,
+  "private": true,
+  "main": "index.json"
+}

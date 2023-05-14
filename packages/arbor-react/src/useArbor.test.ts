@@ -1,5 +1,5 @@
-import Arbor, { ArborNode, BaseNode, Path } from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks/native"
+import { Arbor, ArborNode, BaseNode, Path } from "@arborjs/store"
+import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor, { Watcher } from "./useArbor"
 
@@ -175,12 +175,16 @@ describe("useArbor", () => {
     expect(result.all.length).toBe(2)
   })
 
-  it("throws an error when attemoting to initialize the hook with any value other than a literal object or an instance of Arbor", () => {
-    expect(() => useArbor(new Date())).toThrowError(
+  it("throws an error when attemoting to initialize the hook with invalid values", () => {
+    expect(() => useArbor(new Date())).toThrow(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
 
-    expect(() => useArbor("No strings allowed" as any)).toThrowError(
+    expect(() => useArbor("No strings allowed" as never)).toThrow(
+      "useArbor must be initialized with either an instance of Arbor or a proxiable object"
+    )
+
+    expect(() => useArbor(new (class {})())).toThrow(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )
   })

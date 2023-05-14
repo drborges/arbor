@@ -8,11 +8,11 @@
  * them stale, at which point mutations on that node reference are simply ignored
  * by Arbor to avoid overriding state with stale values.
  */
-class UUID { }
+class UUID {}
 const ArborUUID = Symbol.for("ArborUUID")
 
 export function getUUID(value: object): UUID | undefined {
-  return value?.[ArborUUID]
+  return value?.[ArborUUID] as UUID
 }
 
 export function setUUID<T extends object>(value: T, uuid = new UUID()) {

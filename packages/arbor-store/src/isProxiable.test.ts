@@ -1,22 +1,13 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
 import BaseNode from "./BaseNode"
-import { Clonable } from "./isClonable"
 import isProxiable, { ArborProxiable } from "./isProxiable"
 
 class NotProxiable {}
-class Proxiable {
-  get [ArborProxiable]() {
-    return true
-  }
-}
-
 class Users extends Array {}
 class User extends BaseNode<User> {}
-class UserSet extends Set<User> implements Clonable<UserSet> {
-  $clone(): UserSet {
-    return new UserSet(this.values())
-  }
+class Proxiable {
+  [ArborProxiable] = true
 }
 
 describe("isProxiable", () => {
@@ -34,10 +25,6 @@ describe("isProxiable", () => {
 
   it("considers proxiable user-defined types extending from BaseNode", () => {
     expect(isProxiable(new User())).toBe(true)
-  })
-
-  it("considers proxiable user-defined types implementing the Clonable interface", () => {
-    expect(isProxiable(new UserSet())).toBe(true)
   })
 
   it("considers proxiable user-defined types implementing the 'ArborProxiable' prop", () => {

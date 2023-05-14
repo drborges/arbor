@@ -1,5 +1,5 @@
-import Arbor from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks/native"
+import { Arbor } from "@arborjs/store"
+import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
 import { watchAny } from "./watchAny"
@@ -10,10 +10,12 @@ describe("watchAny", () => {
       users: [
         { name: "Alice", posts: [{ content: "Hello World" }] },
         { name: "Bob", posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users[0], watchAny()))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users[0], watchAny())
+    )
 
     expect(result.all.length).toBe(1)
 
@@ -31,10 +33,12 @@ describe("watchAny", () => {
       users: [
         { name: "Alice", posts: [{ content: "Hello World" }] },
         { name: "Bob", posts: [{ content: "My first post" }] },
-      ]
+      ],
     })
 
-    const { result } = renderHook(() => useArbor(store.state.users[0], watchAny()))
+    const { result } = renderHook(() =>
+      useArbor(store.state.users[0], watchAny())
+    )
 
     expect(result.all.length).toBe(1)
 
