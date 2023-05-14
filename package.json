@@ -7,8 +7,8 @@
   ],
   "scripts": {
     "clean": "yarn workspaces foreach run clean",
-    "build": "npx turbo run build test cy:ci",
-    "build:dev": "npx turbo run lint build:dev test",
+    "build": "npx turbo run build",
+    "build:dev": "npx turbo run build:dev",
     "publish": "yarn workspaces foreach --topological-dev --no-private npm publish --tolerate-republish"
   },
   "devDependencies": {

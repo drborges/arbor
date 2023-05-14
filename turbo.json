@@ -2,27 +2,14 @@
   "baseBranch": "origin/main",
   "pipeline": {
     "build": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["prettier", "lint", "test", "cy:ci"]
     },
     "build:dev": {
-      "dependsOn": ["^build:dev"]
+      "dependsOn": ["prettier", "lint", "test", "cy:ci"]
     },
-    "test": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
-    "cy:ci": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
-    "lint": {
-      "outputs": []
-    },
-    "dev": {
-      "cache": false
-    },
-    "prettier": {
-      "outputs": []
-    }
+    "test": {},
+    "cy:ci": {},
+    "lint": {},
+    "prettier": {}
   }
 }

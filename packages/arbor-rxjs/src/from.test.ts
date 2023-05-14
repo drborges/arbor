@@ -1,5 +1,5 @@
 import { filter } from "rxjs/operators"
-import Arbor, { ArborError, MutationEvent } from "@arborjs/store"
+import { Arbor, ArborError, MutationEvent } from "@arborjs/store"
 import { from } from "./from"
 
 describe("from", () => {
