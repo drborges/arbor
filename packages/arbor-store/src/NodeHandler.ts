@@ -81,9 +81,9 @@ export default class NodeHandler<
       return childValue
     }
 
-    return this.$children.has(childValue as object)
-      ? this.$children.get(childValue as object)
-      : this.$createChildNode(prop, childValue as object)
+    return this.$children.has(childValue)
+      ? this.$children.get(childValue)
+      : this.$createChildNode(prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: INode<T>): boolean {

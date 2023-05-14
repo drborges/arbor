@@ -1,6 +1,6 @@
 export const ArborProxiable = Symbol.for("ArborProxiable")
 
-export default function isProxiable(value: unknown): boolean {
+export default function isProxiable(value: unknown): value is object {
   if (value == null) return false
 
   return (
