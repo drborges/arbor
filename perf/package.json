@@ -1,0 +1,14 @@
+{
+  "name": "@arborjs/store-perf",
+  "sideEffects": false,
+  "private": true,
+  "main": "dist/index.esm.js",
+  "module": "dist/index.mjs.js",
+  "dependencies": {
+    "@arborjs/store": "0.0.1-alpha.48",
+    "immer": "^9.0.12"
+  },
+  "scripts": {
+    "test": "node --stack-size=200000 --expose-gc index.mjs"
+  }
+}

@@ -1,11 +1,13 @@
 {
   "private": true,
   "workspaces": [
+    "perf",
     "config/*",
     "packages/*",
     "examples"
   ],
   "scripts": {
+    "perf": "yarn workspace @arborjs/store-perf run test",
     "clean": "yarn workspaces foreach run clean",
     "build": "npx turbo run build",
     "build:dev": "npx turbo run build:dev",

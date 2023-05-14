@@ -1,11 +1,12 @@
 import { performance } from "perf_hooks"
 
-import { Arbor } from "../dist/index.mjs"
+import pkg from "@arborjs/store"
 import {
   createDeeplyNestedState,
   defaultDepth,
   readRecursevly,
 } from "./helpers.mjs"
+const { Arbor } = pkg
 
 export function readingLeafNodeFromArborStateTree() {
   const state = createDeeplyNestedState()
