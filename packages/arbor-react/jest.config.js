@@ -1,3 +1,6 @@
-const defaultConfig = require("../../jest.config")
+import defaultConfig from "../../jest.config.js"
 
-module.exports = defaultConfig
+export default {
+  ...defaultConfig,
+  testEnvironment: "jsdom",
+}

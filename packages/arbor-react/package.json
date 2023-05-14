@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/react",
-  "version": "0.0.1-alpha.48",
+  "version": "0.0.1-alpha.49",
   "sideEffects": false,
   "description": "A fully typed, minimalistic proxy-based state tree library with very little boilerplate for React apps.",
   "keywords": [
@@ -27,6 +27,13 @@
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs.js",
+      "default": "./dist/index.esm.js"
+    }
+  },
   "prettier": "@arborjs/config-prettier",
   "license": "MIT",
   "files": [
@@ -38,7 +45,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@arborjs/store": "0.0.1-alpha.48",
+    "@arborjs/store": "0.0.1-alpha.49",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^29.5.1",
     "@types/react": "17.0.15",
@@ -65,7 +72,7 @@
     "prepublish": "yarn build"
   },
   "peerDependencies": {
-    "@arborjs/store": "0.0.1-alpha.48",
+    "@arborjs/store": "0.0.1-alpha.49",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   }

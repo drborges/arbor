@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/rxjs",
-  "version": "0.0.1-alpha.48",
+  "version": "0.0.1-alpha.49",
   "sideEffects": false,
   "description": "rxjs binding for @arborjs/store",
   "keywords": [
@@ -28,6 +28,13 @@
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs.js",
+      "default": "./dist/index.esm.js"
+    }
+  },
   "prettier": "@arborjs/config-prettier",
   "license": "MIT",
   "files": [
@@ -48,7 +55,7 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "@arborjs/store": "0.0.1-alpha.48",
+    "@arborjs/store": "0.0.1-alpha.49",
     "rxjs": "*"
   },
   "scripts": {

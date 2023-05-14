@@ -1,12 +1,11 @@
 import { memoryUsage } from "process"
 
-import pkg from "@arborjs/store"
+import { Arbor } from "@arborjs/store"
 import {
   createDeeplyNestedState,
   defaultDepth,
   readRecursevly,
 } from "./helpers.mjs"
-const { Arbor } = pkg
 
 export function checkMemoryAllocationWhenProduceNextStateViaArbor() {
   console.log(`\nHeap Allocation (State Tree Depth: ${defaultDepth})`)

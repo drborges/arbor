@@ -1,8 +1,7 @@
 import * as Immer from "immer"
 import { performance } from "perf_hooks"
 
-import pkg from "@arborjs/store"
-const { Arbor } = pkg
+import { Arbor } from "@arborjs/store"
 import {
   createDeeplyNestedState,
   defaultDepth,
