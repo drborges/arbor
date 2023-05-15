@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import Arbor, { Proxiable } from "./Arbor"
 import BaseNode from "./BaseNode"
@@ -762,8 +763,57 @@ describe("Arbor", () => {
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
       expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
+      expect(store.state.todos.get("abc")).not.toBe(todosMap.get("abc"))
       expect(store.state.todos.get("abc")).toEqual(new Todo("Clean the house"))
+    })
+
+    it("does not trigger mutation if new value is current value", () => {
+      const todosMap = new Map<string, { text: string }>()
+      todosMap.set("123", { text: "Walk the dogs" })
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state.todos.set("123", todosMap.get("123")!)
+      store.state.todos.set("123", store.state.todos.get("123")!)
+
+      expect(subscriber).not.toHaveBeenCalled()
+    })
+
+    it("automatically unwraps state tree nodes when used as values", () => {
+      const todosMap = new Map<string, { text: string }>()
+      todosMap.set("123", { text: "Walk the dogs" })
+      todosMap.set("abc", { text: "Clean the house" })
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      store.state.todos.set("123", store.state.todos.get("abc")!)
+
+      expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
+      expect(store.state.todos.get("123")).not.toBe(todosMap.get("abc"))
+      expect(unwrap(store.state.todos.get("123"))).toBe(todosMap.get("abc"))
+    })
+
+    it("TODO: nodes proxying the same value are conflicting (will have to think more about this)", () => {
+      const todosMap = new Map<string, { text: string }>()
+      todosMap.set("123", { text: "Walk the dogs" })
+      todosMap.set("abc", { text: "Clean the house" })
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      store.state.todos.set("123", store.state.todos.get("abc")!)
+
+      expect(store.state.todos.get("123")).toBe(store.state.todos.get("abc"))
     })
 
     it("allows deleting nodes stored within Map instances", () => {

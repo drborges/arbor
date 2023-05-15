@@ -1,9 +1,8 @@
 import NodeHandler from "./NodeHandler"
 
 export default class NodeArrayHandler<
-  T extends object = object,
-  K extends object = object
-> extends NodeHandler<T[], K> {
+  T extends object = object
+> extends NodeHandler<T[]> {
   static accepts(value: unknown) {
     return Array.isArray(value)
   }

@@ -7,10 +7,8 @@ import isProxiable from "./isProxiable"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
-export default class NodeHandler<
-  T extends object = object,
-  K extends object = object
-> implements ProxyHandler<T>
+export default class NodeHandler<T extends object = object>
+  implements ProxyHandler<T>
 {
   /**
    * Caches all method / function props in the proxied object while
@@ -21,7 +19,7 @@ export default class NodeHandler<
   protected $bindings = new WeakMap()
 
   constructor(
-    readonly $tree: Arbor<K>,
+    readonly $tree: Arbor,
     readonly $path: Path,
     readonly $value: T,
     readonly $children = new NodeCache(),
@@ -120,12 +118,6 @@ export default class NodeHandler<
         }
       })
 
-      // TODO: Investigate the possibility of removing the line below.
-      //
-      // Here we preemptively remove the value from the state tree cache
-      // however, we could leave it to the gargabe collector to free up the
-      // unused objects given that $children is a WeakMap. I'd rather shoot
-      // for simplicity if this line isn't providing any actual value
       this.$children.delete(childValue as object)
     }
 

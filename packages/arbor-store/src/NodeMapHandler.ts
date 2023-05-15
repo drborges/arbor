@@ -1,11 +1,11 @@
 import { INode } from "./Arbor"
 import NodeHandler from "./NodeHandler"
+import isNode from "./isNode"
 import isProxiable from "./isProxiable"
 
 export default class NodeMapHandler<
-  T extends object = object,
-  K extends object = object
-> extends NodeHandler<Map<unknown, T>, K> {
+  T extends object = object
+> extends NodeHandler<Map<unknown, T>> {
   static accepts(value: unknown) {
     return value instanceof Map
   }
@@ -32,15 +32,19 @@ export default class NodeMapHandler<
     }
 
     if (prop === "set") {
-      return (key: string, value: T) => {
-        this.$tree.mutate(this, (map) => {
-          map.set(key, value)
+      return (key: string, newValue: T) => {
+        const value = isNode(newValue) ? (newValue.$unwrap() as T) : newValue
 
-          return {
-            props: [key],
-            operation: "set",
-          }
-        })
+        if (target.get(key) !== value) {
+          this.$tree.mutate(this, (map) => {
+            map.set(key, value)
+
+            return {
+              props: [key],
+              operation: "set",
+            }
+          })
+        }
 
         return this as unknown as T
       }

@@ -2,9 +2,9 @@ import { ArborNode, INode } from "./Arbor"
 import NodeCache from "./NodeCache"
 import isNode from "./isNode"
 
-export function unwrap<T extends object>(value: T): T {
+export function unwrap<T extends object>(value?: T): T {
   const node = value as INode<T>
-  return node.$unwrap()
+  return node?.$unwrap()
 }
 
 export function children<T extends object>(value: T): NodeCache {
