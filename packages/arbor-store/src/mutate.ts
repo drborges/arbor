@@ -29,7 +29,10 @@ export default function mutate<T extends object, K extends object>(
     const root = node.$clone()
 
     const targetNode = path.props.reduce<INode<T>>((parent, prop) => {
-      const childNode = parent[prop] as INode<T>
+      const hasGetter = parent instanceof Map
+      const childNode = (
+        hasGetter ? parent.get(prop) : parent[prop]
+      ) as INode<T>
       const childNodeCopy = childNode.$clone()
       const childNodeValue = childNodeCopy.$unwrap()
 

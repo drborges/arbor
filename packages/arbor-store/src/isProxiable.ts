@@ -5,6 +5,7 @@ export default function isProxiable(value: unknown): value is object {
 
   return (
     Array.isArray(value) ||
+    value instanceof Map ||
     value[ArborProxiable] === true ||
     value.constructor === Object
   )

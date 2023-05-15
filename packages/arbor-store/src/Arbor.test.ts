@@ -1,10 +1,10 @@
 /* eslint-disable max-classes-per-file */
-import Path from "./Path"
 import Arbor, { Proxiable } from "./Arbor"
 import BaseNode from "./BaseNode"
+import Path from "./Path"
 import Repository from "./Repository"
-import { ArborProxiable } from "./isProxiable"
 import { StaleNodeError } from "./errors"
+import { ArborProxiable } from "./isProxiable"
 import { unwrap } from "./test.helpers"
 
 describe("Arbor", () => {
@@ -733,6 +733,141 @@ describe("Arbor", () => {
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
       ])
+    })
+  })
+
+  describe("Example: Reactive Map API", () => {
+    it("allows tracking nodes stored within Map instances", () => {
+      @Proxiable()
+      class Todo {
+        constructor(public text: string) {}
+      }
+
+      const todosMap = new Map<string, Todo>()
+      todosMap.set("123", new Todo("Walk the dogs"))
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state.todos.set("abc", new Todo("Clean the house"))
+
+      expect(subscriber).toHaveBeenCalled()
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(
+        Path.parse("/todos")
+      )
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
+      expect(store.state.todos.get("abc")).toEqual(new Todo("Clean the house"))
+    })
+
+    it("allows deleting nodes stored within Map instances", () => {
+      @Proxiable()
+      class Todo {
+        constructor(public text: string) {}
+      }
+
+      const todosMap = new Map<string, Todo>()
+      todosMap.set("123", new Todo("Walk the dogs"))
+      todosMap.set("abc", new Todo("Clean the house"))
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state.todos.delete("abc")
+
+      expect(subscriber).toHaveBeenCalled()
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(
+        Path.parse("/todos")
+      )
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
+      expect(store.state.todos.get("abc")).toBeUndefined()
+    })
+
+    it("allows clearing a Map of nodes", () => {
+      @Proxiable()
+      class Todo {
+        constructor(public text: string) {}
+      }
+
+      const todosMap = new Map<string, Todo>()
+      todosMap.set("123", new Todo("Walk the dogs"))
+      todosMap.set("abc", new Todo("Clean the house"))
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state.todos.clear()
+
+      expect(subscriber).toHaveBeenCalled()
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
+      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(
+        Path.parse("/todos")
+      )
+      expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("clear")
+      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(store.state.todos.get("123")).toBeUndefined()
+      expect(store.state.todos.get("abc")).toBeUndefined()
+    })
+
+    it("allows iterating over Map values", () => {
+      @Proxiable()
+      class Todo {
+        constructor(public text: string) {}
+      }
+
+      const todosMap = new Map<string, Todo>()
+      todosMap.set("123", new Todo("Walk the dogs"))
+      todosMap.set("abc", new Todo("Clean the house"))
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const todos = Array.from(store.state.todos.values())
+
+      expect(todos[0]).not.toBe(todosMap.get("123"))
+      expect(todos[0]).toBe(store.state.todos.get("123"))
+      expect(todos[1]).not.toBe(todosMap.get("abc"))
+      expect(todos[1]).toBe(store.state.todos.get("abc"))
+    })
+
+    it("allows iterating over Map entries", () => {
+      @Proxiable()
+      class Todo {
+        constructor(public text: string) {}
+      }
+
+      const todosMap = new Map<string, Todo>()
+      todosMap.set("123", new Todo("Walk the dogs"))
+      todosMap.set("abc", new Todo("Clean the house"))
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const entries = Array.from(store.state.todos.entries())
+
+      expect(entries[0][1]).not.toBe(todosMap.get("123"))
+      expect(entries[0][1]).toBe(store.state.todos.get("123"))
+      expect(entries[1][1]).not.toBe(todosMap.get("abc"))
+      expect(entries[1][1]).toBe(store.state.todos.get("abc"))
     })
   })
 

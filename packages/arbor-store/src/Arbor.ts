@@ -1,14 +1,15 @@
 // eslint-disable-next-line max-classes-per-file
-import { ArborProxiable } from "./isProxiable"
-import { NotAnArborNodeError, StaleNodeError } from "./errors"
-import isNode from "./isNode"
-import mutate, { Mutation, MutationMetadata } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
+import NodeMapHandler from "./NodeMapHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
+import { NotAnArborNodeError, StaleNodeError } from "./errors"
+import isNode from "./isNode"
+import { ArborProxiable } from "./isProxiable"
+import mutate, { Mutation, MutationMetadata } from "./mutate"
+import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 import { getUUID, setUUID } from "./uuid"
 
 /**
@@ -89,6 +90,15 @@ export interface Plugin<T extends object> {
 
 export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
 
+/*
+ * Default list of state tree node Proxy handlers.
+ *
+ * A node Proxy handler is the mechanism in which Arbor uses to proxy access to data
+ * within the state tree as well as hook into write operations so that subscribers can
+ * be notified accordingly and the next state tree generated via structural sharing.
+ */
+const defaultNodeHandlers = [NodeArrayHandler, NodeMapHandler, NodeHandler]
+
 /**
  * Implements the Arbor state tree abstraction
  *
@@ -128,7 +138,7 @@ export default class Arbor<T extends object = object> {
    * @param initialState the initial state tree value
    */
   constructor(initialState = {} as T, { handlers = [] }: ArborConfig = {}) {
-    this.#handlers = [...handlers, NodeArrayHandler, NodeHandler]
+    this.#handlers = [...handlers, ...defaultNodeHandlers]
     this.setState(initialState)
   }
 
