@@ -4,7 +4,7 @@ import Arbor, { Proxiable } from "./Arbor"
 import BaseNode from "./BaseNode"
 import Path from "./Path"
 import Repository from "./Repository"
-import { StaleNodeError } from "./errors"
+import { StaleNodeError, ValueAlreadyBoundError } from "./errors"
 import { ArborProxiable } from "./isProxiable"
 import { unwrap } from "./test.helpers"
 
@@ -788,18 +788,22 @@ describe("Arbor", () => {
 
     it("automatically unwraps state tree nodes when used as values", () => {
       const todosMap = new Map<string, { text: string }>()
+      const doneMap = new Map<string, { text: string }>()
       todosMap.set("123", { text: "Walk the dogs" })
-      todosMap.set("abc", { text: "Clean the house" })
+      doneMap.set("abc", { text: "Clean the house" })
 
       const store = new Arbor({
+        done: doneMap,
         todos: todosMap,
       })
 
-      store.state.todos.set("123", store.state.todos.get("abc")!)
+      const abc = store.state.done.get("abc")!
+
+      store.state.todos.set("123", abc)
 
       expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
-      expect(store.state.todos.get("123")).not.toBe(todosMap.get("abc"))
-      expect(unwrap(store.state.todos.get("123"))).toBe(todosMap.get("abc"))
+      expect(store.state.todos.get("123")).not.toBe(doneMap.get("abc"))
+      expect(unwrap(store.state.todos.get("123"))).toBe(doneMap.get("abc"))
     })
 
     it("TODO: nodes proxying the same value are conflicting (will have to think more about this)", () => {
@@ -811,9 +815,9 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      store.state.todos.set("123", store.state.todos.get("abc")!)
-
-      expect(store.state.todos.get("123")).toBe(store.state.todos.get("abc"))
+      expect(() =>
+        store.state.todos.set("123", store.state.todos.get("abc")!)
+      ).toThrow(ValueAlreadyBoundError)
     })
 
     it("allows deleting nodes stored within Map instances", () => {

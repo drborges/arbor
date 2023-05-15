@@ -1,5 +1,6 @@
 import { INode } from "./Arbor"
 import NodeHandler from "./NodeHandler"
+import { ValueAlreadyBoundError } from "./errors"
 import isNode from "./isNode"
 import isProxiable from "./isProxiable"
 
@@ -36,6 +37,15 @@ export default class NodeMapHandler<
         const value = isNode(newValue) ? (newValue.$unwrap() as T) : newValue
 
         if (target.get(key) !== value) {
+          if (this.$children.has(value)) {
+            const node = this.$children.get(value)
+            throw new ValueAlreadyBoundError(
+              `Cannot set value to path ${this.$path
+                .child(key)
+                .toString()}. Value is already bound to path ${node.$path.toString()}.`
+            )
+          }
+
           this.$tree.mutate(this, (map) => {
             map.set(key, value)
 
@@ -52,8 +62,9 @@ export default class NodeMapHandler<
 
     if (prop === "delete") {
       return (key: string) => {
-        const exists = target.has(key)
+        const node = target.get(key)
 
+        this.$children.delete(node)
         this.$tree.mutate(this, (map) => {
           map.delete(key)
 
@@ -63,7 +74,7 @@ export default class NodeMapHandler<
           }
         })
 
-        return exists
+        return node != null
       }
     }
 
