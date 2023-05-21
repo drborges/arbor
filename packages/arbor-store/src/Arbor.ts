@@ -63,11 +63,45 @@ export type ArborNode<T extends object> = {
  * Represents an Arbor state tree node with all of its internal API exposed.
  */
 export type INode<T extends object = object, K extends object = T> = T & {
+  /**
+   * Returns the underlying value wrapped by the state tree node.
+   */
   $unwrap(): T
+  /**
+   * Clones the node intance.
+   *
+   * Used as part of the structural sharing algorithm for generating new
+   * state trees upon mutations.
+   */
   $clone(): INode<T>
+  /**
+   * Accesses a child node indexed by the given key.
+   *
+   * This allows Arbor to consistenly traverse any Node implementation that
+   * may be used to compose the state tree.
+   *
+   * @param key the key used to index a chield node.
+   * @returns the child Node indexed by the key. `undefined` is returned in case
+   * the key does not belong to any child node.
+   */
+  $traverse(key: unknown): INode<T> | undefined
+  /**
+   * Reference to the state tree data structure.
+   */
   readonly $tree: Arbor<K>
+  /**
+   * The path within the state tree where the Node resides in.
+   */
   readonly $path: Path
+  /**
+   * Cache containing all children nodes of this node.
+   */
   readonly $children: NodeCache
+  /**
+   * Tracks subscribers of this Node.
+   *
+   * Subscribers are notified of any mutation event affecting this node.
+   */
   readonly $subscribers: Subscribers
 }
 

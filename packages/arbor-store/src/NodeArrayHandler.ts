@@ -25,6 +25,7 @@ export default class NodeArrayHandler<
   push(...item: T[]): number {
     let size: number
 
+    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
     this.$tree.mutate(this, (node: T[]) => {
       size = node.push(...item)
 

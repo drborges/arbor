@@ -1,5 +1,5 @@
-import Path from "./Path"
 import type { INode } from "./Arbor"
+import Path from "./Path"
 
 export type MutationMetadata = {
   operation?: string
@@ -29,10 +29,7 @@ export default function mutate<T extends object, K extends object>(
     const root = node.$clone()
 
     const targetNode = path.props.reduce<INode<T>>((parent, prop) => {
-      const hasGetter = parent instanceof Map
-      const childNode = (
-        hasGetter ? parent.get(prop) : parent[prop]
-      ) as INode<T>
+      const childNode = parent.$traverse(prop)
       const childNodeCopy = childNode.$clone()
       const childNodeValue = childNodeCopy.$unwrap()
 

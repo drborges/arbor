@@ -2,6 +2,7 @@ import Arbor, { INode } from "./Arbor"
 import NodeCache from "./NodeCache"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
+import { NotAnArborNodeError } from "./errors"
 import isNode from "./isNode"
 import isProxiable from "./isProxiable"
 
@@ -28,6 +29,12 @@ export default class NodeHandler<T extends object = object>
 
   static accepts(_value: unknown) {
     return true
+  }
+
+  $traverse(key: unknown) {
+    if (!isNode<T>(this)) throw new NotAnArborNodeError()
+
+    return this[key as string] as INode
   }
 
   $unwrap(): T {
@@ -93,6 +100,7 @@ export default class NodeHandler<T extends object = object>
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true
 
+    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
 

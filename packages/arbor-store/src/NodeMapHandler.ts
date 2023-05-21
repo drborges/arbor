@@ -1,6 +1,6 @@
 import { INode } from "./Arbor"
 import NodeHandler from "./NodeHandler"
-import { ValueAlreadyBoundError } from "./errors"
+import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import isNode from "./isNode"
 import isProxiable from "./isProxiable"
 
@@ -9,6 +9,12 @@ export default class NodeMapHandler<
 > extends NodeHandler<Map<unknown, T>> {
   static accepts(value: unknown) {
     return value instanceof Map
+  }
+
+  $traverse(key: unknown) {
+    if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
+
+    return this.get(key) as INode<T>
   }
 
   get(
