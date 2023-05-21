@@ -923,6 +923,25 @@ describe("Arbor", () => {
       expect(entries[1][1]).not.toBe(todosMap.get("abc"))
       expect(entries[1][1]).toBe(store.state.todos.get("abc"))
     })
+
+    it("allows destructuring a map into an array of entries", () => {
+      const todosMap = new Map<string, { text: string }>()
+      todosMap.set("123", { text: "Walk the dogs" })
+      todosMap.set("abc", { text: "Clean the house" })
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const entries = [...store.state.todos]
+
+      expect(entries[0][0]).toBe("123")
+      expect(entries[0][1]).toBe(store.state.todos.get("123"))
+      expect(entries[1][0]).toBe("abc")
+      expect(entries[1][1]).toBe(store.state.todos.get("abc"))
+      expect(entries).toBeInstanceOf(Array)
+      expect(entries.length).toBe(2)
+    })
   })
 
   describe("Example: Repository of nodes", () => {

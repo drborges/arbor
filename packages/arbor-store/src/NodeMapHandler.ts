@@ -17,6 +17,14 @@ export default class NodeMapHandler<
     return this.get(key) as INode<T>
   }
 
+  *[Symbol.iterator]() {
+    if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
+
+    for (const entry of this.entries()) {
+      yield entry
+    }
+  }
+
   get(
     target: Map<unknown, T>,
     prop: string,

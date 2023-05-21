@@ -262,6 +262,9 @@ export default class Arbor<T extends object = object> {
     const handler = new Handler(this, path, value, children, subscribers)
     const node = new Proxy<V>(value, handler) as INode<V>
 
+    // UUIDs are used to track nodes across mutations, enabling Arbor to tell
+    // if a node has been removed from the state tree, replaced or moved to
+    // a different path.
     setUUID(value)
 
     return node
