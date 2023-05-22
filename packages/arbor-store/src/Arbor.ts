@@ -117,7 +117,8 @@ export interface Plugin<T extends object> {
    * Allows the plugin to configure itself with the given state tree instance.
    *
    * @param store an instance of a state tree
-   * @returns a resolved promise if the configuration was successful, or a rejected one otherwise.
+   * @returns a resolved promise that resolves when the plugin completes its
+   * initialization. In case of an error, the promise is rejected.
    */
   configure(store: Arbor<T>): Promise<void>
 }
@@ -153,8 +154,8 @@ export default class Arbor<T extends object = object> {
    * List of proxy handlers used to determine at Runtime which handling strategy to use
    * for proxying a given node within the state tree.
    *
-   * By default Arbor will use the NodeArrayHandler implementation to handle array values
-   * and NodeHandler for all other proxiable values.
+   * By default Arbor has built-in node implementations that can handle arrays, map, object literal
+   * and any custom type that is Proxiable by Arbor.
    *
    * Users can extend this list with new strategies allowing them to customize the proxying
    * behavior of Arbor.
@@ -204,8 +205,8 @@ export default class Arbor<T extends object = object> {
    * @param pathOrNode the path or the node within the state tree to be mutated.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
-  mutate<V extends object>(path: Path, mutation: Mutation<V>): void
   mutate<V extends object>(node: ArborNode<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(path: Path, mutation: Mutation<V>): void
   mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
   mutate<V extends object>(
     pathOrNode: ArborNode<V> | Path,
@@ -225,6 +226,10 @@ export default class Arbor<T extends object = object> {
       throw new StaleNodeError()
     }
 
+    // TODO: This needs a little more thought. It would be nice to
+    // conditionally track snapshots of previous state trees since
+    // most use-cases do not require such tracking, thus, this
+    // serialization could be turned off by default.
     const previousState = JSON.stringify(this.#root.$unwrap())
     const result = mutate(this.#root, node.$path, mutation)
 
@@ -260,14 +265,14 @@ export default class Arbor<T extends object = object> {
   ): INode<V> {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
-    const node = new Proxy<V>(value, handler) as INode<V>
+    const node = new Proxy<V>(value, handler)
 
     // UUIDs are used to track nodes across mutations, enabling Arbor to tell
     // if a node has been removed from the state tree, replaced or moved to
     // a different path.
     setUUID(value)
 
-    return node
+    return node as INode<V>
   }
 
   /**
@@ -335,10 +340,10 @@ export default class Arbor<T extends object = object> {
   }
 
   /**
-   * Checks if a given node is still attached to the decision tree.
+   * Checks if a given node is still attached to the state tree.
    *
    * @param node node to check if no longer attached to the state tree.
-   * @returns true if the node no longer exists within the decision tree, false otherwise.
+   * @returns true if the node no longer exists within the state tree, false otherwise.
    */
   isDetached(node: ArborNode<object>) {
     if (!isNode(node)) return true
