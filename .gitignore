@@ -1,5 +1,5 @@
 node_modules/
-todo.todo
+.todo
 .cache/
 .yarn/cache/
 .pnp.cjs
