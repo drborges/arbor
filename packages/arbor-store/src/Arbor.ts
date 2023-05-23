@@ -217,6 +217,7 @@ export default class Arbor<T extends object = object> {
         ? pathOrNode.walk(this.#root)
         : (pathOrNode as INode<V>)
 
+    // TODO: Write a test to cover this condition
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different

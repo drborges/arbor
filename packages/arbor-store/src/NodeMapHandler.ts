@@ -42,13 +42,13 @@ export default class NodeMapHandler<
           ? this.$children.get(value)
           : this.$createChildNode(key, value)
 
-        return node as unknown as T
+        return node
       }
     }
 
     if (prop === "set") {
       return (key: string, newValue: T) => {
-        const value = isNode(newValue) ? (newValue.$unwrap() as T) : newValue
+        const value = isNode<T>(newValue) ? newValue.$unwrap() : newValue
 
         if (target.get(key) !== value) {
           if (this.$children.has(value)) {
@@ -70,7 +70,7 @@ export default class NodeMapHandler<
           })
         }
 
-        return this as unknown as T
+        return this
       }
     }
 
