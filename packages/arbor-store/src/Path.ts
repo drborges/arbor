@@ -73,15 +73,33 @@ export default class Path {
   }
 
   /**
-   * Traverses a given object until reaching the node represented by the path.
+   * Traverses a given node until reaching the node represented by the path.
    *
    * @param node an Arbor node to traverse.
    * @returns the node referenced by the path.
    */
   walk(node: ArborNode<object>): ArborNode<object> {
-    if (!isNode(node)) throw new NotAnArborNodeError()
+    try {
+      if (!isNode(node)) throw new NotAnArborNodeError()
 
-    return this.props.reduce((parent, part) => parent.$traverse(part), node)
+      return this.props.reduce((parent, part) => parent.$traverse(part), node)
+    } catch {
+      return undefined
+    }
+  }
+
+  /**
+   * Traverses a given object until reaching the value represented by the path.
+   *
+   * @param obj an object to traverse.
+   * @returns the value referenced by the path.
+   */
+  walkObj(obj: object): unknown {
+    try {
+      return this.props.reduce((parent, part) => parent[part] as unknown, obj)
+    } catch {
+      return undefined
+    }
   }
 
   /**
