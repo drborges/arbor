@@ -212,12 +212,12 @@ export default class Arbor<T extends object = object> {
     pathOrNode: ArborNode<V> | Path,
     mutation: Mutation<V>
   ): void {
-    const node: INode<V> =
+    const node =
       pathOrNode instanceof Path
         ? pathOrNode.walk(this.#root)
         : (pathOrNode as INode<V>)
 
-    if (!isNode(pathOrNode)) throw new NotAnArborNodeError()
+    if (!isNode(node)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different
     // path are considered detatched nodes and cannot be mutated otherwise we risk
@@ -282,7 +282,7 @@ export default class Arbor<T extends object = object> {
    * @returns the node at the given path.
    */
   getNodeAt<V extends object>(path: Path): INode<V> {
-    return path.walk(this.#root)
+    return path.walk(this.#root) as INode<V>
   }
 
   /**

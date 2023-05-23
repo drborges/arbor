@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import Arbor, { ArborNode } from "./Arbor"
 import Path from "./Path"
-import { ArborNode } from "./Arbor"
 import { InvalidArgumentError } from "./errors"
 
 describe("Path", () => {
@@ -77,14 +77,14 @@ describe("Path", () => {
 
   describe("#walk", () => {
     it("traverses a given object until it reaches the node represented by the path", () => {
-      const path = Path.parse("/state/users/1")
-      const obj = {
-        state: {
+      const path = Path.parse("/data/users/1")
+      const store = new Arbor({
+        data: {
           users: [{ name: "User 1" }, { name: "User 2" }],
         },
-      }
+      })
 
-      expect(path.walk(obj)).toBe(obj.state.users[1])
+      expect(path.walk(store.state)).toBe(store.state.data.users[1])
     })
   })
 

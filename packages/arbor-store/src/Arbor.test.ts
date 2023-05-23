@@ -942,6 +942,20 @@ describe("Arbor", () => {
       expect(entries).toBeInstanceOf(Array)
       expect(entries.length).toBe(2)
     })
+
+    it("can traverse a path including a Map node", () => {
+      const todosMap = new Map<string, { text: string }>()
+      todosMap.set("123", { text: "Walk the dogs" })
+      todosMap.set("abc", { text: "Clean the house" })
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const node = store.getNodeAt(Path.parse("/todos/123"))
+
+      expect(node).toBe(store.state.todos.get("123"))
+    })
   })
 
   describe("Example: Repository of nodes", () => {

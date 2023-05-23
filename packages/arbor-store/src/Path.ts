@@ -1,6 +1,6 @@
-import isNode from "./isNode"
 import { ArborNode } from "./Arbor"
-import { InvalidArgumentError } from "./errors"
+import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
+import isNode from "./isNode"
 
 /**
  * Represent a path within the state tree.
@@ -75,14 +75,13 @@ export default class Path {
   /**
    * Traverses a given object until reaching the node represented by the path.
    *
-   * @param obj object to be traversed
-   * @returns the node within obj represented by the path
+   * @param node an Arbor node to traverse.
+   * @returns the node referenced by the path.
    */
-  walk<T extends object, V extends object>(obj: T): V {
-    return this.props.reduce<T>(
-      (parent, part) => parent[part] as T,
-      obj
-    ) as unknown as V
+  walk(node: ArborNode<object>): ArborNode<object> {
+    if (!isNode(node)) throw new NotAnArborNodeError()
+
+    return this.props.reduce((parent, part) => parent.$traverse(part), node)
   }
 
   /**
