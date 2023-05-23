@@ -172,7 +172,7 @@ export default class Arbor<T extends object = object> {
    *
    * @param initialState the initial state tree value
    */
-  constructor(initialState = {} as T, { handlers = [] }: ArborConfig = {}) {
+  constructor(initialState: T, { handlers = [] }: ArborConfig = {}) {
     this.#handlers = [...handlers, ...defaultNodeHandlers]
     this.setState(initialState)
   }
