@@ -7,3 +7,4 @@ node_modules/
 dist/
 yarn-error.log
 examples/tree-shaking
+**/cypress/screenshots/
