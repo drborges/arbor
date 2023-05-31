@@ -8,6 +8,18 @@ import isProxiable from "./isProxiable"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
+function isGetter(target: unknown, prop: string) {
+  const targetClassDescriptors = Object.getOwnPropertyDescriptors(
+    target.constructor.prototype
+  )
+
+  const classPropDescriptor = targetClassDescriptors[prop]
+  const objectPropDescriptor = Object.getOwnPropertyDescriptor(target, prop)
+  const descriptor = classPropDescriptor || objectPropDescriptor
+
+  return descriptor && typeof descriptor.get === "function"
+}
+
 export default class NodeHandler<T extends object = object>
   implements ProxyHandler<T>
 {
@@ -53,6 +65,10 @@ export default class NodeHandler<T extends object = object>
   get(target: T, prop: string, proxy: INode<T>) {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
+
+    if (isGetter(target, prop)) {
+      return Reflect.get(target, prop, proxy) as unknown
+    }
 
     // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
     // without conflicting with the ProxyHandler API.

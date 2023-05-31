@@ -6,7 +6,7 @@ import Path from "./Path"
 import Repository from "./Repository"
 import { StaleNodeError, ValueAlreadyBoundError } from "./errors"
 import { ArborProxiable } from "./isProxiable"
-import { unwrap } from "./test.helpers"
+import { toINode, unwrap } from "./test.helpers"
 
 describe("Arbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -511,6 +511,81 @@ describe("Arbor", () => {
       expect(subscriber).toHaveBeenCalled()
       expect(store.state[0].status).toBe("done")
       expect(store.state[0].complete).toBeDefined()
+    })
+
+    it("allows using class getters to select nodes within the state tree", () => {
+      @Proxiable()
+      class Todo {
+        constructor(
+          readonly id: number,
+          public text: string,
+          public active = false
+        ) {}
+      }
+
+      @Proxiable()
+      class TodoList {
+        todos: Todo[] = []
+
+        constructor(...items: Todo[]) {
+          items.forEach((item) => {
+            this.todos.push(item)
+          })
+        }
+
+        get activeTodos() {
+          return this.todos.filter((todo) => todo.active)
+        }
+      }
+
+      const store = new Arbor(
+        new TodoList(
+          new Todo(1, "Do the dishes"),
+          new Todo(2, "Learn Arbor", true)
+        )
+      )
+
+      const activeTodos = store.state.activeTodos
+
+      expect(activeTodos[0].id).toBe(2)
+      expect(activeTodos[0].active).toBe(true)
+      expect(activeTodos[0].text).toBe("Learn Arbor")
+      expect(toINode(activeTodos[0]).$path.toString()).toBe("/todos/1")
+      expect(activeTodos[0]).toBe(store.state.todos[1])
+    })
+
+    it("allows using object literal getters to select nodes within the state tree", () => {
+      type Todo = {
+        id: number
+        text: string
+        active: boolean
+      }
+
+      type TodoList = {
+        todos: Todo[]
+        get activeTodos(): Todo[]
+      }
+
+      const todoList: TodoList = {
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Learn Arbor", active: true },
+        ] as Todo[],
+
+        get activeTodos() {
+          return (this as TodoList).todos.filter((todo) => todo.active)
+        },
+      }
+
+      const store = new Arbor(todoList)
+
+      const activeTodos = store.state.activeTodos
+
+      expect(activeTodos[0].id).toBe(2)
+      expect(activeTodos[0].active).toBe(true)
+      expect(activeTodos[0].text).toBe("Learn Arbor")
+      expect(toINode(activeTodos[0]).$path.toString()).toBe("/todos/1")
+      expect(activeTodos[0]).toBe(store.state.todos[1])
     })
   })
 
