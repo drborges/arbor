@@ -9,6 +9,8 @@ export class MissingUUIDError extends ArborError {
 
 export class InvalidArgumentError extends ArborError {}
 
+export class ValueAlreadyBoundError extends ArborError {}
+
 export class NotAnArborNodeError extends ArborError {
   constructor() {
     super("Object not bound to an Arbor store")

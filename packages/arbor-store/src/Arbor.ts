@@ -1,14 +1,15 @@
 // eslint-disable-next-line max-classes-per-file
-import { ArborProxiable } from "./isProxiable"
-import { NotAnArborNodeError, StaleNodeError } from "./errors"
-import isNode from "./isNode"
-import mutate, { Mutation, MutationMetadata } from "./mutate"
 import NodeArrayHandler from "./NodeArrayHandler"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
+import NodeMapHandler from "./NodeMapHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
+import { NotAnArborNodeError, StaleNodeError } from "./errors"
+import isNode from "./isNode"
+import { ArborProxiable } from "./isProxiable"
+import mutate, { Mutation, MutationMetadata } from "./mutate"
+import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 import { getUUID, setUUID } from "./uuid"
 
 /**
@@ -62,11 +63,45 @@ export type ArborNode<T extends object> = {
  * Represents an Arbor state tree node with all of its internal API exposed.
  */
 export type INode<T extends object = object, K extends object = T> = T & {
+  /**
+   * Returns the underlying value wrapped by the state tree node.
+   */
   $unwrap(): T
+  /**
+   * Clones the node intance.
+   *
+   * Used as part of the structural sharing algorithm for generating new
+   * state trees upon mutations.
+   */
   $clone(): INode<T>
+  /**
+   * Accesses a child node indexed by the given key.
+   *
+   * This allows Arbor to consistenly traverse any Node implementation that
+   * may be used to compose the state tree.
+   *
+   * @param key the key used to index a chield node.
+   * @returns the child Node indexed by the key. `undefined` is returned in case
+   * the key does not belong to any child node.
+   */
+  $traverse(key: unknown): INode<T> | undefined
+  /**
+   * Reference to the state tree data structure.
+   */
   readonly $tree: Arbor<K>
+  /**
+   * The path within the state tree where the Node resides in.
+   */
   readonly $path: Path
+  /**
+   * Cache containing all children nodes of this node.
+   */
   readonly $children: NodeCache
+  /**
+   * Tracks subscribers of this Node.
+   *
+   * Subscribers are notified of any mutation event affecting this node.
+   */
   readonly $subscribers: Subscribers
 }
 
@@ -82,12 +117,22 @@ export interface Plugin<T extends object> {
    * Allows the plugin to configure itself with the given state tree instance.
    *
    * @param store an instance of a state tree
-   * @returns a resolved promise if the configuration was successful, or a rejected one otherwise.
+   * @returns a resolved promise that resolves when the plugin completes its
+   * initialization. In case of an error, the promise is rejected.
    */
   configure(store: Arbor<T>): Promise<void>
 }
 
 export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
+
+/*
+ * Default list of state tree node Proxy handlers.
+ *
+ * A node Proxy handler is the mechanism in which Arbor uses to proxy access to data
+ * within the state tree as well as hook into write operations so that subscribers can
+ * be notified accordingly and the next state tree generated via structural sharing.
+ */
+const defaultNodeHandlers = [NodeArrayHandler, NodeMapHandler, NodeHandler]
 
 /**
  * Implements the Arbor state tree abstraction
@@ -109,8 +154,8 @@ export default class Arbor<T extends object = object> {
    * List of proxy handlers used to determine at Runtime which handling strategy to use
    * for proxying a given node within the state tree.
    *
-   * By default Arbor will use the NodeArrayHandler implementation to handle array values
-   * and NodeHandler for all other proxiable values.
+   * By default Arbor has built-in node implementations that can handle arrays, map, object literal
+   * and any custom type that is Proxiable by Arbor.
    *
    * Users can extend this list with new strategies allowing them to customize the proxying
    * behavior of Arbor.
@@ -127,8 +172,8 @@ export default class Arbor<T extends object = object> {
    *
    * @param initialState the initial state tree value
    */
-  constructor(initialState = {} as T, { handlers = [] }: ArborConfig = {}) {
-    this.#handlers = [...handlers, NodeArrayHandler, NodeHandler]
+  constructor(initialState: T, { handlers = [] }: ArborConfig = {}) {
+    this.#handlers = [...handlers, ...defaultNodeHandlers]
     this.setState(initialState)
   }
 
@@ -160,19 +205,20 @@ export default class Arbor<T extends object = object> {
    * @param pathOrNode the path or the node within the state tree to be mutated.
    * @param mutation a function responsible for mutating the target node at the given path.
    */
-  mutate<V extends object>(path: Path, mutation: Mutation<V>): void
   mutate<V extends object>(node: ArborNode<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(path: Path, mutation: Mutation<V>): void
   mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
   mutate<V extends object>(
     pathOrNode: ArborNode<V> | Path,
     mutation: Mutation<V>
   ): void {
-    const node: INode<V> =
+    const node =
       pathOrNode instanceof Path
         ? pathOrNode.walk(this.#root)
         : (pathOrNode as INode<V>)
 
-    if (!isNode(pathOrNode)) throw new NotAnArborNodeError()
+    // TODO: Write a test to cover this condition
+    if (!isNode(node)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different
     // path are considered detatched nodes and cannot be mutated otherwise we risk
@@ -181,6 +227,10 @@ export default class Arbor<T extends object = object> {
       throw new StaleNodeError()
     }
 
+    // TODO: This needs a little more thought. It would be nice to
+    // conditionally track snapshots of previous state trees since
+    // most use-cases do not require such tracking, thus, this
+    // serialization could be turned off by default.
     const previousState = JSON.stringify(this.#root.$unwrap())
     const result = mutate(this.#root, node.$path, mutation)
 
@@ -216,11 +266,14 @@ export default class Arbor<T extends object = object> {
   ): INode<V> {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
-    const node = new Proxy<V>(value, handler) as INode<V>
+    const node = new Proxy<V>(value, handler)
 
+    // UUIDs are used to track nodes across mutations, enabling Arbor to tell
+    // if a node has been removed from the state tree, replaced or moved to
+    // a different path.
     setUUID(value)
 
-    return node
+    return node as INode<V>
   }
 
   /**
@@ -230,7 +283,7 @@ export default class Arbor<T extends object = object> {
    * @returns the node at the given path.
    */
   getNodeAt<V extends object>(path: Path): INode<V> {
-    return path.walk(this.#root)
+    return path.walk(this.#root) as INode<V>
   }
 
   /**
@@ -288,10 +341,10 @@ export default class Arbor<T extends object = object> {
   }
 
   /**
-   * Checks if a given node is still attached to the decision tree.
+   * Checks if a given node is still attached to the state tree.
    *
    * @param node node to check if no longer attached to the state tree.
-   * @returns true if the node no longer exists within the decision tree, false otherwise.
+   * @returns true if the node no longer exists within the state tree, false otherwise.
    */
   isDetached(node: ArborNode<object>) {
     if (!isNode(node)) return true

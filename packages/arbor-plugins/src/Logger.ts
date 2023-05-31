@@ -18,12 +18,15 @@ export default class Logger<T extends object> implements Plugin<T> {
   async configure(store: Arbor<T>) {
     store.subscribe(({ metadata, mutationPath, state }) => {
       const { operation, props } = metadata
-      const previousValue = mutationPath.walk(state.previous)
-      const currentValue = mutationPath.walk((state.current as INode).$unwrap())
+
+      const previousValue = mutationPath.walkObj(state.previous || {}) as T
+      const currentValue = mutationPath.walk(
+        (state.current as INode).$unwrap()
+      ) as T
 
       const isPropDeletion = operation === "delete"
-      const previous = sliceObject(previousValue, props)
-      const current = sliceObject(currentValue, props)
+      const previous = sliceObject(previousValue || {}, props)
+      const current = sliceObject(currentValue || {}, props)
 
       console.group(
         `${this.tag} ${operation.toUpperCase()} ${

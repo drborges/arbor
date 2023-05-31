@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import Arbor, { ArborNode } from "./Arbor"
 import Path from "./Path"
-import { ArborNode } from "./Arbor"
 import { InvalidArgumentError } from "./errors"
 
 describe("Path", () => {
@@ -76,15 +76,50 @@ describe("Path", () => {
   })
 
   describe("#walk", () => {
-    it("traverses a given object until it reaches the node represented by the path", () => {
-      const path = Path.parse("/state/users/1")
+    it("traverses a given state tree node until it reaches the value referenced by the path", () => {
+      const path = Path.parse("/data/users/1")
+      const store = new Arbor({
+        data: {
+          users: [{ name: "User 1" }, { name: "User 2" }],
+        },
+      })
+
+      expect(path.walk(store.state)).toBe(store.state.data.users[1])
+    })
+
+    it("returns undefined if path does not reference any nodes within the state tree", () => {
+      const path = Path.parse("/data/todos/1")
+      const store = new Arbor({
+        data: {
+          users: [{ name: "User 1" }, { name: "User 2" }],
+        },
+      })
+
+      expect(path.walk(store.state)).toBeUndefined()
+    })
+  })
+
+  describe("#walkObj", () => {
+    it("traverses a given object until it reaches the value referenced by the path", () => {
+      const path = Path.parse("/data/users/1")
       const obj = {
-        state: {
+        data: {
           users: [{ name: "User 1" }, { name: "User 2" }],
         },
       }
 
-      expect(path.walk(obj)).toBe(obj.state.users[1])
+      expect(path.walkObj(obj)).toBe(obj.data.users[1])
+    })
+
+    it("returns undefined if path does not reference any nodes within the state tree", () => {
+      const path = Path.parse("/data/todos/1")
+      const obj = {
+        data: {
+          users: [{ name: "User 1" }, { name: "User 2" }],
+        },
+      }
+
+      expect(path.walkObj(obj)).toBeUndefined()
     })
   })
 

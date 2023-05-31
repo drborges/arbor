@@ -1,9 +1,8 @@
 import NodeHandler from "./NodeHandler"
 
 export default class NodeArrayHandler<
-  T extends object = object,
-  K extends object = object
-> extends NodeHandler<T[], K> {
+  T extends object = object
+> extends NodeHandler<T[]> {
   static accepts(value: unknown) {
     return Array.isArray(value)
   }
@@ -26,6 +25,7 @@ export default class NodeArrayHandler<
   push(...item: T[]): number {
     let size: number
 
+    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
     this.$tree.mutate(this, (node: T[]) => {
       size = node.push(...item)
 
