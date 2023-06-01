@@ -4,9 +4,15 @@ import Arbor, { Proxiable } from "./Arbor"
 import BaseNode from "./BaseNode"
 import Path from "./Path"
 import Repository from "./Repository"
-import { StaleNodeError, ValueAlreadyBoundError } from "./errors"
+import {
+  ArborError,
+  NotAnArborNodeError,
+  StaleNodeError,
+  ValueAlreadyBoundError,
+} from "./errors"
 import { ArborProxiable } from "./isProxiable"
 import { toINode, unwrap } from "./test.helpers"
+import { detach, isDetached, merge, path } from "./utilities"
 
 describe("Arbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -1063,6 +1069,176 @@ describe("Arbor", () => {
       expect(store.state["1"]).toEqual({
         uuid: "1",
         text: "Clean the living room",
+      })
+    })
+  })
+
+  describe("Example: Utility functions", () => {
+    describe("detach", () => {
+      it("cannot detach the state tree's root node", () => {
+        const store = new Arbor({
+          todos: [
+            { id: 1, text: "Do the dishes" },
+            { id: 2, text: "Walk the dogs" },
+          ],
+        })
+
+        expect(() => detach(store.state)).toThrow(ArborError)
+      })
+
+      it("cannot detach values that are not already attached to the state tree", () => {
+        expect(() => detach(123)).toThrow(NotAnArborNodeError)
+        expect(() => detach("")).toThrow(NotAnArborNodeError)
+        expect(() => detach({})).toThrow(NotAnArborNodeError)
+      })
+
+      it("cannot detach node already detached", () => {
+        const store = new Arbor({
+          todos: [
+            { id: 1, text: "Do the dishes" },
+            { id: 2, text: "Walk the dogs" },
+          ],
+        })
+
+        const node = store.state.todos[0]
+        detach(node)
+
+        expect(() => detach(node)).toThrow(StaleNodeError)
+      })
+
+      it("detaches a given ArborNode from the state tree", () => {
+        const initialState = {
+          todos: [
+            { id: 1, text: "Do the dishes" },
+            { id: 2, text: "Walk the dogs" },
+          ],
+        }
+
+        const todo0 = initialState.todos[0]
+
+        const store = new Arbor(initialState)
+
+        const detched = detach(store.state.todos[0])
+
+        expect(detched).toBe(todo0)
+        expect(store.state).toEqual({
+          todos: [{ id: 2, text: "Walk the dogs" }],
+        })
+      })
+    })
+
+    describe("merge", () => {
+      it("cannot merge values that are not already attached to the state tree", () => {
+        const node = { name: "Alice", age: 32 }
+
+        expect(() => {
+          merge(node, { name: "Alice Doe", age: 33 })
+        }).toThrow(NotAnArborNodeError)
+      })
+
+      it("cannot merge data into node when node is detached from the state tree", () => {
+        const store = new Arbor({
+          todos: [
+            { id: 1, text: "Do the dishes" },
+            { id: 2, text: "Walk the dogs" },
+          ],
+        })
+
+        const node = store.state.todos[0]
+        detach(node)
+
+        expect(() => {
+          merge(node, { text: "" })
+        }).toThrow(StaleNodeError)
+      })
+
+      it("merges data into a given state tree node", () => {
+        const store = new Arbor({
+          todos: [
+            { id: 1, text: "Do the dishes", active: false },
+            { id: 2, text: "Walk the dogs", active: true },
+          ],
+        })
+
+        const updated = merge(store.state.todos[0], {
+          text: "Did the dishes",
+          active: false,
+        })
+
+        expect(updated).toBe(store.state.todos[0])
+        expect(store.state).toEqual({
+          todos: [
+            { id: 1, text: "Did the dishes", active: false },
+            { id: 2, text: "Walk the dogs", active: true },
+          ],
+        })
+      })
+    })
+
+    describe("path", () => {
+      it("cannot determine a path for a value that is not attached to the state tree", () => {
+        const node = { name: "Alice", age: 32 }
+
+        expect(() => {
+          path(node)
+        }).toThrow(NotAnArborNodeError)
+      })
+
+      it("cannot determine a path for a detached node", () => {
+        const store = new Arbor({
+          todos: [
+            { id: 1, text: "Do the dishes" },
+            { id: 2, text: "Walk the dogs" },
+          ],
+        })
+
+        const node = store.state.todos[0]
+        detach(node)
+
+        expect(() => {
+          path(node)
+        }).toThrow(StaleNodeError)
+      })
+
+      it("determines the path of the node within the state tree", () => {
+        const store = new Arbor({
+          todos: [
+            { id: 1, text: "Do the dishes" },
+            { id: 2, text: "Walk the dogs" },
+          ],
+        })
+
+        expect(path(store.state)).toEqual(Path.parse("/"))
+        expect(path(store.state.todos)).toEqual(Path.parse("/todos"))
+        expect(path(store.state.todos[0])).toEqual(Path.parse("/todos/0"))
+        expect(path(store.state.todos[1])).toEqual(Path.parse("/todos/1"))
+      })
+    })
+
+    describe("isDetached", () => {
+      it("throws an error if given value is not a state tree node", () => {
+        const node = { name: "Alice", age: 32 }
+
+        expect(() => {
+          isDetached(node)
+        }).toThrow(NotAnArborNodeError)
+      })
+
+      it("determines if a node is no longer within the state tree", () => {
+        const store = new Arbor({
+          todos: [
+            { id: 1, text: "Do the dishes" },
+            { id: 2, text: "Walk the dogs" },
+          ],
+        })
+
+        const node = store.state.todos[0]
+
+        expect(isDetached(node)).toBe(false)
+
+        detach(node)
+
+        expect(isDetached(node)).toBe(true)
       })
     })
   })
