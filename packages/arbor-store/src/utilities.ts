@@ -91,3 +91,18 @@ export function isDetached<T extends object>(node: ArborNode<T>): boolean {
 
   return node.$tree.isDetached(node)
 }
+
+/**
+ * Retrieves the value wrapped by the given state tree node.
+ *
+ * Nodes in Arbor are basically proxies of to objects within the state tree.
+ * Unwrapping a node gives you back the "raw" value referenced by the node.
+ *
+ * @param node node to unwrap.
+ * @returns the value wrapped by the node.
+ */
+export function unwrap<T extends object>(node: ArborNode<T>): T {
+  if (!isNode<T>(node)) throw new NotAnArborNodeError()
+
+  return node.$unwrap()
+}
