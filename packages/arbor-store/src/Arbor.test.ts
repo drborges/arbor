@@ -10,8 +10,8 @@ import {
   StaleNodeError,
   ValueAlreadyBoundError,
 } from "./errors"
+
 import { ArborProxiable } from "./isProxiable"
-import { toINode } from "./test.helpers"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 describe("Arbor", () => {
@@ -95,9 +95,9 @@ describe("Arbor", () => {
       })
 
       const todo = { text: "Walk the dogs" }
-      store.state[0] = todo
+      store.state.todos[0] = todo
 
-      expect(unwrap(store.state[0])).toBe(todo)
+      expect(unwrap(store.state.todos[0])).toBe(todo)
     })
 
     it("automatically unwrap node values during assignments", () => {
@@ -556,7 +556,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].id).toBe(2)
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
-      expect(toINode(activeTodos[0]).$path.toString()).toBe("/todos/1")
+      expect(path(activeTodos[0]).toString()).toBe("/todos/1")
       expect(activeTodos[0]).toBe(store.state.todos[1])
     })
 
@@ -590,7 +590,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].id).toBe(2)
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
-      expect(toINode(activeTodos[0]).$path.toString()).toBe("/todos/1")
+      expect(path(activeTodos[0]).toString()).toBe("/todos/1")
       expect(activeTodos[0]).toBe(store.state.todos[1])
     })
   })
@@ -884,7 +884,7 @@ describe("Arbor", () => {
 
       expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
       expect(store.state.todos.get("123")).not.toBe(doneMap.get("abc"))
-      expect(unwrap(store.state.todos.get("123"))).toBe(doneMap.get("abc"))
+      expect(unwrap(store.state.todos.get("123")!)).toBe(doneMap.get("abc"))
     })
 
     it("TODO: nodes proxying the same value are conflicting (will have to think more about this)", () => {
@@ -1262,9 +1262,7 @@ describe("Arbor", () => {
         const todo0 = initialState.todos[0]
         const store = new Arbor(initialState)
 
-        const unwrapped = unwrap(store.state.todos[0])
-
-        expect(unwrapped).toBe(todo0)
+        expect(unwrap(store.state.todos[0])).toBe(todo0)
       })
     })
   })
