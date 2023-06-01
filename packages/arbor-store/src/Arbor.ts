@@ -5,7 +5,7 @@ import NodeHandler from "./NodeHandler"
 import NodeMapHandler from "./NodeMapHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
-import { NotAnArborNodeError, StaleNodeError } from "./errors"
+import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import isNode from "./isNode"
 import { ArborProxiable } from "./isProxiable"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
@@ -224,7 +224,7 @@ export default class Arbor<T extends object = object> {
     // path are considered detatched nodes and cannot be mutated otherwise we risk
     // computing incorrect state trees with values that are no longer valid.
     if (this.isDetached(node)) {
-      throw new StaleNodeError()
+      throw new DetachedNodeError()
     }
 
     // TODO: This needs a little more thought. It would be nice to

@@ -5,8 +5,8 @@ import Path from "./Path"
 import Repository from "./Repository"
 import {
   ArborError,
+  DetachedNodeError,
   NotAnArborNodeError,
-  StaleNodeError,
   ValueAlreadyBoundError,
 } from "./errors"
 
@@ -172,7 +172,7 @@ describe("Arbor", () => {
       store.subscribe(subscriber1)
       store.subscribeTo(user0, subscriber2)
 
-      expect(() => user0.age++).toThrow(StaleNodeError)
+      expect(() => user0.age++).toThrow(DetachedNodeError)
       expect(subscriber1).not.toHaveBeenCalled()
       expect(subscriber2).not.toHaveBeenCalled()
     })
@@ -1090,7 +1090,7 @@ describe("Arbor", () => {
         const node = store.state.todos[0]
         detach(node)
 
-        expect(() => detach(node)).toThrow(StaleNodeError)
+        expect(() => detach(node)).toThrow(DetachedNodeError)
       })
 
       it("detaches a given ArborNode from the state tree", () => {
@@ -1136,7 +1136,7 @@ describe("Arbor", () => {
 
         expect(() => {
           merge(node, { text: "" })
-        }).toThrow(StaleNodeError)
+        }).toThrow(DetachedNodeError)
       })
 
       it("merges data into a given state tree node", () => {
@@ -1184,7 +1184,7 @@ describe("Arbor", () => {
 
         expect(() => {
           path(node)
-        }).toThrow(StaleNodeError)
+        }).toThrow(DetachedNodeError)
       })
 
       it("determines the path of the node within the state tree", () => {

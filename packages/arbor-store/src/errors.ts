@@ -17,7 +17,7 @@ export class NotAnArborNodeError extends ArborError {
   }
 }
 
-export class StaleNodeError extends ArborError {
+export class DetachedNodeError extends ArborError {
   constructor() {
     super("Mutation attempt on a stale node")
   }
