@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import Arbor, { Proxiable } from "./Arbor"
-import BaseNode from "./BaseNode"
 import Path from "./Path"
 import Repository from "./Repository"
 import {
@@ -229,9 +228,14 @@ describe("Arbor", () => {
       })
     })
 
-    it("allows deleting nodes by detaching them from the state tree when extending from BaseNode class", () => {
-      class Todo extends BaseNode<Todo> {
+    it("allows deleting nodes by detaching them from the state tree", () => {
+      @Proxiable()
+      class Todo {
         text: string
+
+        constructor(data: Partial<Todo>) {
+          Object.assign(this, data)
+        }
       }
 
       type Todos = {
@@ -239,14 +243,14 @@ describe("Arbor", () => {
       }
 
       const store = new Arbor<Todos>({
-        "1": Todo.from<Todo>({ text: "Clean the house" }),
-        "2": Todo.from<Todo>({ text: "Walk the dogs" }),
+        "1": new Todo({ text: "Clean the house" }),
+        "2": new Todo({ text: "Walk the dogs" }),
       })
 
       const subscriber = jest.fn()
       store.subscribe(subscriber)
 
-      store.state["2"].detach()
+      detach(store.state["2"])
 
       expect(store.state["2"]).toBeUndefined()
       expect(subscriber.mock.calls.length).toBe(1)
@@ -474,28 +478,6 @@ describe("Arbor", () => {
       expect(subscriber).toHaveBeenCalled()
       expect(store.state[0].status).toBe("done")
       expect(store.state[0].complete).toBeDefined()
-    })
-
-    it("allows for custom node types that inherit from BaseNode", () => {
-      class Todo extends BaseNode<Todo> {
-        text: string
-        status = "todo"
-
-        complete() {
-          this.status = "done"
-        }
-      }
-
-      const todo = Todo.from<Todo>({ text: "Do the dishes" })
-      const store = new Arbor([todo])
-      const subscriber = jest.fn()
-      store.subscribe(subscriber)
-
-      store.state[0].complete()
-
-      expect(subscriber).toHaveBeenCalled()
-      expect(store.state[0].status).toBe("done")
-      expect(store.state[0]).toBeInstanceOf(Todo)
     })
 
     it("marks a custom type as proxiable via decorator", () => {
@@ -1041,15 +1023,20 @@ describe("Arbor", () => {
 
   describe("Example: Repository of nodes", () => {
     it("provides an iteratable key value store to make it easier to track nodes", () => {
-      class Todo extends BaseNode<Todo> {
+      @Proxiable()
+      class Todo {
         uuid: string
         text: string
+
+        constructor(data: Partial<Todo>) {
+          Object.assign(this, data)
+        }
       }
 
       const store = new Arbor(
         new Repository(
-          Todo.from<Todo>({ uuid: "1", text: "Clean the house" }),
-          Todo.from<Todo>({ uuid: "2", text: "Walk the dogs" })
+          new Todo({ uuid: "1", text: "Clean the house" }),
+          new Todo({ uuid: "2", text: "Walk the dogs" })
         )
       )
 

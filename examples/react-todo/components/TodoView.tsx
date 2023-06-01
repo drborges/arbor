@@ -42,7 +42,7 @@ export default memo(function TodoView({ id }: TodoProps) {
       >
         Edit
       </button>
-      <button type="button" onClick={todo.detach}>
+      <button type="button" onClick={todo.delete}>
         Delete
       </button>
       <button onClick={todo.like} data-testid={`like-todo-${todo.uuid}`}>

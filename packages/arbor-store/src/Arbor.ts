@@ -19,7 +19,7 @@ import { getUUID, setUUID } from "./uuid"
  * @returns Arbor compatiby type.
  */
 export function Proxiable() {
-  return <T extends Function>(target: T, _context: unknown) => {
+  return <T extends Function>(target: T, _context: unknown = null) => {
     target.prototype[ArborProxiable] = true
   }
 }

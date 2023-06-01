@@ -7,7 +7,6 @@ export type {
   INode,
   Plugin,
 } from "./Arbor"
-export { default as BaseNode } from "./BaseNode"
 export { default as NodeArrayHandler } from "./NodeArrayHandler"
 export { default as NodeCache } from "./NodeCache"
 export { default as NodeHandler } from "./NodeHandler"

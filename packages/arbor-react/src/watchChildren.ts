@@ -1,24 +1,14 @@
-import {
-  ArborNode,
-  BaseNode,
-  isNode,
-  MutationEvent,
-  Repository,
-} from "@arborjs/store"
+import { ArborNode, isNode, MutationEvent, Repository } from "@arborjs/store"
 import { watchPaths } from "./watchPaths"
 
 export type NodeProps<T> = T extends Function
   ? never
-  : T extends BaseNode<infer D>
-  ? keyof Omit<D, keyof BaseNode<object>>
   : T extends object
   ? keyof T
   : never
 
 export type ChildrenNodeProps<T> = {
-  [K in keyof T]: T extends BaseNode<infer D>
-    ? NodeProps<T[NodeProps<Omit<T, keyof BaseNode<D>>>]>
-    : T extends Array<infer D>
+  [K in keyof T]: T extends Array<infer D>
     ? NodeProps<D>
     : T extends Repository<infer D>
     ? NodeProps<D>
