@@ -1,10 +1,11 @@
 import {
   Arbor,
   ArborNode,
-  INode,
   MutationEvent,
+  isArborNode,
   isNode,
   isProxiable,
+  path,
 } from "@arborjs/store"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -75,25 +76,20 @@ function useArbor<T extends object>(
     if (target instanceof Arbor) return target
     if (isNode<T>(target)) return target.$tree
     return new Arbor<T>(target as T)
-    // TODO: Revisit this decision on whether or not we'd like to recompute the
-    // store whenever the target memory reference changes.
+    // NOTE: useArbor has a similar behavior as the one of useState where
+    // subsequent calls to the hook with new arguments do not create side-effects.
+    // The hook's argument is simply the mechanism in which the hook is initialized
+    // and further state changes must be triggered via mutations.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const targetPath = isNode(target)
-    ? target.$path
-    : (store.state as INode).$path
-
-  const node = useMemo(
-    () => store.getNodeAt(targetPath) as ArborNode<T>,
-    [store, targetPath]
-  )
-
+  const node = isArborNode<T>(target) ? target : store.state
+  const targetPath = path(node)
   const [state, setState] = useState(node)
 
   const update = useCallback(
     (event: MutationEvent) => {
-      const nextState = store.getNodeAt(targetPath) as ArborNode<T>
+      const nextState = store.getNodeAt<T>(targetPath)
 
       if (nextState !== state && watcher(state, event)) {
         setState(nextState)
