@@ -1,12 +1,12 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
 import { Proxiable } from "./Arbor"
-import { ArborProxiable, isProxiable } from "./guards"
+import { ArborProxiable, isNode, isProxiable } from "./guards"
 
-class NotProxiable {}
-class Users extends Array {}
 @Proxiable()
 class User {}
+class NotProxiable {}
+class Users extends Array {}
 class ProxiableType {
   [ArborProxiable] = true
 }
@@ -45,5 +45,15 @@ describe("isProxiable", () => {
     expect(isProxiable(new Number(2))).toBe(false)
     expect(isProxiable(new Boolean(true))).toBe(false)
     expect(isProxiable(new Boolean(false))).toBe(false)
+  })
+})
+
+describe("isNode", () => {
+  it("checks whether or not a given value is an Arbor Node", () => {
+    expect(isNode(null)).toEqual(false)
+    expect(isNode(undefined)).toEqual(false)
+    expect(isNode({})).toEqual(false)
+    expect(isNode({ $unwrap: "not a function" })).toEqual(false)
+    expect(isNode({ $unwrap() {} })).toEqual(true)
   })
 })
