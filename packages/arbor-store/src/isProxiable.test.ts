@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
 import { Proxiable } from "./Arbor"
-import isProxiable, { ArborProxiable } from "./isProxiable"
+import { ArborProxiable, isProxiable } from "./guards"
 
 class NotProxiable {}
 class Users extends Array {}

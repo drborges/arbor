@@ -10,7 +10,7 @@ import {
   ValueAlreadyBoundError,
 } from "./errors"
 
-import { ArborProxiable } from "./isProxiable"
+import { ArborProxiable } from "./guards"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 describe("Arbor", () => {
