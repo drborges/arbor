@@ -1,4 +1,5 @@
 import { ArborNode } from "./Arbor"
+import Path from "./Path"
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import isNode from "./isNode"
 
@@ -59,7 +60,7 @@ export function merge<T extends object>(
     }
   })
 
-  return node.$tree.getNodeAt(node.$path) as ArborNode<T>
+  return node.$tree.getNodeAt(node.$path)
 }
 
 /**
@@ -68,7 +69,7 @@ export function merge<T extends object>(
  * @param node the node to determine the path for.
  * @returns the path of the node within the state tree.
  */
-export function path<T extends object>(node: ArborNode<T>) {
+export function path<T extends object>(node: ArborNode<T>): Path {
   if (!isNode<T>(node)) {
     throw new NotAnArborNodeError()
   }

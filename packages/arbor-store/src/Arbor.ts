@@ -282,8 +282,8 @@ export default class Arbor<T extends object = object> {
    * @param path the path of the node to be retrieved.
    * @returns the node at the given path.
    */
-  getNodeAt<V extends object>(path: Path): INode<V> {
-    return path.walk(this.#root) as INode<V>
+  getNodeAt<V extends object>(path: Path) {
+    return path.walk(this.#root) as ArborNode<V>
   }
 
   /**
@@ -292,7 +292,7 @@ export default class Arbor<T extends object = object> {
    * @param value the value to be used as the root of the state tree.
    * @returns the root node.
    */
-  setState(value: T): INode<T> {
+  setState(value: T): ArborNode<T> {
     const previous = this.#root?.$unwrap()
     const current = this.createNode(
       Path.root,
@@ -349,7 +349,7 @@ export default class Arbor<T extends object = object> {
   isDetached(node: ArborNode<object>) {
     if (!isNode(node)) return true
 
-    const reloadedNode = this.getNodeAt(node.$path)
+    const reloadedNode = this.getNodeAt<INode>(node.$path)
 
     // Node no longer exists within the state tree
     if (!reloadedNode) return true
