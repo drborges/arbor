@@ -1,4 +1,4 @@
-import { Arbor, INode, Plugin } from "@arborjs/store"
+import { Arbor, Plugin, unwrap } from "@arborjs/store"
 
 const sliceObject = (obj: object, props: string[]) =>
   Object.fromEntries(
@@ -20,9 +20,7 @@ export default class Logger<T extends object> implements Plugin<T> {
       const { operation, props } = metadata
 
       const previousValue = mutationPath.walkObj(state.previous || {}) as T
-      const currentValue = mutationPath.walk(
-        (state.current as INode).$unwrap()
-      ) as T
+      const currentValue = mutationPath.walk(unwrap(state.current)) as T
 
       const isPropDeletion = operation === "delete"
       const previous = sliceObject(previousValue || {}, props)

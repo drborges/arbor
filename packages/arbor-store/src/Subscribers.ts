@@ -10,6 +10,10 @@ export type Unsubscribe = () => void
  * Describes a mutation event passed to subscribers
  */
 export type MutationEvent = {
+  // TODO: consider not exposing reactive state to plugins.
+  // If plugins wish to trigger mutations, perhaps it's a
+  // better idea to be explicit, and retrieve the node to
+  // mutate from the state tree.
   state: { current?: object; previous?: object }
   mutationPath: Path
   metadata: MutationMetadata
