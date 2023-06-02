@@ -67,7 +67,11 @@ function useArbor<T extends object>(
   target: ArborNode<T> | Arbor<T> | T,
   watcher: Watcher<T> = watchAny()
 ): ArborNode<T> {
-  if (!(target instanceof Arbor) && !isNode(target) && !isProxiable(target)) {
+  if (
+    !(target instanceof Arbor) &&
+    !isArborNode(target) &&
+    !isProxiable(target)
+  ) {
     throw new Error(
       "useArbor must be initialized with either an instance of Arbor or a proxiable object"
     )

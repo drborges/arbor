@@ -1,4 +1,4 @@
-import { ArborNode, isNode, MutationEvent } from "@arborjs/store"
+import { ArborNode, isArborNode, MutationEvent } from "@arborjs/store"
 
 const parsePathPattern = (pathPattern: string): [RegExp, string | null] => {
   const processedWildcards = pathPattern.replace(/:\w+/g, ".*")
@@ -18,7 +18,7 @@ export function watchPaths(...patterns: string[]) {
   const parsedPatterns = patterns.map(parsePathPattern)
 
   return <T extends object>(node: ArborNode<T>, event: MutationEvent) => {
-    if (!isNode(node)) return false
+    if (!isArborNode(node)) return false
     if (!event.mutationPath.affects(node)) return false
 
     return parsedPatterns.some(([regex, prop]) => {

@@ -1,4 +1,4 @@
-import { ArborNode, isNode, MutationEvent } from "@arborjs/store"
+import { ArborNode, isArborNode, MutationEvent, path } from "@arborjs/store"
 import { ChildrenNodeProps, NodeProps } from "./watchChildren"
 import { watchPaths } from "./watchPaths"
 
@@ -19,8 +19,8 @@ export function watchChild<T extends object>(
   ...props: ChildrenNodeProps<T>[]
 ) {
   return (node: ArborNode<T>, event: MutationEvent) => {
-    if (!isNode(node)) return false
-    const childPath = node.$path.child(String(childKey))
+    if (!isArborNode(node)) return false
+    const childPath = path(node).child(String(childKey))
     const potentialChildPath = event.mutationPath.child(event.metadata.props[0])
     if (potentialChildPath.targets(childPath)) return true
 
