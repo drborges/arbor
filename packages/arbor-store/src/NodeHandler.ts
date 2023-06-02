@@ -3,7 +3,7 @@ import NodeCache from "./NodeCache"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
 import { NotAnArborNodeError } from "./errors"
-import isNode from "./isNode"
+import isNode from "./guards"
 import isProxiable from "./isProxiable"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]

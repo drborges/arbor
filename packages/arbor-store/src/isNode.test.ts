@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import isNode from "./isNode"
+import isNode from "./guards"
 
 describe("isNode", () => {
   it("checks whether or not a given value is an Arbor Node", () => {

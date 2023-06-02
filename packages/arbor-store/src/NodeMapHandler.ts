@@ -1,7 +1,7 @@
 import { INode } from "./Arbor"
 import NodeHandler from "./NodeHandler"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
-import isNode from "./isNode"
+import isNode from "./guards"
 import isProxiable from "./isProxiable"
 
 export default class NodeMapHandler<
