@@ -63,7 +63,7 @@ function useArbor<T extends object>(
  * @returns the current state of the Arbor state tree.
  */
 function useArbor<T extends object>(
-  target: ArborNode<T> | Arbor | T,
+  target: ArborNode<T> | Arbor<T> | T,
   watcher: Watcher<T> = watchAny()
 ): ArborNode<T> {
   if (!(target instanceof Arbor) && !isNode(target) && !isProxiable(target)) {
@@ -73,20 +73,19 @@ function useArbor<T extends object>(
   }
   const store = useMemo(() => {
     if (target instanceof Arbor) return target
-    if (isNode(target)) return target.$tree
+    if (isNode<T>(target)) return target.$tree
     return new Arbor<T>(target as T)
     // TODO: Revisit this decision on whether or not we'd like to recompute the
     // store whenever the target memory reference changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const targetPath = useMemo(
-    () => (isNode(target) ? target.$path : (store.state as INode).$path),
-    [store, target]
-  )
+  const targetPath = isNode(target)
+    ? target.$path
+    : (store.state as INode).$path
 
   const node = useMemo(
-    () => store.getNodeAt(targetPath) as INode<T>,
+    () => store.getNodeAt(targetPath) as ArborNode<T>,
     [store, targetPath]
   )
 
@@ -94,7 +93,7 @@ function useArbor<T extends object>(
 
   const update = useCallback(
     (event: MutationEvent) => {
-      const nextState = store.getNodeAt(targetPath) as INode<T>
+      const nextState = store.getNodeAt(targetPath) as ArborNode<T>
 
       if (nextState !== state && watcher(state, event)) {
         setState(nextState)
@@ -103,12 +102,9 @@ function useArbor<T extends object>(
     [state, store, targetPath, watcher]
   )
 
-  useEffect(
-    () => store.subscribeTo(state as ArborNode<T>, update),
-    [state, store, update]
-  )
+  useEffect(() => store.subscribeTo(state, update), [state, store, update])
 
-  return state as ArborNode<T>
+  return state
 }
 
 export default useArbor
