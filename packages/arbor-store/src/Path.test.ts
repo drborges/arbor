@@ -137,12 +137,16 @@ describe("Path", () => {
 
     it("checks if a path targets a given ArborNode", () => {
       const node1 = {
-        $unwrap() {},
+        get $tree() {
+          return new Arbor({})
+        },
         $path: Path.parse("/users"),
       } as ArborNode<object>
 
       const node2 = {
-        $unwrap() {},
+        get $tree() {
+          return new Arbor({})
+        },
         $path: Path.parse("/users/123"),
       } as ArborNode<object>
 
@@ -164,12 +168,16 @@ describe("Path", () => {
   describe("#affects", () => {
     it("checks if a path affects a given node", () => {
       const node1 = {
-        $unwrap() {},
+        get $tree() {
+          return new Arbor({})
+        },
         $path: Path.parse("/users"),
       } as ArborNode<object>
 
       const node2 = {
-        $unwrap() {},
+        get $tree() {
+          return new Arbor({})
+        },
         $path: Path.parse("/users/123"),
       } as ArborNode<object>
 

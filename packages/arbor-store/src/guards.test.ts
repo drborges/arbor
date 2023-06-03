@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
-import { Proxiable } from "./Arbor"
+import Arbor, { Proxiable } from "./Arbor"
 import { ArborProxiable, isNode, isProxiable } from "./guards"
 
 @Proxiable()
@@ -53,7 +53,13 @@ describe("isNode", () => {
     expect(isNode(null)).toEqual(false)
     expect(isNode(undefined)).toEqual(false)
     expect(isNode({})).toEqual(false)
-    expect(isNode({ $unwrap: "not a function" })).toEqual(false)
-    expect(isNode({ $unwrap() {} })).toEqual(true)
+    expect(isNode({ $tree: "not an Arbor instance" })).toEqual(false)
+    expect(
+      isNode({
+        get $tree() {
+          return new Arbor({})
+        },
+      })
+    ).toEqual(true)
   })
 })
