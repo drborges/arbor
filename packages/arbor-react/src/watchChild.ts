@@ -18,7 +18,7 @@ export function watchChild<T extends object>(
   childKey: WatchableProps<T>,
   ...props: ChildrenNodeProps<T>[]
 ) {
-  return (node: ArborNode<T>, event: MutationEvent) => {
+  return (node: ArborNode<T>, event: MutationEvent<T>) => {
     if (!isArborNode(node)) return false
     const childPath = path(node).child(String(childKey))
     const potentialChildPath = event.mutationPath.child(event.metadata.props[0])

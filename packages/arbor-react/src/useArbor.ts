@@ -13,7 +13,7 @@ import { watchAny } from "./watchAny"
 
 export type Watcher<T extends object> = (
   target: ArborNode<T>,
-  event: MutationEvent
+  event: MutationEvent<T>
 ) => boolean
 
 function useArbor<T extends object>(
@@ -92,7 +92,7 @@ function useArbor<T extends object>(
   const [state, setState] = useState(node)
 
   const update = useCallback(
-    (event: MutationEvent) => {
+    (event: MutationEvent<T>) => {
       const nextState = store.getNodeAt<T>(targetPath)
 
       if (nextState !== state && watcher(state, event)) {

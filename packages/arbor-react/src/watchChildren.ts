@@ -24,7 +24,7 @@ export type ChildrenNodeProps<T> = {
 export function watchChildren<T extends object>(
   ...props: ChildrenNodeProps<T>[]
 ) {
-  return (node: ArborNode<T>, event: MutationEvent) => {
+  return (node: ArborNode<T>, event: MutationEvent<T>) => {
     if (!isArborNode(node)) return false
     if (event.mutationPath.targets(node)) return true
     const nodePath = path(node)

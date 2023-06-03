@@ -1,7 +1,9 @@
 import { INode } from "./Arbor"
 import { MutationEvent } from "./Subscribers"
 
-export function notifyAffectedSubscribers(event: MutationEvent) {
+export function notifyAffectedSubscribers<T extends object>(
+  event: MutationEvent<T>
+) {
   const root = event.state.current as INode
   root.$subscribers.notify(event)
 
