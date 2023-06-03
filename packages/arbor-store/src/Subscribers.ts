@@ -15,7 +15,7 @@ export type MutationEvent<T extends object> = {
   // If plugins wish to trigger mutations, perhaps it's a
   // better idea to be explicit, and retrieve the node to
   // mutate from the state tree.
-  store: Arbor
+  store: Arbor<T>
   state: { current?: T; previous?: T }
   mutationPath: Path
   metadata: MutationMetadata
