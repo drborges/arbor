@@ -236,8 +236,9 @@ export default class Arbor<T extends object = object> {
     this.#root = result?.root
 
     notifyAffectedSubscribers({
+      store: this,
       state: {
-        current: result?.root,
+        current: result?.root?.$unwrap(),
         get previous() {
           return JSON.parse(previousState) as T
         },
@@ -302,6 +303,7 @@ export default class Arbor<T extends object = object> {
     this.#root = current
 
     notifyAffectedSubscribers({
+      store: this,
       state: { current, previous },
       mutationPath: Path.root,
       metadata: {

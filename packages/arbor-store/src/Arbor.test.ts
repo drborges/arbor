@@ -825,7 +825,9 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.current).toBe(
+        unwrap(store.state)
+      )
       expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
       expect(store.state.todos.get("abc")).not.toBe(todosMap.get("abc"))
@@ -908,7 +910,9 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.current).toBe(
+        unwrap(store.state)
+      )
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
@@ -938,7 +942,9 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("clear")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.current).toBe(
+        unwrap(store.state)
+      )
       expect(store.state.todos.get("123")).toBeUndefined()
       expect(store.state.todos.get("abc")).toBeUndefined()
     })

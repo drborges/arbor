@@ -4,7 +4,7 @@ import { MutationEvent } from "./Subscribers"
 export function notifyAffectedSubscribers<T extends object>(
   event: MutationEvent<T>
 ) {
-  const root = event.state.current as INode
+  const root = event.store.state as INode
   root.$subscribers.notify(event)
 
   event.mutationPath.props.reduce((parent: INode, prop: string) => {

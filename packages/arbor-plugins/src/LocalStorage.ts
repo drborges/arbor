@@ -1,4 +1,4 @@
-import { Arbor, ArborNode, Plugin, unwrap } from "@arborjs/store"
+import { Arbor, Plugin } from "@arborjs/store"
 
 import debounce from "./debounce"
 
@@ -54,8 +54,7 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
     }
 
     store.subscribe(({ state }) => {
-      const node = state.current as ArborNode<T>
-      void this.update(unwrap(node))
+      void this.update(state.current)
     })
   }
 
