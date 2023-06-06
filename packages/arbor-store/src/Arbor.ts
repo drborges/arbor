@@ -9,7 +9,6 @@ import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { ArborProxiable, isNode } from "./guards"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
-import { getUUID, setUUID } from "./uuid"
 
 /**
  * Decorates a class marking it as Arbor proxiable, allowing
@@ -268,11 +267,6 @@ export default class Arbor<T extends object = object> {
     const handler = new Handler(this, path, value, children, subscribers)
     const node = new Proxy<V>(value, handler)
 
-    // UUIDs are used to track nodes across mutations, enabling Arbor to tell
-    // if a node has been removed from the state tree, replaced or moved to
-    // a different path.
-    setUUID(value)
-
     return node as INode<V>
   }
 
@@ -357,7 +351,7 @@ export default class Arbor<T extends object = object> {
 
     const reloadedValue = reloadedNode.$unwrap()
     const value = node.$unwrap()
-    if (getUUID(value) === getUUID(reloadedValue)) return false
+    if (value === reloadedValue) return false
     if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(`Stale node pointing to path ${node.$path.toString()}`)
