@@ -1,3 +1,5 @@
+import { MutationEvent } from "@arborjs/store"
+
 import Storage from "./Storage"
 
 /**
@@ -9,10 +11,11 @@ export interface Config<T extends object> {
    */
   key: string
   /**
-   * Amount in milliseconds to debouce by local storage updates.
+   * Period in milliseconds after an update is processed in which
+   * new updates are ignored.
    *
-   * This can be used to reduce the frequency in which data is written
-   * back to local storage.
+   * This helps ensure that the local storage gets updated at most once
+   * every so often based on the configured debounce period.
    */
   debounceBy?: number
   /**
@@ -39,40 +42,37 @@ export interface Config<T extends object> {
  * application state to be preserved across browser refreshes/sessions.
  */
 export default class LocalStorage<T extends object> extends Storage<T> {
-  /**
-   * Creates a new instance of the LocalStorage backend.
-   *
-   * @param key the key to be used in LocalStorage to reference the serialized state.
-   */
-  constructor(config: Config<T>) {
-    super({
-      debounceBy: config.debounceBy,
+  constructor(readonly config: Config<T>) {
+    super(config)
+  }
 
-      load: () => {
-        return new Promise<T>((resolve, reject) => {
-          try {
-            const data = window.localStorage.getItem(config.key) || "null"
-            const deserialize =
-              config.deserialize || (JSON.parse as typeof config.deserialize)
+  load() {
+    return new Promise<T>((resolve, reject) => {
+      try {
+        const data = window.localStorage.getItem(this.config.key) || "null"
+        const deserialize =
+          this.config.deserialize ||
+          (JSON.parse as typeof this.config.deserialize)
 
-            resolve(deserialize(data))
-          } catch (e) {
-            reject(e)
-          }
-        })
-      },
+        resolve(deserialize(data))
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
 
-      update: (data: T): Promise<void> => {
-        return new Promise((resolve, reject) => {
-          try {
-            const serialize = config.serialize || JSON.stringify
-            window.localStorage.setItem(config.key, serialize(data))
-            resolve()
-          } catch (e) {
-            reject(e)
-          }
-        })
-      },
+  update(event: MutationEvent<T>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const serialize = this.config.serialize || JSON.stringify
+        window.localStorage.setItem(
+          this.config.key,
+          serialize(event.state.current)
+        )
+        resolve()
+      } catch (e) {
+        reject(e)
+      }
     })
   }
 }

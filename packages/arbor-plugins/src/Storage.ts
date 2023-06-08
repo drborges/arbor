@@ -1,24 +1,16 @@
-import { Arbor, Plugin } from "@arborjs/store"
+import { Arbor, MutationEvent, Plugin } from "@arborjs/store"
 
 import debounce from "./debounce"
 
 export interface Config<T extends object> {
   /**
-   * Amount in milliseconds to debouce by updates.
+   * Period in milliseconds after an update is processed in which
+   * new updates are ignored.
+   *
+   * This helps ensure that the storage gets updated at most once
+   * every so often based on the configured debounce period.
    */
   debounceBy?: number
-  /**
-   * Loads an Arbor store's state from a persistent storage.
-   *
-   * @returns the data to initialize the Arbor store.
-   */
-  load(): Promise<T>
-  /**
-   * Persists the state of the Arbor store into a storage.
-   *
-   * @param state the state to be persisted.
-   */
-  update(state: T): Promise<void>
 }
 
 /**
@@ -31,14 +23,8 @@ export interface Config<T extends object> {
  * More specific storage implementations can extend this base class in order
  * to provide the persistency logic.
  */
-export default class Storage<T extends object> implements Plugin<T> {
-  protected deboucedUpdate: (data: T) => void
-
-  constructor(readonly config: Config<T>) {
-    this.deboucedUpdate = debounce((data: T) => {
-      config.update(data)
-    }, config.debounceBy)
-  }
+export default abstract class Storage<T extends object> implements Plugin<T> {
+  constructor(readonly config: Config<T>) {}
 
   /**
    * Initializes the plugin hooking into the given Arbor store.
@@ -52,14 +38,29 @@ export default class Storage<T extends object> implements Plugin<T> {
    * @param store the store to plug into.
    */
   async configure(store: Arbor<T>) {
-    const data = await this.config.load()
+    const data = await this.load()
 
     if (data && typeof data === "object") {
       store.setState(data)
     }
 
-    store.subscribe(({ state }) => {
-      void this.deboucedUpdate(state.current)
-    })
+    store.subscribe(this.deboucedUpdate)
   }
+  /**
+   * Provides the means to load data from the storage into the Arbor store.
+   *
+   * @returns a promise that resolves with the storage data.
+   */
+  abstract load(): Promise<T>
+  /**
+   * Updates the storage whenever a mutation to the store is made.
+   *
+   * @param event an Arbor store mutation event to handle.
+   */
+  abstract update(event: MutationEvent<T>): Promise<void>
+
+  private deboucedUpdate = debounce(
+    this.update.bind(this),
+    this.config.debounceBy
+  )
 }
