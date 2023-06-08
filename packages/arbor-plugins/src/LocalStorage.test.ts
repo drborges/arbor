@@ -3,6 +3,10 @@ import { Arbor } from "@arborjs/store"
 import LocalStorage from "./LocalStorage"
 
 describe("LocalStorage", () => {
+  beforeEach(() => {
+    window.localStorage.removeItem("the-key")
+  })
+
   it("initializes a given store with data retrieved from the local storage", async () => {
     const store = new Arbor({ text: "" })
     const plugin = new LocalStorage({ key: "the-key" })
@@ -12,16 +16,16 @@ describe("LocalStorage", () => {
       JSON.stringify({ text: "the app state" })
     )
 
-    await plugin.configure(store)
+    await store.use(plugin)
 
     expect(store.state.text).toEqual("the app state")
   })
 
-  it("updates the storage upon changes to the store", async () => {
+  it("updates the local storage upon changes to the store", async () => {
     const store = new Arbor({ text: "some initial state" })
     const plugin = new LocalStorage({ key: "the-key" })
 
-    await plugin.configure(store)
+    await store.use(plugin)
 
     return new Promise<void>((resolve) => {
       store.subscribe(() => {
@@ -40,7 +44,7 @@ describe("LocalStorage", () => {
     const plugin = new LocalStorage<{ text: string }>({
       key: "the-key",
       deserialize: (data) => ({
-        text: `!!${data.text}!!`,
+        text: `!!${JSON.parse(data).text}!!`,
       }),
     })
 
@@ -54,5 +58,34 @@ describe("LocalStorage", () => {
     await plugin.configure(store)
 
     expect(store.state.text).toEqual("!!the app state!!")
+  })
+
+  it("supports custom serialization logic", async () => {
+    const plugin = new LocalStorage<{ text: string }>({
+      key: "the-key",
+      serialize(data) {
+        return `text|${data.text}`
+      },
+      deserialize(data) {
+        return {
+          text: data.split("|")[1],
+        }
+      },
+    })
+
+    const store = new Arbor({ text: "some initial state" })
+    await store.use(plugin)
+
+    store.state.text = "Hello World!"
+
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        expect(window.localStorage.getItem("the-key")).toEqual(
+          "text|Hello World!"
+        )
+
+        resolve()
+      }, 500)
+    })
   })
 })

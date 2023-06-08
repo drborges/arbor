@@ -9,7 +9,7 @@ export interface Config<T extends object> {
   key: string
 
   /**
-   * Amount of milliseconds to debouce update calls by.
+   * Amount in milliseconds to debouce by local storage updates.
    *
    * This can be used to reduce the frequency in which data is written
    * back to local storage.
@@ -17,11 +17,21 @@ export interface Config<T extends object> {
   debounceBy?: number
 
   /**
-   * Used to deserialize the data retrieved from local storage.
+   * Serializes some data structure into its string representation to be
+   * stored in the browser's local storage.
    *
-   * This can be used to convert plain objects into user defined data models.
+   * @param data the data to serialize.
+   * @returns the string representation of the data.
    */
-  deserialize?: (data: T) => T
+  serialize?: (data: T) => string
+
+  /**
+   * Deserializes the data retrieved from local storage.
+   *
+   * @param serialized the serialized data structure retrieved from local storage.
+   * @returns the deserialized version of the data.
+   */
+  deserialize?: (serialized: string) => T
 }
 
 /**
@@ -40,17 +50,24 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
    */
   constructor(readonly config: Config<T>) {
     this.deboucedUpdate = debounce((data: T) => {
-      window.localStorage.setItem(this.config.key, JSON.stringify(data))
+      const serialize =
+        config.serialize || (JSON.stringify as typeof config.serialize)
+
+      window.localStorage.setItem(this.config.key, serialize(data))
     }, config.debounceBy)
   }
 
+  /**
+   * Runs the plugin's configuration/initialization logic.
+   *
+   * @param store the Arbor store to apply the plugin to.
+   * @returns a Promise that resolves when configuration logic completes.
+   */
   async configure(store: Arbor<T>) {
     const data = await this.load()
-    const deserialize = this.config.deserialize || (() => data)
-    const deserialized = deserialize(data)
 
-    if (deserialized && typeof deserialized === "object") {
-      store.setState(deserialized)
+    if (data && typeof data === "object") {
+      store.setState(data)
     }
 
     store.subscribe(({ state }) => {
@@ -66,9 +83,12 @@ export default class LocalStorage<T extends object> implements Plugin<T> {
   async load(): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       try {
-        resolve(
-          JSON.parse(window.localStorage.getItem(this.config.key) || null) as T
-        )
+        const data = window.localStorage.getItem(this.config.key) || "null"
+        const deserialize =
+          this.config.deserialize ||
+          (JSON.parse as typeof this.config.deserialize)
+
+        resolve(deserialize(data))
       } catch (e) {
         reject(e)
       }
