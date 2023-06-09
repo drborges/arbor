@@ -1,7 +1,7 @@
 import { LocalStorage, Logger } from "@arborjs/plugins"
-import { Arbor, Repository, useArbor } from "@arborjs/react"
+import { Arbor, useArbor } from "@arborjs/react"
 
-import { Todo } from "./useTodos"
+import { Repository, Todo } from "./useTodos"
 
 export type FilterValue = "all" | "completed" | "active"
 
@@ -26,7 +26,7 @@ export const complete = () => (store.state.value = "completed")
 export const select = (filter: FilterValue) => (store.state.value = filter)
 
 export const filterTodos = (repo: Repository<Todo>, filter: FilterValue) => {
-  const todos = Object.values(repo)
+  const todos = Array.from(repo.values())
   return filter === "all"
     ? todos
     : todos.filter((todo) => todo.status === filter)

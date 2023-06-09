@@ -2,7 +2,6 @@
 /* eslint-disable max-classes-per-file */
 import Arbor, { ArborNode, Proxiable } from "./Arbor"
 import Path from "./Path"
-import Repository from "./Repository"
 import {
   ArborError,
   DetachedNodeError,
@@ -1037,45 +1036,6 @@ describe("Arbor", () => {
       todo.text = "House cleaned"
 
       expect(store.state.get("abc")!.text).toBe("House cleaned")
-    })
-  })
-
-  describe("Example: Repository of nodes", () => {
-    it("provides an iteratable key value store to make it easier to track nodes", () => {
-      @Proxiable()
-      class Todo {
-        uuid: string
-        text: string
-
-        constructor(data: Partial<Todo>) {
-          Object.assign(this, data)
-        }
-      }
-
-      const store = new Arbor(
-        new Repository(
-          new Todo({ uuid: "1", text: "Clean the house" }),
-          new Todo({ uuid: "2", text: "Walk the dogs" })
-        )
-      )
-
-      const todo1 = store.state["1"]
-      // A Repository even though is a key-value store, it is also
-      // iterable just like arrays, thus destructuring repositories
-      // will yield an array
-      const todos = [...store.state]
-
-      expect(todos[0]).toBe(store.state["1"])
-      expect(todos[1]).toBe(store.state["2"])
-
-      todos[0].text = "Clean the living room"
-
-      expect(todo1.text).toEqual("Clean the living room")
-      expect(store.state).toBeInstanceOf(Repository)
-      expect(store.state["1"]).toEqual({
-        uuid: "1",
-        text: "Clean the living room",
-      })
     })
   })
 

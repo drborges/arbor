@@ -1,15 +1,12 @@
 import { LocalStorage, Logger } from "@arborjs/plugins"
 import {
   Arbor,
+  ArborNode,
   ArborProxiable,
-  Repository,
   detach,
   useArbor,
 } from "@arborjs/react"
 import { v4 as uuid } from "uuid"
-
-import { store as storeFilter } from "./useTodosFilter"
-import { watchTodosFilteredBy } from "./watchers/watchTodosFilteredBy"
 
 export type Status = "completed" | "active"
 
@@ -24,15 +21,15 @@ export class Todo {
     Object.assign(this, data)
   }
 
-  static add(text: string) {
+  static add(text: string): ArborNode<Todo> {
     const todo = new Todo({
       text,
       status: "active",
     })
 
-    store.state[todo.uuid] = todo
+    store.state.set(todo.uuid, todo)
 
-    return todo
+    return store.state.get(todo.uuid)
   }
 
   delete() {
@@ -56,13 +53,36 @@ export class Todo {
   }
 }
 
+export type Record = {
+  uuid: string
+}
+
+export class Repository<T extends Record> extends Map<string, T> {
+  constructor(...records: T[]) {
+    super()
+
+    records.forEach((record) => {
+      this.set(record.uuid, record)
+    })
+  }
+
+  add(record: T) {
+    this.set(record.uuid, record)
+  }
+
+  map<K>(transform: (record: T) => K) {
+    return Array.from(this.values()).map(transform)
+  }
+}
+
 export const store = new Arbor(new Repository<Todo>())
 
 const persistence = new LocalStorage<Repository<Todo>>({
   key: "TodoApp.todos",
   debounceBy: 300,
-  deserialize: (todos: Repository<Todo>) => {
-    const items = Object.values(todos || {}) as Partial<Todo>[]
+  deserialize: (data: string) => {
+    const parsed: Repository<Todo> = JSON.parse(data)
+    const items = Object.values(parsed || {}) as Partial<Todo>[]
     const todoItems = items.map((item) => new Todo(item))
     return new Repository<Todo>(...todoItems)
   },
@@ -72,6 +92,5 @@ store.use(new Logger("Todos"))
 store.use(persistence)
 
 export default function useTodos() {
-  useArbor(store.state, watchTodosFilteredBy(storeFilter.state.value))
-  return store.state
+  return useArbor(store)
 }

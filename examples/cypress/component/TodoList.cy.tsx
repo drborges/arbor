@@ -1,7 +1,7 @@
-import { Repository } from "@arborjs/store"
 import React from "react"
 
 import TodoListApp, { store } from "../../react-todo/App"
+import { Repository } from "../../react-todo/store/useTodos"
 
 describe("TodoList", () => {
   beforeEach(() => {
@@ -64,7 +64,7 @@ describe("TodoList", () => {
     cy.findByText("All")
       .click()
       .then(() => {
-        const todos = [...store.state]
+        const todos = Array.from(store.state.values())
         cy.findByTestId(`todo-${todos[0].id}`).within(() => {
           cy.findByText("Edit").click()
           cy.focused().type("... again...").blur()
