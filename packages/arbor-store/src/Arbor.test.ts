@@ -1025,6 +1025,19 @@ describe("Arbor", () => {
 
       expect(node).toBe(store.state.todos.get("123"))
     })
+
+    it("traverses children nodes successfully when notifying about mutations", () => {
+      const todosMap = new Map<string, { text: string }>()
+      todosMap.set("123", { text: "Walk the dogs" })
+      todosMap.set("abc", { text: "Clean the house" })
+
+      const store = new Arbor(todosMap)
+      const todo = store.state.get("abc")!
+
+      todo.text = "House cleaned"
+
+      expect(store.state.get("abc")!.text).toBe("House cleaned")
+    })
   })
 
   describe("Example: Repository of nodes", () => {
