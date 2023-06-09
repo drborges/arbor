@@ -40,6 +40,15 @@ export interface Config<T extends object> {
  *
  * This provides LocalStorage-based persistence to Arbor state trees allowing
  * application state to be preserved across browser refreshes/sessions.
+ *
+ * @example
+ *
+ * ```ts
+ * store.use(new LocalStorage({
+ *   key: "MyAppState",
+ *   debounceBy: 100,
+ * }))
+ * ```
  */
 export default class LocalStorage<T extends object> extends Storage<T> {
   constructor(readonly config: Config<T>) {

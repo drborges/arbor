@@ -118,7 +118,7 @@ export interface Plugin<T extends object> {
    * @returns a resolved promise that resolves when the plugin completes its
    * initialization. In case of an error, the promise is rejected.
    */
-  configure(store: Arbor<T>): Promise<void>
+  configure(store: Arbor<T>): Promise<Unsubscribe>
 }
 
 export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }

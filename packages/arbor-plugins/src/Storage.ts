@@ -29,13 +29,9 @@ export default abstract class Storage<T extends object> implements Plugin<T> {
   /**
    * Initializes the plugin hooking into the given Arbor store.
    *
-   * @example
-   *
-   * ```ts
-   * store.use(new Storage({...}))
-   * ```
-   *
    * @param store the store to plug into.
+   * @returns A promise that resolves with an unsusbcribe function that
+   * can be used to unsubscribe from the given store.
    */
   async configure(store: Arbor<T>) {
     const data = await this.load()
@@ -44,7 +40,7 @@ export default abstract class Storage<T extends object> implements Plugin<T> {
       store.setState(data)
     }
 
-    store.subscribe(this.deboucedUpdate)
+    return store.subscribe(this.deboucedUpdate)
   }
   /**
    * Provides the means to load data from the storage into the Arbor store.
