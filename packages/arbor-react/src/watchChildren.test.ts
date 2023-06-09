@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { Arbor, Proxiable, Repository } from "@arborjs/store"
+import { Arbor, Proxiable } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
@@ -47,26 +47,26 @@ describe("watchChildren", () => {
   })
 
   it("allow watching props of a given object", () => {
-    const store = new Arbor(
-      new Repository({
+    const store = new Arbor({
+      user: {
         uuid: "123",
         name: "Alice",
         age: 30,
-      })
-    )
+      },
+    })
 
     const { result } = renderHook(() => useArbor(store, watchChildren("name")))
 
     expect(result.all.length).toBe(1)
 
     act(() => {
-      store.state["123"].name = "Alice updated"
+      store.state.user.name = "Alice updated"
     })
 
     expect(result.all.length).toBe(2)
 
     act(() => {
-      store.state["123"].age++
+      store.state.user.age++
     })
 
     expect(result.all.length).toBe(2)
