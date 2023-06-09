@@ -1,7 +1,7 @@
 import { ArborNode, MutationEvent } from "@arborjs/store"
 
 export type PropsOf<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any ? never : K
+  [K in keyof T]: T[K] extends (...args: unknown[]) => unknown ? never : K
 }[keyof T]
 
 export function watchNode<T extends object>(...props: PropsOf<T>[]) {

@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
-import { Arbor, Proxiable } from "@arborjs/store"
+import { Arbor } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
-import { watchChildren } from "./watchChildren"
+import { watchItems } from "./watchItems"
 
 interface Post {
   content: string
@@ -19,7 +19,7 @@ interface State {
   users: User[]
 }
 
-describe("watchChildren", () => {
+describe("watchItems of an Array", () => {
   it("does not update if mutation does not target any of the listed children props", () => {
     const store = new Arbor<State>({
       users: [
@@ -29,7 +29,7 @@ describe("watchChildren", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchChildren("name", "age"))
+      useArbor(store.state.users, watchItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -46,64 +46,6 @@ describe("watchChildren", () => {
     expect(result.all.length).toBe(1)
   })
 
-  it("allow watching props of a given object", () => {
-    const store = new Arbor({
-      user: {
-        uuid: "123",
-        name: "Alice",
-        age: 30,
-      },
-    })
-
-    const { result } = renderHook(() => useArbor(store, watchChildren("name")))
-
-    expect(result.all.length).toBe(1)
-
-    act(() => {
-      store.state.user.name = "Alice updated"
-    })
-
-    expect(result.all.length).toBe(2)
-
-    act(() => {
-      store.state.user.age++
-    })
-
-    expect(result.all.length).toBe(2)
-  })
-
-  it("allow watching props of children of a custom node type", () => {
-    @Proxiable()
-    class Preference {
-      email = false
-      sms = false
-    }
-
-    @Proxiable()
-    class User {
-      name: string
-      preference = new Preference()
-    }
-
-    const store = new Arbor(new User())
-
-    const { result } = renderHook(() => useArbor(store, watchChildren("email")))
-
-    expect(result.all.length).toBe(1)
-
-    act(() => {
-      store.state.preference.email = true
-    })
-
-    expect(result.all.length).toBe(2)
-
-    act(() => {
-      store.state.preference.sms = true
-    })
-
-    expect(result.all.length).toBe(2)
-  })
-
   it("updates when mutation targets the node being watched", () => {
     const store = new Arbor<State>({
       users: [
@@ -113,7 +55,7 @@ describe("watchChildren", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchChildren("name", "age"))
+      useArbor(store.state.users, watchItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -134,7 +76,7 @@ describe("watchChildren", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchChildren("name", "age"))
+      useArbor(store.state.users, watchItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -164,7 +106,7 @@ describe("watchChildren", () => {
     expect(result.all.length).toBe(5)
   })
 
-  it("updates if child node is detached from the state tree", () => {
+  it("updates when child node is detached from the state tree", () => {
     const store = new Arbor<State>({
       users: [
         { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
@@ -173,7 +115,7 @@ describe("watchChildren", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchChildren())
+      useArbor(store.state.users, watchItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -194,7 +136,7 @@ describe("watchChildren", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchChildren())
+      useArbor(store.state.users, watchItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -219,7 +161,7 @@ describe("watchChildren", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchChildren())
+      useArbor(store.state.users, watchItems())
     )
 
     expect(result.all.length).toBe(1)
