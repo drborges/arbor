@@ -24,6 +24,22 @@ export default class NodeMapHandler<
     }
   }
 
+  deleteProperty(target: Map<string, T>, prop: string): boolean {
+    const child = target.get(prop)
+
+    this.$children.delete(child)
+    this.$tree.mutate(this, (map) => {
+      map.delete(prop)
+
+      return {
+        props: [prop],
+        operation: "delete",
+      }
+    })
+
+    return child != null
+  }
+
   get(
     target: Map<unknown, T>,
     prop: string,
@@ -75,19 +91,11 @@ export default class NodeMapHandler<
 
     if (prop === "delete") {
       return (key: string) => {
-        const node = target.get(key)
+        const child = target.get(key)
 
-        this.$children.delete(node)
-        this.$tree.mutate(this, (map) => {
-          map.delete(key)
+        delete proxy[key]
 
-          return {
-            props: [key],
-            operation: "delete",
-          }
-        })
-
-        return node != null
+        return child != null
       }
     }
 

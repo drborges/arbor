@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import Arbor, { Proxiable } from "./Arbor"
+import Arbor, { ArborNode, Proxiable } from "./Arbor"
 import Path from "./Path"
 import Repository from "./Repository"
 import {
@@ -1130,6 +1130,21 @@ describe("Arbor", () => {
         expect(store.state).toEqual({
           todos: [{ id: 2, text: "Walk the dogs" }],
         })
+      })
+
+      it("detaches children from a Map node", () => {
+        const todos = new Map<string, ArborNode<{ text: string }>>()
+        todos.set("a", { text: "Do the dishes" })
+        todos.set("b", { text: "Clean the house" })
+
+        const store = new Arbor(todos)
+
+        const todo = store.state.get("b")!
+        const detachedTodo = detach(todo)
+
+        expect(todos.get("b")).toBeUndefined()
+        expect(store.state.get("b")).toBeUndefined()
+        expect(detachedTodo).toBe(unwrap(todo))
       })
     })
 
