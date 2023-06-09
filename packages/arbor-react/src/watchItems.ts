@@ -3,10 +3,7 @@ import { PropsOf } from "./watchNode"
 import { watchPaths } from "./watchPaths"
 
 export function watchItems<T extends object>(...props: PropsOf<T>[]) {
-  return (
-    node: ArborNode<Map<unknown, T> | Array<T>>,
-    event: MutationEvent<Map<unknown, T> | Array<T>>
-  ) => {
+  return (node: ArborNode<object>, event: MutationEvent<object>) => {
     if (!isArborNode(node)) return false
     if (event.mutationPath.targets(node)) return true
     const nodePath = path(node)

@@ -4,7 +4,7 @@ import { Arbor } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
-import { watchItems } from "./watchItems"
+import { watchMapItems } from "./watchMapItems"
 
 interface Post {
   content: string
@@ -35,7 +35,7 @@ class Users extends Map<string, User> {
   }
 }
 
-describe("watchItems of a Map", () => {
+describe("watchMapItems of a Map", () => {
   it("does not update if mutation does not target any of the listed children props", () => {
     const store = new Arbor<State>({
       users: new Users(
@@ -50,7 +50,7 @@ describe("watchItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems("name", "age"))
+      useArbor(store.state.users, watchMapItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -81,7 +81,7 @@ describe("watchItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems("name", "age"))
+      useArbor(store.state.users, watchMapItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -107,7 +107,7 @@ describe("watchItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems("name", "age"))
+      useArbor(store.state.users, watchMapItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -151,7 +151,7 @@ describe("watchItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems())
+      useArbor(store.state.users, watchMapItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -177,7 +177,7 @@ describe("watchItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems())
+      useArbor(store.state.users, watchMapItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -208,7 +208,7 @@ describe("watchItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems())
+      useArbor(store.state.users, watchMapItems())
     )
 
     expect(result.all.length).toBe(1)

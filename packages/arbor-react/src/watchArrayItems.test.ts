@@ -3,7 +3,7 @@ import { Arbor } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
-import { watchItems } from "./watchItems"
+import { watchArrayItems } from "./watchArrayItems"
 
 interface Post {
   content: string
@@ -19,7 +19,7 @@ interface State {
   users: User[]
 }
 
-describe("watchItems of an Array", () => {
+describe("watchArrayItems of an Array", () => {
   it("does not update if mutation does not target any of the listed children props", () => {
     const store = new Arbor<State>({
       users: [
@@ -29,7 +29,7 @@ describe("watchItems of an Array", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems("name", "age"))
+      useArbor(store.state.users, watchArrayItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -55,7 +55,7 @@ describe("watchItems of an Array", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems("name", "age"))
+      useArbor(store.state.users, watchArrayItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -76,7 +76,7 @@ describe("watchItems of an Array", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems("name", "age"))
+      useArbor(store.state.users, watchArrayItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -115,7 +115,7 @@ describe("watchItems of an Array", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems())
+      useArbor(store.state.users, watchArrayItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -136,7 +136,7 @@ describe("watchItems of an Array", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems())
+      useArbor(store.state.users, watchArrayItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -161,7 +161,7 @@ describe("watchItems of an Array", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchItems())
+      useArbor(store.state.users, watchArrayItems())
     )
 
     expect(result.all.length).toBe(1)
