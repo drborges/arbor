@@ -2,7 +2,7 @@ import { Arbor, MutationEvent, Plugin } from "@arborjs/store"
 
 import debounce from "./debounce"
 
-export interface Config<T extends object> {
+export interface Config {
   /**
    * Period in milliseconds after an update is processed in which
    * new updates are ignored.
@@ -24,7 +24,7 @@ export interface Config<T extends object> {
  * to provide the persistency logic.
  */
 export default abstract class Storage<T extends object> implements Plugin<T> {
-  constructor(readonly config: Config<T>) {}
+  constructor(readonly config: Config) {}
 
   /**
    * Initializes the plugin hooking into the given Arbor store.
