@@ -1,8 +1,4 @@
-export default function debounce(
-  func: Function,
-  wait = 500,
-  immediate = false
-) {
+export default function debounce(func: Function, wait = 0, immediate = false) {
   let timeout: NodeJS.Timeout
 
   return function debounced(...args: unknown[]) {

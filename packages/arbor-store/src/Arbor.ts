@@ -5,12 +5,10 @@ import NodeHandler from "./NodeHandler"
 import NodeMapHandler from "./NodeMapHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
-import { NotAnArborNodeError, StaleNodeError } from "./errors"
-import isNode from "./isNode"
-import { ArborProxiable } from "./isProxiable"
+import { DetachedNodeError, NotAnArborNodeError } from "./errors"
+import { ArborProxiable, isNode } from "./guards"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
-import { getUUID, setUUID } from "./uuid"
 
 /**
  * Decorates a class marking it as Arbor proxiable, allowing
@@ -19,7 +17,7 @@ import { getUUID, setUUID } from "./uuid"
  * @returns Arbor compatiby type.
  */
 export function Proxiable() {
-  return <T extends Function>(target: T, _context: unknown) => {
+  return <T extends Function>(target: T, _context: unknown = null) => {
     target.prototype[ArborProxiable] = true
   }
 }
@@ -102,7 +100,7 @@ export type INode<T extends object = object, K extends object = T> = T & {
    *
    * Subscribers are notified of any mutation event affecting this node.
    */
-  readonly $subscribers: Subscribers
+  readonly $subscribers: Subscribers<T>
 }
 
 export type ArborConfig = {
@@ -120,7 +118,7 @@ export interface Plugin<T extends object> {
    * @returns a resolved promise that resolves when the plugin completes its
    * initialization. In case of an error, the promise is rejected.
    */
-  configure(store: Arbor<T>): Promise<void>
+  configure(store: Arbor<T>): Promise<Unsubscribe>
 }
 
 export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
@@ -224,7 +222,7 @@ export default class Arbor<T extends object = object> {
     // path are considered detatched nodes and cannot be mutated otherwise we risk
     // computing incorrect state trees with values that are no longer valid.
     if (this.isDetached(node)) {
-      throw new StaleNodeError()
+      throw new DetachedNodeError()
     }
 
     // TODO: This needs a little more thought. It would be nice to
@@ -237,8 +235,9 @@ export default class Arbor<T extends object = object> {
     this.#root = result?.root
 
     notifyAffectedSubscribers({
+      store: this,
       state: {
-        current: result?.root,
+        current: result?.root?.$unwrap(),
         get previous() {
           return JSON.parse(previousState) as T
         },
@@ -261,17 +260,12 @@ export default class Arbor<T extends object = object> {
   createNode<V extends object>(
     path: Path,
     value: V,
-    subscribers = new Subscribers(),
+    subscribers = new Subscribers<T>(),
     children = new NodeCache()
   ): INode<V> {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
     const node = new Proxy<V>(value, handler)
-
-    // UUIDs are used to track nodes across mutations, enabling Arbor to tell
-    // if a node has been removed from the state tree, replaced or moved to
-    // a different path.
-    setUUID(value)
 
     return node as INode<V>
   }
@@ -282,8 +276,8 @@ export default class Arbor<T extends object = object> {
    * @param path the path of the node to be retrieved.
    * @returns the node at the given path.
    */
-  getNodeAt<V extends object>(path: Path): INode<V> {
-    return path.walk(this.#root) as INode<V>
+  getNodeAt<V extends object>(path: Path) {
+    return path.walk(this.#root) as ArborNode<V>
   }
 
   /**
@@ -292,17 +286,18 @@ export default class Arbor<T extends object = object> {
    * @param value the value to be used as the root of the state tree.
    * @returns the root node.
    */
-  setState(value: T): INode<T> {
+  setState(value: T): ArborNode<T> {
     const previous = this.#root?.$unwrap()
     const current = this.createNode(
       Path.root,
       value,
-      this.#root?.$subscribers || new Subscribers()
+      this.#root?.$subscribers || new Subscribers<T>()
     )
 
     this.#root = current
 
     notifyAffectedSubscribers({
+      store: this,
       state: { current, previous },
       mutationPath: Path.root,
       metadata: {
@@ -320,7 +315,7 @@ export default class Arbor<T extends object = object> {
    * @param subscriber a function to be called whenever a state update occurs.
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
-  subscribe(subscriber: Subscriber): Unsubscribe {
+  subscribe(subscriber: Subscriber<T>): Unsubscribe {
     return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
   }
 
@@ -333,7 +328,7 @@ export default class Arbor<T extends object = object> {
    */
   subscribeTo<K extends object>(
     node: ArborNode<K>,
-    subscriber: Subscriber
+    subscriber: Subscriber<T>
   ): Unsubscribe {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
@@ -349,14 +344,14 @@ export default class Arbor<T extends object = object> {
   isDetached(node: ArborNode<object>) {
     if (!isNode(node)) return true
 
-    const reloadedNode = this.getNodeAt(node.$path)
+    const reloadedNode = this.getNodeAt<INode>(node.$path)
 
     // Node no longer exists within the state tree
     if (!reloadedNode) return true
 
     const reloadedValue = reloadedNode.$unwrap()
     const value = node.$unwrap()
-    if (getUUID(value) === getUUID(reloadedValue)) return false
+    if (value === reloadedValue) return false
     if (global.DEBUG) {
       // eslint-disable-next-line no-console
       console.warn(`Stale node pointing to path ${node.$path.toString()}`)

@@ -1,17 +1,21 @@
-import Arbor, { ArborNode, INode } from "./Arbor"
+import Arbor, { ArborNode, INode, Proxiable } from "./Arbor"
 import Repository from "./Repository"
-import BaseNode from "./BaseNode"
 
-class User extends BaseNode<User> {
+@Proxiable()
+class User {
   uuid: string
   name: string
   age: number
+
+  constructor(data: Partial<User>) {
+    Object.assign(this, data)
+  }
 }
 
 describe("Repository", () => {
   it("adds a new item to the repository", () => {
     const store = new Arbor(new Repository<User>())
-    const user = User.from<User>({ uuid: "123", name: "Alice", age: 22 })
+    const user = new User({ uuid: "123", name: "Alice", age: 22 })
 
     store.state["123"] = user
 
@@ -21,8 +25,8 @@ describe("Repository", () => {
   })
 
   it("initializes the repository with items", () => {
-    const user1 = User.from<User>({ uuid: "1", name: "Alice", age: 22 })
-    const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
+    const user1 = new User({ uuid: "1", name: "Alice", age: 22 })
+    const user2 = new User({ uuid: "2", name: "Bob", age: 25 })
     const store = new Arbor(new Repository(user1, user2))
 
     expect(store.state).toEqual({
@@ -32,8 +36,8 @@ describe("Repository", () => {
   })
 
   it("deletes an item from the repository", () => {
-    const user1 = User.from<User>({ uuid: "1", name: "Alice", age: 22 })
-    const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
+    const user1 = new User({ uuid: "1", name: "Alice", age: 22 })
+    const user2 = new User({ uuid: "2", name: "Bob", age: 25 })
     const store = new Arbor(new Repository(user1, user2))
 
     delete store.state[user1.uuid]
@@ -45,8 +49,8 @@ describe("Repository", () => {
 
   it("implements an iterator for the values stored in the repository", () => {
     const items: ArborNode<User>[] = []
-    const user1 = User.from<User>({ uuid: "1", name: "Alice", age: 22 })
-    const user2 = User.from<User>({ uuid: "2", name: "Bob", age: 25 })
+    const user1 = new User({ uuid: "1", name: "Alice", age: 22 })
+    const user2 = new User({ uuid: "2", name: "Bob", age: 25 })
     const store = new Arbor(new Repository(user1, user2))
 
     for (const item of store.state) {
@@ -61,9 +65,9 @@ describe("Repository", () => {
   it("destructs repository into an array ordered by the items' insertion order", () => {
     const store = new Arbor(
       new Repository(
-        User.from<User>({ uuid: "c", name: "User 1" }),
-        User.from<User>({ uuid: "b", name: "User 2" }),
-        User.from<User>({ uuid: "a", name: "User 3" })
+        new User({ uuid: "c", name: "User 1" }),
+        new User({ uuid: "b", name: "User 2" }),
+        new User({ uuid: "a", name: "User 3" })
       )
     )
 

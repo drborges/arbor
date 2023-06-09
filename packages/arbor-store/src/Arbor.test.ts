@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import Arbor, { Proxiable } from "./Arbor"
-import BaseNode from "./BaseNode"
 import Path from "./Path"
 import Repository from "./Repository"
 import {
   ArborError,
+  DetachedNodeError,
   NotAnArborNodeError,
-  StaleNodeError,
   ValueAlreadyBoundError,
 } from "./errors"
 
-import { ArborProxiable } from "./isProxiable"
+import { ArborProxiable } from "./guards"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 describe("Arbor", () => {
@@ -173,7 +172,7 @@ describe("Arbor", () => {
       store.subscribe(subscriber1)
       store.subscribeTo(user0, subscriber2)
 
-      expect(() => user0.age++).toThrow(StaleNodeError)
+      expect(() => user0.age++).toThrow(DetachedNodeError)
       expect(subscriber1).not.toHaveBeenCalled()
       expect(subscriber2).not.toHaveBeenCalled()
     })
@@ -229,9 +228,14 @@ describe("Arbor", () => {
       })
     })
 
-    it("allows deleting nodes by detaching them from the state tree when extending from BaseNode class", () => {
-      class Todo extends BaseNode<Todo> {
+    it("allows deleting nodes by detaching them from the state tree", () => {
+      @Proxiable()
+      class Todo {
         text: string
+
+        constructor(data: Partial<Todo>) {
+          Object.assign(this, data)
+        }
       }
 
       type Todos = {
@@ -239,14 +243,14 @@ describe("Arbor", () => {
       }
 
       const store = new Arbor<Todos>({
-        "1": Todo.from<Todo>({ text: "Clean the house" }),
-        "2": Todo.from<Todo>({ text: "Walk the dogs" }),
+        "1": new Todo({ text: "Clean the house" }),
+        "2": new Todo({ text: "Walk the dogs" }),
       })
 
       const subscriber = jest.fn()
       store.subscribe(subscriber)
 
-      store.state["2"].detach()
+      detach(store.state["2"])
 
       expect(store.state["2"]).toBeUndefined()
       expect(subscriber.mock.calls.length).toBe(1)
@@ -474,28 +478,6 @@ describe("Arbor", () => {
       expect(subscriber).toHaveBeenCalled()
       expect(store.state[0].status).toBe("done")
       expect(store.state[0].complete).toBeDefined()
-    })
-
-    it("allows for custom node types that inherit from BaseNode", () => {
-      class Todo extends BaseNode<Todo> {
-        text: string
-        status = "todo"
-
-        complete() {
-          this.status = "done"
-        }
-      }
-
-      const todo = Todo.from<Todo>({ text: "Do the dishes" })
-      const store = new Arbor([todo])
-      const subscriber = jest.fn()
-      store.subscribe(subscriber)
-
-      store.state[0].complete()
-
-      expect(subscriber).toHaveBeenCalled()
-      expect(store.state[0].status).toBe("done")
-      expect(store.state[0]).toBeInstanceOf(Todo)
     })
 
     it("marks a custom type as proxiable via decorator", () => {
@@ -843,7 +825,9 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.current).toBe(
+        unwrap(store.state)
+      )
       expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
       expect(store.state.todos.get("abc")).not.toBe(todosMap.get("abc"))
@@ -926,7 +910,9 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.current).toBe(
+        unwrap(store.state)
+      )
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
@@ -956,7 +942,9 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("clear")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
+      expect(subscriber.mock.calls[0][0].state.current).toBe(
+        unwrap(store.state)
+      )
       expect(store.state.todos.get("123")).toBeUndefined()
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
@@ -1041,15 +1029,20 @@ describe("Arbor", () => {
 
   describe("Example: Repository of nodes", () => {
     it("provides an iteratable key value store to make it easier to track nodes", () => {
-      class Todo extends BaseNode<Todo> {
+      @Proxiable()
+      class Todo {
         uuid: string
         text: string
+
+        constructor(data: Partial<Todo>) {
+          Object.assign(this, data)
+        }
       }
 
       const store = new Arbor(
         new Repository(
-          Todo.from<Todo>({ uuid: "1", text: "Clean the house" }),
-          Todo.from<Todo>({ uuid: "2", text: "Walk the dogs" })
+          new Todo({ uuid: "1", text: "Clean the house" }),
+          new Todo({ uuid: "2", text: "Walk the dogs" })
         )
       )
 
@@ -1103,7 +1096,7 @@ describe("Arbor", () => {
         const node = store.state.todos[0]
         detach(node)
 
-        expect(() => detach(node)).toThrow(StaleNodeError)
+        expect(() => detach(node)).toThrow(DetachedNodeError)
       })
 
       it("detaches a given ArborNode from the state tree", () => {
@@ -1149,7 +1142,7 @@ describe("Arbor", () => {
 
         expect(() => {
           merge(node, { text: "" })
-        }).toThrow(StaleNodeError)
+        }).toThrow(DetachedNodeError)
       })
 
       it("merges data into a given state tree node", () => {
@@ -1197,7 +1190,7 @@ describe("Arbor", () => {
 
         expect(() => {
           path(node)
-        }).toThrow(StaleNodeError)
+        }).toThrow(DetachedNodeError)
       })
 
       it("determines the path of the node within the state tree", () => {

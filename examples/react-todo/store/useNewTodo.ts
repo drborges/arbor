@@ -9,7 +9,7 @@ export const store = new Arbor<Input>({
   value: "",
 })
 
-store.use(new Logger("[NewTodo]"))
+store.use(new Logger("NewTodo"))
 store.use(
   new LocalStorage<Input>({
     key: "TodoApp.form",

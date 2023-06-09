@@ -1,3 +1,4 @@
+import Arbor from "./Arbor"
 import { MutationMetadata } from "./mutate"
 import Path from "./Path"
 
@@ -9,8 +10,13 @@ export type Unsubscribe = () => void
 /**
  * Describes a mutation event passed to subscribers
  */
-export type MutationEvent = {
-  state: { current?: object; previous?: object }
+export type MutationEvent<T extends object> = {
+  // TODO: consider not exposing reactive state to plugins.
+  // If plugins wish to trigger mutations, perhaps it's a
+  // better idea to be explicit, and retrieve the node to
+  // mutate from the state tree.
+  store: Arbor<T>
+  state: { current?: T; previous?: T }
   mutationPath: Path
   metadata: MutationMetadata
 }
@@ -18,12 +24,12 @@ export type MutationEvent = {
 /**
  * Subscriber function used to listen to mutation events triggered by the state tree.
  */
-export type Subscriber = (event: MutationEvent) => void
+export type Subscriber<T extends object> = (event: MutationEvent<T>) => void
 
-export default class Subscribers {
-  constructor(private readonly subscribers: Set<Subscriber> = new Set()) {}
+export default class Subscribers<T extends object = object> {
+  constructor(private readonly subscribers: Set<Subscriber<T>> = new Set()) {}
 
-  subscribe(subscriber: Subscriber): Unsubscribe {
+  subscribe(subscriber: Subscriber<T>): Unsubscribe {
     this.subscribers.add(subscriber)
 
     return () => {
@@ -31,7 +37,7 @@ export default class Subscribers {
     }
   }
 
-  notify(event: MutationEvent) {
+  notify(event: MutationEvent<T>) {
     this.subscribers.forEach((subscriber) => {
       subscriber(event)
     })

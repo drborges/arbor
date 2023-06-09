@@ -7,7 +7,6 @@ export type {
   INode,
   Plugin,
 } from "./Arbor"
-export { default as BaseNode } from "./BaseNode"
 export { default as NodeArrayHandler } from "./NodeArrayHandler"
 export { default as NodeCache } from "./NodeCache"
 export { default as NodeHandler } from "./NodeHandler"
@@ -16,8 +15,7 @@ export { default as Repository } from "./Repository"
 export type { Record } from "./Repository"
 export { default as Subscribers } from "./Subscribers"
 export type { MutationEvent, Subscriber, Unsubscribe } from "./Subscribers"
-export { ArborError, MissingUUIDError, NotAnArborNodeError } from "./errors"
-export { default as isNode } from "./isNode"
-export { ArborProxiable, default as isProxiable } from "./isProxiable"
+export * from "./errors"
+export * from "./guards"
 export type { Mutation } from "./mutate"
 export * from "./utilities"

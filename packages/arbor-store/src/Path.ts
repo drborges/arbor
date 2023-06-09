@@ -1,6 +1,6 @@
 import { ArborNode } from "./Arbor"
 import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
-import isNode from "./isNode"
+import { isNode } from "./guards"
 
 /**
  * Represent a path within the state tree.

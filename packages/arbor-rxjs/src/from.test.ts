@@ -1,5 +1,5 @@
-import { filter } from "rxjs/operators"
 import { Arbor, ArborError, MutationEvent } from "@arborjs/store"
+import { filter } from "rxjs/operators"
 import { from } from "./from"
 
 describe("from", () => {
@@ -12,33 +12,7 @@ describe("from", () => {
     })
 
     const observable = from(store)
-    const mutationEvents: MutationEvent[] = []
-
-    observable
-      .pipe(filter((event) => event.metadata.props.includes("name")))
-      .forEach((event) => {
-        mutationEvents.push(event)
-      })
-      .catch(console.error)
-
-    store.state.users[0].name = "Alice Updated"
-    store.state.users[0].age++
-
-    expect(mutationEvents.length).toBe(1)
-    expect(mutationEvents[0].metadata.props).toContain("name")
-    expect(mutationEvents[0].mutationPath.toString()).toBe("/users/0")
-  })
-
-  it("creates an observable from an ArborNode", () => {
-    const store = new Arbor({
-      users: [
-        { name: "Alice", age: 25 },
-        { name: "Bob", age: 30 },
-      ],
-    })
-
-    const observable = from(store.state.users[0])
-    const mutationEvents: MutationEvent[] = []
+    const mutationEvents: MutationEvent<typeof store.state>[] = []
 
     observable
       .pipe(filter((event) => event.metadata.props.includes("name")))
@@ -63,8 +37,8 @@ describe("from", () => {
       ],
     })
 
-    const observable = from(store.state.users[0])
-    const mutations: MutationEvent[] = []
+    const observable = from(store)
+    const mutations: MutationEvent<typeof store.state>[] = []
 
     const subscription = observable.subscribe((event) => {
       mutations.push(event)
@@ -78,8 +52,10 @@ describe("from", () => {
   })
 
   it("throws an error when observable target is not an Arbor instance nor an ArborNode", () => {
-    expect(() => from(123)).toThrow(ArborError)
-    expect(() => from("invalid target")).toThrow(ArborError)
-    expect(() => from({ invalid: "target" })).toThrow(ArborError)
+    expect(() => from(123 as unknown as Arbor)).toThrow(ArborError)
+    expect(() => from("invalid target" as unknown as Arbor)).toThrow(ArborError)
+    expect(() => from({ invalid: "target" } as unknown as Arbor)).toThrow(
+      ArborError
+    )
   })
 })

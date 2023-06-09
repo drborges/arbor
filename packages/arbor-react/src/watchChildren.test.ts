@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { Arbor, BaseNode, Repository } from "@arborjs/store"
+import { Arbor, Proxiable, Repository } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
@@ -72,12 +72,15 @@ describe("watchChildren", () => {
     expect(result.all.length).toBe(2)
   })
 
-  it("allow watching props of BaseNode children", () => {
-    class Preference extends BaseNode<Preference> {
+  it("allow watching props of children of a custom node type", () => {
+    @Proxiable()
+    class Preference {
       email = false
       sms = false
     }
-    class User extends BaseNode<User> {
+
+    @Proxiable()
+    class User {
       name: string
       preference = new Preference()
     }

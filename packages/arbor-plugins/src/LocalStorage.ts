@@ -1,27 +1,38 @@
-import { Arbor, INode, Plugin } from "@arborjs/store"
+import { MutationEvent } from "@arborjs/store"
 
-import debounce from "./debounce"
+import Storage from "./Storage"
 
 /**
  * Describes a LocaStorage configuration object.
  */
 export interface Config<T extends object> {
-  key: string
-
   /**
-   * Amount of milliseconds to debouce update calls by.
+   * The local storage key to reference the store data.
+   */
+  key: string
+  /**
+   * Period in milliseconds after an update is processed in which
+   * new updates are ignored.
    *
-   * This can be used to reduce the frequency in which data is written
-   * back to local storage.
+   * This helps ensure that the local storage gets updated at most once
+   * every so often based on the configured debounce period.
    */
   debounceBy?: number
-
   /**
-   * Used to deserialize the data retrieved from local storage.
+   * Serializes some data structure into its string representation to be
+   * stored in the browser's local storage.
    *
-   * This can be used to convert plain objects into user defined data models.
+   * @param data the data to serialize.
+   * @returns the string representation of the data.
    */
-  deserialize?: (data: T) => T
+  serialize?: (data: T) => string
+  /**
+   * Deserializes the data retrieved from local storage.
+   *
+   * @param serialized the serialized data structure retrieved from local storage.
+   * @returns the deserialized version of the data.
+   */
+  deserialize?: (serialized: string) => T
 }
 
 /**
@@ -29,63 +40,44 @@ export interface Config<T extends object> {
  *
  * This provides LocalStorage-based persistence to Arbor state trees allowing
  * application state to be preserved across browser refreshes/sessions.
+ *
+ * @example
+ *
+ * ```ts
+ * store.use(new LocalStorage({
+ *   key: "MyAppState",
+ *   debounceBy: 100,
+ * }))
+ * ```
  */
-export default class LocalStorage<T extends object> implements Plugin<T> {
-  private deboucedUpdate: (data: T) => void
-
-  /**
-   * Creates a new instance of the LocalStorage backend.
-   *
-   * @param key the key to be used in LocalStorage to reference the serialized state.
-   */
+export default class LocalStorage<T extends object> extends Storage<T> {
   constructor(readonly config: Config<T>) {
-    this.deboucedUpdate = debounce((data: T) => {
-      window.localStorage.setItem(this.config.key, JSON.stringify(data))
-    }, config.debounceBy)
+    super(config)
   }
 
-  async configure(store: Arbor<T>) {
-    const data = await this.load()
-    const deserialize = this.config.deserialize || (() => data)
-    const deserialized = deserialize(data)
-
-    if (deserialized && typeof deserialized === "object") {
-      store.setState(deserialized)
-    }
-
-    store.subscribe(({ state }) => {
-      const node = state.current as INode<T>
-      void this.update(node.$unwrap())
-    })
-  }
-
-  /**
-   * Loads the persisted data from window.localStorage.
-   *
-   * @returns a promise that resolves to the persisted data if successful.
-   */
-  async load(): Promise<T> {
+  load() {
     return new Promise<T>((resolve, reject) => {
       try {
-        resolve(
-          JSON.parse(window.localStorage.getItem(this.config.key) || null) as T
-        )
+        const data = window.localStorage.getItem(this.config.key) || "null"
+        const deserialize =
+          this.config.deserialize ||
+          (JSON.parse as typeof this.config.deserialize)
+
+        resolve(deserialize(data))
       } catch (e) {
         reject(e)
       }
     })
   }
 
-  /**
-   * Updates the LocalStorage with the given data.
-   *
-   * @param data the data to be persisted to window.localStorage.
-   * @returns a Promise that resolves to void when the operation completes.
-   */
-  async update(data: T): Promise<void> {
+  update(event: MutationEvent<T>): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        this.deboucedUpdate(data)
+        const serialize = this.config.serialize || JSON.stringify
+        window.localStorage.setItem(
+          this.config.key,
+          serialize(event.state.current)
+        )
         resolve()
       } catch (e) {
         reject(e)

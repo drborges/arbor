@@ -1,4 +1,4 @@
-import { ArborProxiable } from "./isProxiable"
+import { ArborProxiable } from "./guards"
 
 export type Record = {
   uuid: string

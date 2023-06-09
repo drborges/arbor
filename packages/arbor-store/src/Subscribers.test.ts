@@ -1,3 +1,4 @@
+import Arbor from "./Arbor"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
 
@@ -7,6 +8,7 @@ describe("Subscribers", () => {
     const subscriber2 = jest.fn()
     const subscribers = new Subscribers()
     const mutationEvent = {
+      store: new Arbor({}),
       mutationPath: Path.root,
       metadata: { operation: "", props: [] },
       state: { previous: { count: 1 }, current: { count: 2 } },
@@ -26,6 +28,7 @@ describe("Subscribers", () => {
     const subscriber2 = jest.fn()
     const subscribers = new Subscribers()
     const mutationEvent = {
+      store: new Arbor({}),
       mutationPath: Path.root,
       metadata: { operation: "", props: [] },
       state: { previous: { count: 1 }, current: { count: 2 } },

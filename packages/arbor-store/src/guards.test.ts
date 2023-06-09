@@ -1,12 +1,13 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
-import BaseNode from "./BaseNode"
-import isProxiable, { ArborProxiable } from "./isProxiable"
+import Arbor, { Proxiable } from "./Arbor"
+import { ArborProxiable, isNode, isProxiable } from "./guards"
 
+@Proxiable()
+class User {}
 class NotProxiable {}
 class Users extends Array {}
-class User extends BaseNode<User> {}
-class Proxiable {
+class ProxiableType {
   [ArborProxiable] = true
 }
 
@@ -23,12 +24,12 @@ describe("isProxiable", () => {
     expect(isProxiable(new Users())).toBe(true)
   })
 
-  it("considers proxiable user-defined types extending from BaseNode", () => {
+  it("considers proxiable user-defined types annotated with the @Proxiable() decorator", () => {
     expect(isProxiable(new User())).toBe(true)
   })
 
   it("considers proxiable user-defined types implementing the 'ArborProxiable' prop", () => {
-    expect(isProxiable(new Proxiable())).toBe(true)
+    expect(isProxiable(new ProxiableType())).toBe(true)
   })
 
   it("does not consider proxiable user-defined types missing the 'ArborProxiable' prop", () => {
@@ -44,5 +45,21 @@ describe("isProxiable", () => {
     expect(isProxiable(new Number(2))).toBe(false)
     expect(isProxiable(new Boolean(true))).toBe(false)
     expect(isProxiable(new Boolean(false))).toBe(false)
+  })
+})
+
+describe("isNode", () => {
+  it("checks whether or not a given value is an Arbor Node", () => {
+    expect(isNode(null)).toEqual(false)
+    expect(isNode(undefined)).toEqual(false)
+    expect(isNode({})).toEqual(false)
+    expect(isNode({ $tree: "not an Arbor instance" })).toEqual(false)
+    expect(
+      isNode({
+        get $tree() {
+          return new Arbor({})
+        },
+      })
+    ).toEqual(true)
   })
 })

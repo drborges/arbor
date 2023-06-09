@@ -1,4 +1,4 @@
-import { Arbor, ArborNode, BaseNode, Path } from "@arborjs/store"
+import { Arbor, ArborNode, Path, Proxiable } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor, { Watcher } from "./useArbor"
@@ -88,7 +88,8 @@ describe("useArbor", () => {
   })
 
   it("supports custom object types to represent the state", () => {
-    class InputHandler extends BaseNode<InputHandler> {
+    @Proxiable()
+    class InputHandler {
       value = ""
       settings = {}
       onChange(e: { target: { value: string } }) {

@@ -1,6 +1,7 @@
 import { ArborNode } from "./Arbor"
-import { ArborError, NotAnArborNodeError, StaleNodeError } from "./errors"
-import isNode from "./isNode"
+import Path from "./Path"
+import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
+import { isNode } from "./guards"
 
 /**
  * Detaches a given ArborNode from the state tree.
@@ -16,7 +17,7 @@ export function detach<T extends object>(node: ArborNode<T>): T {
   }
 
   if (node.$tree.isDetached(node)) {
-    throw new StaleNodeError()
+    throw new DetachedNodeError()
   }
 
   if (node.$path.isRoot()) {
@@ -48,7 +49,7 @@ export function merge<T extends object>(
   }
 
   if (node.$tree.isDetached(node)) {
-    throw new StaleNodeError()
+    throw new DetachedNodeError()
   }
 
   node.$tree.mutate(node.$path, (value) => {
@@ -59,7 +60,7 @@ export function merge<T extends object>(
     }
   })
 
-  return node.$tree.getNodeAt(node.$path) as ArborNode<T>
+  return node.$tree.getNodeAt(node.$path)
 }
 
 /**
@@ -68,13 +69,13 @@ export function merge<T extends object>(
  * @param node the node to determine the path for.
  * @returns the path of the node within the state tree.
  */
-export function path<T extends object>(node: ArborNode<T>) {
+export function path<T extends object>(node: ArborNode<T>): Path {
   if (!isNode<T>(node)) {
     throw new NotAnArborNodeError()
   }
 
   if (node.$tree.isDetached(node)) {
-    throw new StaleNodeError()
+    throw new DetachedNodeError()
   }
 
   return node.$path
