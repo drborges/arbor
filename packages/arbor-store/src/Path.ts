@@ -80,10 +80,10 @@ export default class Path {
    * intersected by the path.
    * @returns the node referenced by the path.
    */
-  walk(
-    node: ArborNode<object>,
-    cb?: (child: ArborNode<object>, parent: ArborNode<object>) => void
-  ): ArborNode<object> {
+  walk<T extends object>(
+    node: object,
+    cb?: (child: object, parent: object) => void
+  ): T {
     try {
       return this.props.reduce((parent, part) => {
         const child = isNode(parent) ? parent.$traverse(part) : parent[part]
