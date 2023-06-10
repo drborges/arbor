@@ -99,30 +99,6 @@ describe("Path", () => {
     })
   })
 
-  describe("#walkObj", () => {
-    it("traverses a given object until it reaches the value referenced by the path", () => {
-      const path = Path.parse("/data/users/1")
-      const obj = {
-        data: {
-          users: [{ name: "User 1" }, { name: "User 2" }],
-        },
-      }
-
-      expect(path.walkObj(obj)).toBe(obj.data.users[1])
-    })
-
-    it("returns undefined if path does not reference any nodes within the state tree", () => {
-      const path = Path.parse("/data/todos/1")
-      const obj = {
-        data: {
-          users: [{ name: "User 1" }, { name: "User 2" }],
-        },
-      }
-
-      expect(path.walkObj(obj)).toBeUndefined()
-    })
-  })
-
   describe("#targets", () => {
     it("checks if a path targets another given path", () => {
       expect(Path.root.targets(Path.root)).toBe(true)

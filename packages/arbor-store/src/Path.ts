@@ -1,5 +1,5 @@
 import { ArborNode } from "./Arbor"
-import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
+import { InvalidArgumentError } from "./errors"
 import { isNode } from "./guards"
 
 /**
@@ -76,27 +76,20 @@ export default class Path {
    * Traverses a given node until reaching the node represented by the path.
    *
    * @param node an Arbor node to traverse.
+   * @param cb an optional callback that allows one to process intermediary nodes
+   * intersected by the path.
    * @returns the node referenced by the path.
    */
-  walk(node: ArborNode<object>): ArborNode<object> {
+  walk(
+    node: ArborNode<object>,
+    cb?: (child: ArborNode<object>, parent: ArborNode<object>) => void
+  ): ArborNode<object> {
     try {
-      if (!isNode(node)) throw new NotAnArborNodeError()
-
-      return this.props.reduce((parent, part) => parent.$traverse(part), node)
-    } catch {
-      return undefined
-    }
-  }
-
-  /**
-   * Traverses a given object until reaching the value represented by the path.
-   *
-   * @param obj an object to traverse.
-   * @returns the value referenced by the path.
-   */
-  walkObj(obj: object): unknown {
-    try {
-      return this.props.reduce((parent, part) => parent[part], obj)
+      return this.props.reduce((parent, part) => {
+        const child = isNode(parent) ? parent.$traverse(part) : parent[part]
+        if (cb) cb(child, parent)
+        return child
+      }, node)
     } catch {
       return undefined
     }
