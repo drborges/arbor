@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
-import Arbor, { Proxiable } from "./Arbor"
+import Arbor, { proxiable } from "./Arbor"
 import { ArborProxiable, isNode, isProxiable } from "./guards"
 
-@Proxiable()
+@proxiable
 class User {}
 class NotProxiable {}
 class Users extends Array {}
@@ -24,7 +24,7 @@ describe("isProxiable", () => {
     expect(isProxiable(new Users())).toBe(true)
   })
 
-  it("considers proxiable user-defined types annotated with the @Proxiable() decorator", () => {
+  it("considers proxiable user-defined types annotated with the @proxiable decorator", () => {
     expect(isProxiable(new User())).toBe(true)
   })
 

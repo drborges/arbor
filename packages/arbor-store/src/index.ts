@@ -1,4 +1,4 @@
-export { default as Arbor, Proxiable } from "./Arbor"
+export { default as Arbor, proxiable } from "./Arbor"
 export type {
   ArborConfig,
   ArborNode,

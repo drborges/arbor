@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import Arbor, { ArborNode, Proxiable } from "./Arbor"
+import Arbor, { ArborNode, proxiable } from "./Arbor"
 import Path from "./Path"
 import {
   ArborError,
@@ -228,7 +228,7 @@ describe("Arbor", () => {
     })
 
     it("allows deleting nodes by detaching them from the state tree", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         text: string
 
@@ -480,7 +480,7 @@ describe("Arbor", () => {
     })
 
     it("marks a custom type as proxiable via decorator", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string, public status = "todo") {}
         complete() {
@@ -501,7 +501,7 @@ describe("Arbor", () => {
     })
 
     it("allows using class getters to select nodes within the state tree", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(
           readonly id: number,
@@ -510,7 +510,7 @@ describe("Arbor", () => {
         ) {}
       }
 
-      @Proxiable()
+      @proxiable
       class TodoList {
         todos: Todo[] = []
 
@@ -801,7 +801,7 @@ describe("Arbor", () => {
 
   describe("Example: Reactive Map API", () => {
     it("allows tracking nodes stored within Map instances", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -885,7 +885,7 @@ describe("Arbor", () => {
     })
 
     it("allows deleting nodes stored within Map instances", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -917,7 +917,7 @@ describe("Arbor", () => {
     })
 
     it("allows clearing a Map of nodes", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -949,7 +949,7 @@ describe("Arbor", () => {
     })
 
     it("allows iterating over Map values", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -971,7 +971,7 @@ describe("Arbor", () => {
     })
 
     it("allows iterating over Map entries", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }

@@ -14,12 +14,20 @@ import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
  * Decorates a class marking it as Arbor proxiable, allowing
  * Arbor to use it as Node type.
  *
- * @returns Arbor compatiby type.
+ * @example
+ *
+ * ```ts
+ * @proxiable
+ * class Todo {
+ *   text: string
+ * }
+ * ```
  */
-export function Proxiable() {
-  return <T extends Function>(target: T, _context: unknown = null) => {
-    target.prototype[ArborProxiable] = true
-  }
+export function proxiable<T extends Function>(
+  target: T,
+  _context: unknown = null
+) {
+  target.prototype[ArborProxiable] = true
 }
 
 /**

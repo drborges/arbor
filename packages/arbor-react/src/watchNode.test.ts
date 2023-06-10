@@ -1,4 +1,4 @@
-import { Arbor, Proxiable } from "@arborjs/store"
+import { Arbor, proxiable } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor from "./useArbor"
@@ -94,7 +94,7 @@ describe("watchNode", () => {
   })
 
   it("watches a BseNode value", () => {
-    @Proxiable()
+    @proxiable
     class User {
       name: string
       age: number
