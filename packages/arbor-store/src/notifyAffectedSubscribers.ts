@@ -7,9 +7,7 @@ export function notifyAffectedSubscribers<T extends object>(
   const root = event.store.state as INode
   root.$subscribers.notify(event)
 
-  event.mutationPath.props.reduce((parent: INode, prop: string) => {
-    const node = parent.$traverse(prop) as INode
-    node.$subscribers.notify(event)
-    return node
-  }, root)
+  event.mutationPath.walk(root, (child: INode) => {
+    child.$subscribers.notify(event)
+  })
 }
