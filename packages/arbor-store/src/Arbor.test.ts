@@ -2,7 +2,7 @@
 /* eslint-disable max-classes-per-file */
 import Arbor, { ArborNode } from "./Arbor"
 import Path from "./Path"
-import { ArborProxiable, proxiable } from "./decorators"
+import { ArborProxiable, detached, proxiable } from "./decorators"
 import {
   ArborError,
   DetachedNodeError,
@@ -111,6 +111,33 @@ describe("Arbor", () => {
       store.state.user2 = aliceNode
 
       expect(unwrap(store.state.user2)).toBe(alice)
+    })
+
+    it("allows marking node properties as detached to avoid updates", () => {
+      @proxiable
+      class Todo {
+        @detached count = 0
+
+        @detached
+        tracker = {
+          count: 0,
+        }
+
+        constructor(public text: string) {}
+      }
+
+      const store = new Arbor([
+        new Todo("Clean the house"),
+        new Todo("Walk the dogs"),
+      ])
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state[0].count++
+      store.state[0].tracker.count++
+
+      expect(subscriber).not.toHaveBeenCalled()
     })
   })
 

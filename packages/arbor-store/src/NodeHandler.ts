@@ -2,6 +2,7 @@ import Arbor, { INode } from "./Arbor"
 import NodeCache from "./NodeCache"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
+import { isDetachedProperty } from "./decorators"
 import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 
@@ -65,7 +66,7 @@ export default class NodeHandler<T extends object = object>
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
 
-    if (isGetter(target, prop)) {
+    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
       return Reflect.get(target, prop, proxy) as unknown
     }
 
@@ -115,15 +116,19 @@ export default class NodeHandler<T extends object = object>
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true
 
-    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
-    this.$tree.mutate(proxy, (t: T) => {
-      t[prop] = value
+    if (isDetachedProperty(target, prop)) {
+      target[prop] = value
+    } else {
+      // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
+      this.$tree.mutate(proxy, (t: T) => {
+        t[prop] = value
 
-      return {
-        operation: "set",
-        props: [prop],
-      }
-    })
+        return {
+          operation: "set",
+          props: [prop],
+        }
+      })
+    }
 
     return true
   }
@@ -132,14 +137,18 @@ export default class NodeHandler<T extends object = object>
     if (prop in target) {
       const childValue = Reflect.get(target, prop) as unknown
 
-      this.$tree.mutate(this, (t: T) => {
-        delete t[prop]
+      if (isDetachedProperty(target, prop)) {
+        delete target[prop]
+      } else {
+        this.$tree.mutate(this, (t: T) => {
+          delete t[prop]
 
-        return {
-          operation: "delete",
-          props: [prop],
-        }
-      })
+          return {
+            operation: "delete",
+            props: [prop],
+          }
+        })
+      }
 
       this.$children.delete(childValue as object)
     }
