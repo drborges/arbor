@@ -9,6 +9,7 @@ import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
+import { isDetached } from "./utilities"
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
@@ -35,7 +36,11 @@ export interface Handler {
 }
 
 /**
- * Recursively describes the props of an Arbor state tree node.
+ * Recursively marks proxiable node fields as being Arbor nodes.
+ *
+ * This is a type cue that informs developers that a given value is
+ * bound to Arbor's state tree and thus is reactive, e.g. mutations
+ * to the value will cause update notifications to be triggered.
  */
 export type ArborNode<T extends object> = {
   [P in keyof T]: T[P] extends object
@@ -47,6 +52,11 @@ export type ArborNode<T extends object> = {
 
 /**
  * Represents an Arbor state tree node with all of its internal API exposed.
+ *
+ * @internal
+ *
+ * This type is meant to be used internally for the most part and
+ * may be removed from Arbor's public API.
  */
 export type INode<T extends object = object, K extends object = T> = T & {
   /**
@@ -203,13 +213,12 @@ export default class Arbor<T extends object = object> {
         ? pathOrNode.walk(this.#root)
         : (pathOrNode as INode<V>)
 
-    // TODO: Write a test to cover this condition
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different
     // path are considered detatched nodes and cannot be mutated otherwise we risk
     // computing incorrect state trees with values that are no longer valid.
-    if (this.isDetached(node)) {
+    if (isDetached(node)) {
       throw new DetachedNodeError()
     }
 
@@ -321,40 +330,6 @@ export default class Arbor<T extends object = object> {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     return node.$subscribers.subscribe(subscriber)
-  }
-
-  /**
-   * Checks if a given node is still attached to the state tree.
-   *
-   * @param node node to check if no longer attached to the state tree.
-   * @returns true if the node no longer exists within the state tree, false otherwise.
-   */
-  isDetached(node: ArborNode<object>) {
-    if (!isNode(node)) return true
-
-    const reloadedNode = this.getNodeAt<INode>(node.$path)
-
-    // Node no longer exists within the state tree
-    if (!reloadedNode) return true
-
-    const reloadedValue = reloadedNode.$unwrap()
-    const value = node.$unwrap()
-    if (value === reloadedValue) return false
-    if (global.DEBUG) {
-      // eslint-disable-next-line no-console
-      console.warn(`Stale node pointing to path ${node.$path.toString()}`)
-    }
-
-    return true
-  }
-
-  /**
-   * Allow extending Arbor's proxying behavior with new node handler implementations.
-   *
-   * @param handlers a list of NodeHandler implementations to register in the store.
-   */
-  with(...handlers: Handler[]) {
-    this.#handlers = [...handlers, ...this.#handlers]
   }
 
   /**
