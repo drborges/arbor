@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import Arbor, { ArborNode, proxiable } from "./Arbor"
+import Arbor, { ArborNode } from "./Arbor"
 import Path from "./Path"
+import { ArborProxiable, proxiable } from "./decorators"
 import {
   ArborError,
   DetachedNodeError,
@@ -9,7 +10,6 @@ import {
   ValueAlreadyBoundError,
 } from "./errors"
 
-import { ArborProxiable } from "./guards"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 describe("Arbor", () => {

@@ -1,4 +1,5 @@
 import Arbor, { ArborNode, INode } from "./Arbor"
+import { ArborProxiable } from "./decorators"
 
 export function isNode<T extends object>(value: unknown): value is INode<T> {
   const isNodeValue = value as INode<T>
@@ -10,8 +11,6 @@ export function isArborNode<T extends object>(
 ): value is ArborNode<T> {
   return isNode(value)
 }
-
-export const ArborProxiable = Symbol.for("ArborProxiable")
 
 export function isProxiable(value: unknown): value is object {
   if (value == null) return false

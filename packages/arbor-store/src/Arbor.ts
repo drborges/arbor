@@ -6,29 +6,9 @@ import NodeMapHandler from "./NodeMapHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
-import { ArborProxiable, isNode } from "./guards"
+import { isNode } from "./guards"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
-
-/**
- * Decorates a class marking it as Arbor proxiable, allowing
- * Arbor to use it as Node type.
- *
- * @example
- *
- * ```ts
- * @proxiable
- * class Todo {
- *   text: string
- * }
- * ```
- */
-export function proxiable<T extends Function>(
-  target: T,
-  _context: unknown = null
-) {
-  target.prototype[ArborProxiable] = true
-}
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
