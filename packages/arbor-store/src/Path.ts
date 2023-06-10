@@ -96,7 +96,7 @@ export default class Path {
    */
   walkObj(obj: object): unknown {
     try {
-      return this.props.reduce((parent, part) => parent[part] as unknown, obj)
+      return this.props.reduce((parent, part) => parent[part], obj)
     } catch {
       return undefined
     }

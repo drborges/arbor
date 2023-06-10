@@ -67,7 +67,7 @@ export default class NodeHandler<T extends object = object>
     const handlerApiAccess = Reflect.get(this, prop, proxy)
 
     if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
-      return Reflect.get(target, prop, proxy) as unknown
+      return Reflect.get(target, prop, proxy)
     }
 
     // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
@@ -95,7 +95,7 @@ export default class NodeHandler<T extends object = object>
         this.$bindings.set(childValue, childValue.bind(proxy))
       }
 
-      return this.$bindings.get(childValue) as unknown
+      return this.$bindings.get(childValue)
     }
 
     if (!isProxiable(childValue)) {
@@ -118,37 +118,39 @@ export default class NodeHandler<T extends object = object>
 
     if (isDetachedProperty(target, prop)) {
       target[prop] = value
-    } else {
-      // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
-      this.$tree.mutate(proxy, (t: T) => {
-        t[prop] = value
-
-        return {
-          operation: "set",
-          props: [prop],
-        }
-      })
+      return true
     }
+
+    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
+    this.$tree.mutate(proxy, (t: T) => {
+      t[prop] = value
+
+      return {
+        operation: "set",
+        props: [prop],
+      }
+    })
 
     return true
   }
 
   deleteProperty(target: T, prop: string): boolean {
     if (prop in target) {
-      const childValue = Reflect.get(target, prop) as unknown
+      const childValue = Reflect.get(target, prop)
 
       if (isDetachedProperty(target, prop)) {
         delete target[prop]
-      } else {
-        this.$tree.mutate(this, (t: T) => {
-          delete t[prop]
-
-          return {
-            operation: "delete",
-            props: [prop],
-          }
-        })
+        return true
       }
+
+      this.$tree.mutate(this, (t: T) => {
+        delete t[prop]
+
+        return {
+          operation: "delete",
+          props: [prop],
+        }
+      })
 
       this.$children.delete(childValue as object)
     }
