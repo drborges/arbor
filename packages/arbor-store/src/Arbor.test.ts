@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import Arbor, { ArborNode, Proxiable } from "./Arbor"
+import Arbor, { ArborNode } from "./Arbor"
 import Path from "./Path"
+import { ArborProxiable, detached, proxiable } from "./decorators"
 import {
   ArborError,
   DetachedNodeError,
@@ -9,7 +10,6 @@ import {
   ValueAlreadyBoundError,
 } from "./errors"
 
-import { ArborProxiable } from "./guards"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 describe("Arbor", () => {
@@ -111,6 +111,33 @@ describe("Arbor", () => {
       store.state.user2 = aliceNode
 
       expect(unwrap(store.state.user2)).toBe(alice)
+    })
+
+    it("allows marking node properties as detached to avoid updates", () => {
+      @proxiable
+      class Todo {
+        @detached count = 0
+
+        @detached
+        tracker = {
+          count: 0,
+        }
+
+        constructor(public text: string) {}
+      }
+
+      const store = new Arbor([
+        new Todo("Clean the house"),
+        new Todo("Walk the dogs"),
+      ])
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.state[0].count++
+      store.state[0].tracker.count++
+
+      expect(subscriber).not.toHaveBeenCalled()
     })
   })
 
@@ -228,7 +255,7 @@ describe("Arbor", () => {
     })
 
     it("allows deleting nodes by detaching them from the state tree", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         text: string
 
@@ -480,7 +507,7 @@ describe("Arbor", () => {
     })
 
     it("marks a custom type as proxiable via decorator", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string, public status = "todo") {}
         complete() {
@@ -501,7 +528,7 @@ describe("Arbor", () => {
     })
 
     it("allows using class getters to select nodes within the state tree", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(
           readonly id: number,
@@ -510,7 +537,7 @@ describe("Arbor", () => {
         ) {}
       }
 
-      @Proxiable()
+      @proxiable
       class TodoList {
         todos: Todo[] = []
 
@@ -801,7 +828,7 @@ describe("Arbor", () => {
 
   describe("Example: Reactive Map API", () => {
     it("allows tracking nodes stored within Map instances", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -885,7 +912,7 @@ describe("Arbor", () => {
     })
 
     it("allows deleting nodes stored within Map instances", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -917,7 +944,7 @@ describe("Arbor", () => {
     })
 
     it("allows clearing a Map of nodes", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -949,7 +976,7 @@ describe("Arbor", () => {
     })
 
     it("allows iterating over Map values", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }
@@ -971,7 +998,7 @@ describe("Arbor", () => {
     })
 
     it("allows iterating over Map entries", () => {
-      @Proxiable()
+      @proxiable
       class Todo {
         constructor(public text: string) {}
       }

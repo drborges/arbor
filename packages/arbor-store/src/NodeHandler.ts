@@ -2,6 +2,7 @@ import Arbor, { INode } from "./Arbor"
 import NodeCache from "./NodeCache"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
+import { isDetachedProperty } from "./decorators"
 import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 
@@ -65,8 +66,8 @@ export default class NodeHandler<T extends object = object>
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
 
-    if (isGetter(target, prop)) {
-      return Reflect.get(target, prop, proxy) as unknown
+    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
+      return Reflect.get(target, prop, proxy)
     }
 
     // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
@@ -94,7 +95,7 @@ export default class NodeHandler<T extends object = object>
         this.$bindings.set(childValue, childValue.bind(proxy))
       }
 
-      return this.$bindings.get(childValue) as unknown
+      return this.$bindings.get(childValue)
     }
 
     if (!isProxiable(childValue)) {
@@ -115,6 +116,11 @@ export default class NodeHandler<T extends object = object>
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true
 
+    if (isDetachedProperty(target, prop)) {
+      target[prop] = value
+      return true
+    }
+
     // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
@@ -130,7 +136,12 @@ export default class NodeHandler<T extends object = object>
 
   deleteProperty(target: T, prop: string): boolean {
     if (prop in target) {
-      const childValue = Reflect.get(target, prop) as unknown
+      const childValue = Reflect.get(target, prop)
+
+      if (isDetachedProperty(target, prop)) {
+        delete target[prop]
+        return true
+      }
 
       this.$tree.mutate(this, (t: T) => {
         delete t[prop]

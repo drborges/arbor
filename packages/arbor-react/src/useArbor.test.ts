@@ -1,4 +1,4 @@
-import { Arbor, ArborNode, Path, Proxiable } from "@arborjs/store"
+import { Arbor, ArborNode, Path, proxiable } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
 import useArbor, { Watcher } from "./useArbor"
@@ -88,7 +88,7 @@ describe("useArbor", () => {
   })
 
   it("supports custom object types to represent the state", () => {
-    @Proxiable()
+    @proxiable
     class InputHandler {
       value = ""
       settings = {}

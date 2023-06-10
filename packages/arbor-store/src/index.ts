@@ -1,4 +1,4 @@
-export { default as Arbor, Proxiable } from "./Arbor"
+export { default as Arbor } from "./Arbor"
 export type {
   ArborConfig,
   ArborNode,
@@ -13,6 +13,7 @@ export { default as NodeHandler } from "./NodeHandler"
 export { default as Path } from "./Path"
 export { default as Subscribers } from "./Subscribers"
 export type { MutationEvent, Subscriber, Unsubscribe } from "./Subscribers"
+export * from "./decorators"
 export * from "./errors"
 export * from "./guards"
 export type { Mutation } from "./mutate"
