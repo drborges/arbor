@@ -1,4 +1,4 @@
-import { ArborNode } from "./Arbor"
+import { ArborNode, INode } from "./Arbor"
 import Path from "./Path"
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
@@ -16,7 +16,7 @@ export function detach<T extends object>(node: ArborNode<T>): T {
     throw new NotAnArborNodeError()
   }
 
-  if (node.$tree.isDetached(node)) {
+  if (isDetached(node)) {
     throw new DetachedNodeError()
   }
 
@@ -48,7 +48,7 @@ export function merge<T extends object>(
     throw new NotAnArborNodeError()
   }
 
-  if (node.$tree.isDetached(node)) {
+  if (isDetached(node)) {
     throw new DetachedNodeError()
   }
 
@@ -74,7 +74,7 @@ export function path<T extends object>(node: ArborNode<T>): Path {
     throw new NotAnArborNodeError()
   }
 
-  if (node.$tree.isDetached(node)) {
+  if (isDetached(node)) {
     throw new DetachedNodeError()
   }
 
@@ -87,10 +87,23 @@ export function path<T extends object>(node: ArborNode<T>): Path {
  * @param node the node to check whether it's detached from the state tree.
  * @returns true if node is no longer in the state tree, false otherwise.
  */
-export function isDetached<T extends object>(node: ArborNode<T>): boolean {
-  if (!isNode(node)) throw new NotAnArborNodeError()
+export function isDetached<T extends object>(node: T): boolean {
+  if (!isNode(node)) return true
 
-  return node.$tree.isDetached(node)
+  const reloadedNode = node.$tree.getNodeAt<INode>(node.$path)
+
+  // Node no longer exists within the state tree
+  if (!reloadedNode) return true
+
+  const reloadedValue = reloadedNode.$unwrap()
+  const value = node.$unwrap()
+  if (value === reloadedValue) return false
+  if (global.DEBUG) {
+    // eslint-disable-next-line no-console
+    console.warn(`Stale node pointing to path ${node.$path.toString()}`)
+  }
+
+  return true
 }
 
 /**

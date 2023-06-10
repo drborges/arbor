@@ -1224,12 +1224,10 @@ describe("Arbor", () => {
     })
 
     describe("isDetached", () => {
-      it("throws an error if given value is not a state tree node", () => {
+      it("returns true if value is not an Arbor node", () => {
         const node = { name: "Alice", age: 32 }
 
-        expect(() => {
-          isDetached(node)
-        }).toThrow(NotAnArborNodeError)
+        expect(isDetached(node)).toBe(true)
       })
 
       it("determines if a node is no longer within the state tree", () => {

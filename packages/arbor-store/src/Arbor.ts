@@ -9,6 +9,7 @@ import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import mutate, { Mutation, MutationMetadata } from "./mutate"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
+import { isDetached } from "./utilities"
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
@@ -217,7 +218,7 @@ export default class Arbor<T extends object = object> {
     // Nodes that are no longer in the state tree or were moved into a different
     // path are considered detatched nodes and cannot be mutated otherwise we risk
     // computing incorrect state trees with values that are no longer valid.
-    if (this.isDetached(node)) {
+    if (isDetached(node)) {
       throw new DetachedNodeError()
     }
 
@@ -329,31 +330,6 @@ export default class Arbor<T extends object = object> {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     return node.$subscribers.subscribe(subscriber)
-  }
-
-  /**
-   * Checks if a given node is still attached to the state tree.
-   *
-   * @param node node to check if no longer attached to the state tree.
-   * @returns true if the node no longer exists within the state tree, false otherwise.
-   */
-  isDetached(node: ArborNode<object>) {
-    if (!isNode(node)) return true
-
-    const reloadedNode = this.getNodeAt<INode>(node.$path)
-
-    // Node no longer exists within the state tree
-    if (!reloadedNode) return true
-
-    const reloadedValue = reloadedNode.$unwrap()
-    const value = node.$unwrap()
-    if (value === reloadedValue) return false
-    if (global.DEBUG) {
-      // eslint-disable-next-line no-console
-      console.warn(`Stale node pointing to path ${node.$path.toString()}`)
-    }
-
-    return true
   }
 
   /**
