@@ -120,3 +120,24 @@ export function unwrap<T extends object>(node: ArborNode<T>): T {
 
   return node.$unwrap()
 }
+
+/**
+ * Checks if a given prop is a getter in the given target's prototype chain.
+ *
+ * @param target an object to check the prototype chain for a given prop.
+ * @param prop the prop to check for.
+ * @returns true if the prop is a getter in the prototype chain, false otherwise.
+ */
+export function isGetter(target: object, prop: string) {
+  if (!target) {
+    return false
+  }
+
+  const descriptor = Object.getOwnPropertyDescriptor(target, prop)
+
+  if (descriptor && descriptor.get !== undefined) {
+    return true
+  }
+
+  return isGetter(Object.getPrototypeOf(target), prop)
+}

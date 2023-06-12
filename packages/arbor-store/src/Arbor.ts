@@ -338,7 +338,7 @@ export default class Arbor<T extends object = object> {
    * @param plugin plugin to extend the store with.
    * @returns a promise that gets resolved when the plugin completes its configuration steps.
    */
-  async use(plugin: Plugin<T>) {
+  use(plugin: Plugin<T>) {
     return plugin.configure(this)
   }
 
