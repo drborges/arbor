@@ -5,20 +5,9 @@ import Subscribers from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
 import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
+import { isGetter } from "./utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
-
-function isGetter(target: unknown, prop: string) {
-  const targetClassDescriptors = Object.getOwnPropertyDescriptors(
-    target.constructor.prototype
-  )
-
-  const classPropDescriptor = targetClassDescriptors[prop]
-  const objectPropDescriptor = Object.getOwnPropertyDescriptor(target, prop)
-  const descriptor = classPropDescriptor || objectPropDescriptor
-
-  return descriptor && typeof descriptor.get === "function"
-}
 
 export default class NodeHandler<T extends object = object>
   implements ProxyHandler<T>

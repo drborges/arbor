@@ -601,6 +601,50 @@ describe("Arbor", () => {
       expect(path(activeTodos[0]).toString()).toBe("/todos/1")
       expect(activeTodos[0]).toBe(store.state.todos[1])
     })
+
+    it("accounts for getters in the prototype chain", () => {
+      type Todo = {
+        id: string
+        text: string
+        active: boolean
+      }
+
+      class Collection {
+        private items = new Map<string, Todo>()
+
+        constructor(...items: Todo[]) {
+          items.forEach((item) => {
+            this.items.set(item.id, item)
+          })
+        }
+
+        get all() {
+          return Array.from(this.items.values())
+        }
+      }
+
+      @proxiable
+      class Todos extends Collection {
+        get activeTodos() {
+          return this.all.filter((todo) => todo.active)
+        }
+      }
+
+      const store = new Arbor(
+        new Todos(
+          { id: "a", text: "Do the dishes", active: false },
+          { id: "b", text: "Learn Arbor", active: true }
+        )
+      )
+
+      const activeTodos = store.state.activeTodos
+
+      expect(activeTodos[0].id).toBe("b")
+      expect(activeTodos[0].active).toBe(true)
+      expect(activeTodos[0].text).toBe("Learn Arbor")
+      expect(path(activeTodos[0]).toString()).toBe("/items/b")
+      expect(activeTodos[0]).toBe(store.state.all[1])
+    })
   })
 
   describe("Example: Reactive Array API", () => {
