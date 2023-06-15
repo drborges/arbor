@@ -164,12 +164,35 @@ export default class Arbor<T extends object = object> {
   #root: INode<T>
 
   /**
+   * List of node handlers used to extend Arbor's default proxying mechanism.
+   *
+   * The best way to extend Arbor is to subclass it with your list of node handlers:
+   *
+   * @example
+   *
+   * ```ts
+   * class TodoListNodeHandler extends NodeHandler<Map<unknown, TodoList>> {
+   *  static accepts(value: unknown) {
+   *    return value instanceof TodoList
+   *  }
+   *
+   *  // Omitted implementation details
+   * }
+   *
+   * class MyArbor extends Arbor<TodoList> {
+   *   extensions = [TodoListNodeHandler]
+   * }
+   * ```
+   */
+  protected readonly extensions: Handler[] = []
+
+  /**
    * Create a new Arbor instance.
    *
    * @param initialState the initial state tree value
    */
-  constructor(initialState: T, { handlers = [] }: ArborConfig = {}) {
-    this.#handlers = [...handlers, ...defaultNodeHandlers]
+  constructor(initialState: T) {
+    this.#handlers = [...this.extensions, ...defaultNodeHandlers]
     this.setState(initialState)
   }
 
