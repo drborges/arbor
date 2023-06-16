@@ -225,28 +225,14 @@ export default class Arbor<T extends object = object> {
       throw new DetachedNodeError()
     }
 
-    // TODO: This needs a little more thought. It would be nice to
-    // conditionally track snapshots of previous state trees since
-    // most use-cases do not require such tracking, thus, this
-    // serialization could be turned off by default.
-    // I'm considering removing the concept of a previous state from
-    // Arbor's core implementation in favor of having this functionality
-    // in a Plugin.
-    const previousState = JSON.stringify(this.#root.$unwrap())
     const result = mutate(this.#root, node.$path, mutation)
 
     this.#root = result?.root
 
     notifyAffectedSubscribers({
-      store: this,
-      state: {
-        current: result?.root?.$unwrap(),
-        get previous() {
-          return JSON.parse(previousState) as T
-        },
-      },
-      metadata: result.metadata ? result.metadata : null,
+      state: this.state,
       mutationPath: node.$path,
+      metadata: result.metadata ? result.metadata : null,
     })
   }
 
@@ -290,7 +276,6 @@ export default class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): ArborNode<T> {
-    const previous = this.#root?.$unwrap()
     const current = this.createNode(
       Path.root,
       value,
@@ -300,8 +285,7 @@ export default class Arbor<T extends object = object> {
     this.#root = current
 
     notifyAffectedSubscribers({
-      store: this,
-      state: { current, previous },
+      state: this.state,
       mutationPath: Path.root,
       metadata: {
         operation: "set",

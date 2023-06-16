@@ -1,4 +1,4 @@
-import Arbor from "./Arbor"
+import { ArborNode } from "./Arbor"
 import { MutationMetadata } from "./mutate"
 import Path from "./Path"
 
@@ -11,12 +11,7 @@ export type Unsubscribe = () => void
  * Describes a mutation event passed to subscribers
  */
 export type MutationEvent<T extends object> = {
-  // TODO: consider not exposing reactive state to plugins.
-  // If plugins wish to trigger mutations, perhaps it's a
-  // better idea to be explicit, and retrieve the node to
-  // mutate from the state tree.
-  store: Arbor<T>
-  state: { current?: T; previous?: T }
+  state: ArborNode<T>
   mutationPath: Path
   metadata: MutationMetadata
 }

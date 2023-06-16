@@ -74,10 +74,7 @@ export default class LocalStorage<T extends object> extends Storage<T> {
     return new Promise((resolve, reject) => {
       try {
         const serialize = this.config.serialize || JSON.stringify
-        window.localStorage.setItem(
-          this.config.key,
-          serialize(event.state.current)
-        )
+        window.localStorage.setItem(this.config.key, serialize(event.state))
         resolve()
       } catch (e) {
         reject(e)

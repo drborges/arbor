@@ -73,6 +73,13 @@ export class Repository<T extends Record> extends Map<string, T> {
   map<K>(transform: (record: T) => K) {
     return Array.from(this.values()).map(transform)
   }
+
+  toJSON() {
+    return Array.from(this.entries()).reduce((obj, entry) => {
+      obj[entry[0]] = entry[1]
+      return obj
+    }, {})
+  }
 }
 
 export const store = new Arbor(new Repository<Todo>())
