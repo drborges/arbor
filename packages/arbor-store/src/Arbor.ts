@@ -1,8 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
-import NodeArrayHandler from "./NodeArrayHandler"
+import ArrayNodeHandler from "./ArrayNodeHandler"
+import MapNodeHandler from "./MapNodeHandler"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import NodeMapHandler from "./NodeMapHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
@@ -128,7 +128,7 @@ export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
  * within the state tree as well as hook into write operations so that subscribers can
  * be notified accordingly and the next state tree generated via structural sharing.
  */
-const defaultNodeHandlers = [NodeArrayHandler, NodeMapHandler, NodeHandler]
+const defaultNodeHandlers = [ArrayNodeHandler, MapNodeHandler, NodeHandler]
 
 /**
  * Implements the Arbor state tree abstraction

@@ -3,7 +3,7 @@ import NodeHandler from "./NodeHandler"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 
-export default class NodeMapHandler<
+export default class MapNodeHandler<
   T extends object = object
 > extends NodeHandler<Map<unknown, T>> {
   static accepts(value: unknown) {
