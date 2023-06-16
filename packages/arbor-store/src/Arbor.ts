@@ -203,17 +203,6 @@ export default class Arbor<T extends object = object> {
    *
    * @example
    *
-   * Mutating a node referenced by a path:
-   *
-   * ```ts
-   * const store = new Arbor({ users: [] })
-   * store.mutate(Path.parse("/users"), node => node.push({ name: "John Doe" }))
-   * store.state
-   * => { users: [{ name: "John Doe" }]}
-   * ```
-   *
-   * Or using a node reference:
-   *
    * ```ts
    * const store = new Arbor({ users: [] })
    * store.mutate(store.state.users, node => node.push({ name: "John Doe" }))
@@ -221,21 +210,12 @@ export default class Arbor<T extends object = object> {
    * => { users: [{ name: "John Doe" }]}
    * ```
    *
-   * @param pathOrNode the path or the node within the state tree to be mutated.
-   * @param mutation a function responsible for mutating the target node at the given path.
+   * @param node the node within the state tree to be mutated.
+   * @param mutation a function that performs the mutation to the node.
    */
   mutate<V extends object>(node: ArborNode<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(path: Path, mutation: Mutation<V>): void
   mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(
-    pathOrNode: ArborNode<V> | Path,
-    mutation: Mutation<V>
-  ): void {
-    const node =
-      pathOrNode instanceof Path
-        ? pathOrNode.walk(this.#root)
-        : (pathOrNode as INode<V>)
-
+  mutate<V extends object>(node: unknown, mutation: Mutation<V>): void {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different
@@ -249,6 +229,9 @@ export default class Arbor<T extends object = object> {
     // conditionally track snapshots of previous state trees since
     // most use-cases do not require such tracking, thus, this
     // serialization could be turned off by default.
+    // I'm considering removing the concept of a previous state from
+    // Arbor's core implementation in favor of having this functionality
+    // in a Plugin.
     const previousState = JSON.stringify(this.#root.$unwrap())
     const result = mutate(this.#root, node.$path, mutation)
 
