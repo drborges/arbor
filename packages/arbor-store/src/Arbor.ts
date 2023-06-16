@@ -7,7 +7,7 @@ import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
-import mutate, { Mutation, MutationMetadata } from "./mutate"
+import mutate, { Mutation } from "./mutate"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 import { isDetached } from "./utilities"
 
@@ -262,7 +262,7 @@ export default class Arbor<T extends object = object> {
           return JSON.parse(previousState) as T
         },
       },
-      metadata: result.metadata as MutationMetadata,
+      metadata: result.metadata ? result.metadata : null,
       mutationPath: node.$path,
     })
   }
