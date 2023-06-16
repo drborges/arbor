@@ -53,11 +53,7 @@ export default class NodeMapHandler<
           return value
         }
 
-        const node = this.$children.has(value)
-          ? this.$children.get(value)
-          : this.$createChildNode(key, value)
-
-        return node
+        return this.$getOrCreateChildNode(key, value)
       }
     }
 

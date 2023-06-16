@@ -78,6 +78,12 @@ export default class NodeHandler<T extends object = object>
     )
   }
 
+  $getOrCreateChildNode<V extends object>(prop: string, value: V): INode<V> {
+    return this.$children.has(value)
+      ? this.$children.get(value)
+      : this.$createChildNode(prop, value)
+  }
+
   get(target: T, prop: string, proxy: INode<T>) {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
@@ -118,9 +124,7 @@ export default class NodeHandler<T extends object = object>
       return childValue
     }
 
-    return this.$children.has(childValue)
-      ? this.$children.get(childValue)
-      : this.$createChildNode(prop, childValue)
+    return this.$getOrCreateChildNode(prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: INode<T>): boolean {
@@ -174,10 +178,7 @@ export default class NodeHandler<T extends object = object>
     return true
   }
 
-  protected $createChildNode<V extends object>(
-    prop: string,
-    value: V
-  ): INode<V> {
+  private $createChildNode<V extends object>(prop: string, value: V): INode<V> {
     const childPath = this.$path.child(prop)
     const childNode = this.$tree.createNode(childPath, value)
     return this.$children.set(value, childNode)
