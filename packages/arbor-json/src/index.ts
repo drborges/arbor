@@ -1,20 +1,56 @@
+export const ArborSerializeAs = Symbol.for("ArborSerializeAs")
+
 export type Typed = {
   $reviver: string
   $value: unknown
 }
 
-export type Serialized<T extends Serializable> = ReturnType<T["toJSON"]>
+export type SerializedExplicitly<T extends Serializable> = ReturnType<
+  T["toJSON"]
+>
+export type Serialized<T> = {
+  $reviver: string
+  $value: {
+    [K in keyof T]: T[K]
+  }
+}
 
 export type Serializable = {
   toJSON(): Typed
 }
 
-export type Reviver<T extends Serializable = Serializable> = Function & {
-  $revive(obj: Serialized<T>): T
+export type Reviver<T = object> = Function & {
+  $revive(obj: object): T
 }
 
 function isTyped(value: unknown): value is Typed {
   return value?.["$reviver"] != null && value?.["$value"] != null
+}
+
+export function serializeAs<T extends Function>(reviver: string) {
+  return (target: T, _context: unknown = null) => {
+    target.prototype[ArborSerializeAs] = reviver || target.name
+
+    target.prototype.toJSON = function () {
+      const $value = {}
+
+      Object.keys(this).forEach((key) => {
+        $value[key] = this[key]
+      })
+
+      return {
+        $value,
+        $reviver: this[ArborSerializeAs],
+      }
+    }
+  }
+}
+
+export function serialize<T extends Function>(
+  target: T,
+  _context: unknown = null
+) {
+  return serializeAs(target.name)(target, _context)
 }
 
 export class Serializer {
@@ -22,7 +58,8 @@ export class Serializer {
 
   register(...revivers: Reviver[]) {
     revivers.forEach((reviver) => {
-      this.registerReviver(reviver.name, reviver)
+      const key = reviver.prototype[ArborSerializeAs] || reviver.name
+      this.registerReviver(key, reviver)
     })
   }
 

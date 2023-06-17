@@ -1,9 +1,15 @@
-import { Serialized, Serializer } from "./index"
+import {
+  Serialized,
+  SerializedExplicitly,
+  Serializer,
+  serialize,
+  serializeAs,
+} from "./index"
 
 class Todo {
   constructor(readonly uuid: string, public text: string) {}
 
-  static $revive({ $value }: Serialized<Todo>) {
+  static $revive({ $value }: SerializedExplicitly<Todo>) {
     return new Todo($value.id, $value.text)
   }
 
@@ -18,12 +24,30 @@ class Todo {
   }
 }
 
+@serialize
+class DecoratedTodo {
+  constructor(readonly uuid: string, public text: string) {}
+
+  static $revive({ $value }: Serialized<DecoratedTodo>) {
+    return new DecoratedTodo($value.uuid, $value.text)
+  }
+}
+
+@serializeAs("MyTodo")
+class DecoratedTodoCustomKey {
+  constructor(readonly uuid: string, public text: string) {}
+
+  static $revive({ $value }: Serialized<DecoratedTodoCustomKey>) {
+    return new DecoratedTodoCustomKey($value.uuid, $value.text)
+  }
+}
+
 class TodoList extends Map<string, Todo> {
   constructor(...todos: Todo[]) {
     super(todos.map((todo) => [todo.uuid, todo]))
   }
 
-  static $revive({ $value }: Serialized<TodoList>) {
+  static $revive({ $value }: SerializedExplicitly<TodoList>) {
     return new TodoList(...$value)
   }
 
@@ -76,6 +100,56 @@ describe("Serializer", () => {
     const deserialized = serializer.parse(serialized)
 
     expect(deserialized).toBeInstanceOf(Todo)
+    expect(deserialized).toEqual(todo)
+  })
+
+  it("serializes a custom type decorated with @serializable", () => {
+    const serializer = new Serializer()
+    serializer.register(DecoratedTodo)
+
+    const todo = new DecoratedTodo("a", "Clean the house")
+    const serialized = serializer.stringify(todo)
+
+    expect(serialized).toEqual(
+      '{"$value":{"uuid":"a","text":"Clean the house"},"$reviver":"DecoratedTodo"}'
+    )
+  })
+
+  it("serializes a custom type decorated with @serializable and a custom reviver key", () => {
+    const serializer = new Serializer()
+    serializer.register(DecoratedTodoCustomKey)
+
+    const todo = new DecoratedTodoCustomKey("a", "Clean the house")
+    const serialized = serializer.stringify(todo)
+
+    expect(serialized).toEqual(
+      '{"$value":{"uuid":"a","text":"Clean the house"},"$reviver":"MyTodo"}'
+    )
+  })
+
+  it("deserializes a custom type decorated with @serializable", () => {
+    const serializer = new Serializer()
+    serializer.register(DecoratedTodo)
+
+    const todo = new DecoratedTodo("a", "Clean the house")
+
+    const serialized = serializer.stringify(todo)
+    const deserialized = serializer.parse(serialized)
+
+    expect(deserialized).toBeInstanceOf(DecoratedTodo)
+    expect(deserialized).toEqual(todo)
+  })
+
+  it("deserializes a custom type decorated with @serializable and a custom reviver key", () => {
+    const serializer = new Serializer()
+    serializer.register(DecoratedTodoCustomKey)
+
+    const todo = new DecoratedTodoCustomKey("a", "Clean the house")
+
+    const serialized = serializer.stringify(todo)
+    const deserialized = serializer.parse(serialized)
+
+    expect(deserialized).toBeInstanceOf(DecoratedTodoCustomKey)
     expect(deserialized).toEqual(todo)
   })
 
