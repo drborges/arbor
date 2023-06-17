@@ -2,17 +2,15 @@ export const ArborSerializeAs = Symbol.for("ArborSerializeAs")
 
 export type Typed = {
   $reviver: string
-  $value: unknown
+  $value: object
 }
 
 export type SerializedExplicitly<T extends Serializable> = ReturnType<
   T["toJSON"]
->
+>["$value"]
+
 export type Serialized<T> = {
-  $reviver: string
-  $value: {
-    [K in keyof T]: T[K]
-  }
+  [K in keyof T]: T[K]
 }
 
 export type Serializable = {
@@ -80,7 +78,7 @@ export class Serializer {
       const Type = this.#revivers.get(value.$reviver)
 
       if (Type) {
-        return Type.$revive(value)
+        return Type.$revive(value.$value)
       }
     }
 

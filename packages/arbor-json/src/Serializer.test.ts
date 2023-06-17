@@ -9,8 +9,8 @@ import {
 class Todo {
   constructor(readonly uuid: string, public text: string) {}
 
-  static $revive({ $value }: SerializedExplicitly<Todo>) {
-    return new Todo($value.id, $value.text)
+  static $revive(value: SerializedExplicitly<Todo>) {
+    return new Todo(value.id, value.text)
   }
 
   toJSON() {
@@ -28,8 +28,8 @@ class Todo {
 class DecoratedTodo {
   constructor(readonly uuid: string, public text: string) {}
 
-  static $revive({ $value }: Serialized<DecoratedTodo>) {
-    return new DecoratedTodo($value.uuid, $value.text)
+  static $revive(value: Serialized<DecoratedTodo>) {
+    return new DecoratedTodo(value.uuid, value.text)
   }
 }
 
@@ -37,8 +37,8 @@ class DecoratedTodo {
 class DecoratedTodoCustomKey {
   constructor(readonly uuid: string, public text: string) {}
 
-  static $revive({ $value }: Serialized<DecoratedTodoCustomKey>) {
-    return new DecoratedTodoCustomKey($value.uuid, $value.text)
+  static $revive(value: Serialized<DecoratedTodoCustomKey>) {
+    return new DecoratedTodoCustomKey(value.uuid, value.text)
   }
 }
 
@@ -47,8 +47,8 @@ class TodoList extends Map<string, Todo> {
     super(todos.map((todo) => [todo.uuid, todo]))
   }
 
-  static $revive({ $value }: SerializedExplicitly<TodoList>) {
-    return new TodoList(...$value)
+  static $revive(value: SerializedExplicitly<TodoList>) {
+    return new TodoList(...value)
   }
 
   toJSON() {
