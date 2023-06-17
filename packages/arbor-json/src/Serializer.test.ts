@@ -1,10 +1,4 @@
-import {
-  Json,
-  Serialized,
-  SerializedExplicitly,
-  serialize,
-  serializeAs,
-} from "./index"
+import { Json, Serialized, SerializedExplicitly } from "./index"
 
 class Todo {
   constructor(readonly uuid: string, public text: string) {}
@@ -122,7 +116,9 @@ describe("Serializer", () => {
   })
 
   describe("decorated custom type", () => {
-    @serialize
+    const json = new Json()
+
+    @json.serialize
     class DecoratedTodo {
       constructor(readonly uuid: string, public text: string) {}
 
@@ -132,9 +128,6 @@ describe("Serializer", () => {
     }
 
     it("serializes a decorated custom type", () => {
-      const json = new Json()
-      json.register(DecoratedTodo)
-
       const todo = new DecoratedTodo("a", "Clean the house")
       const serialized = json.stringify(todo)
 
@@ -144,9 +137,6 @@ describe("Serializer", () => {
     })
 
     it("deserializes a decorated custom type", () => {
-      const json = new Json()
-      json.register(DecoratedTodo)
-
       const todo = new DecoratedTodo("a", "Clean the house")
 
       const serialized = json.stringify(todo)
@@ -158,7 +148,8 @@ describe("Serializer", () => {
   })
 
   describe("decorated custom type with custom reviver key", () => {
-    @serializeAs("MyTodo")
+    const json = new Json()
+    @json.serializeAs("MyTodo")
     class DecoratedTodoCustomKey {
       constructor(readonly uuid: string, public text: string) {}
 
@@ -168,9 +159,6 @@ describe("Serializer", () => {
     }
 
     it("serializes a custom type decorated with @serializable and a custom reviver key", () => {
-      const json = new Json()
-      json.register(DecoratedTodoCustomKey)
-
       const todo = new DecoratedTodoCustomKey("a", "Clean the house")
       const serialized = json.stringify(todo)
 
@@ -180,9 +168,6 @@ describe("Serializer", () => {
     })
 
     it("deserializes a custom type decorated with @serializable and a custom reviver key", () => {
-      const json = new Json()
-      json.register(DecoratedTodoCustomKey)
-
       const todo = new DecoratedTodoCustomKey("a", "Clean the house")
 
       const serialized = json.stringify(todo)

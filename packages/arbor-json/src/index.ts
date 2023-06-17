@@ -25,34 +25,41 @@ function isTyped(value: unknown): value is Typed {
   return value?.["$reviver"] != null && value?.["$value"] != null
 }
 
-export function serializeAs<T extends Function>(reviver: string) {
-  return (target: T, _context: unknown = null) => {
-    target.prototype[ArborSerializeAs] = reviver || target.name
-
-    target.prototype.toJSON = function () {
-      const $value = {}
-
-      Object.keys(this).forEach((key) => {
-        $value[key] = this[key]
-      })
-
-      return {
-        $value,
-        $reviver: this[ArborSerializeAs],
-      }
-    }
-  }
-}
-
-export function serialize<T extends Function>(
-  target: T,
-  _context: unknown = null
-) {
-  return serializeAs(target.name)(target, _context)
-}
-
 export class Json {
   #revivers = new Map<string, Reviver>()
+
+  /**
+   *
+   * NOTE: This must be an arrow function so this can be scoped to the class instance.
+   *
+   * @param target
+   * @param _context
+   * @returns
+   */
+  serialize = <T extends Reviver>(target: T, _context: unknown = null) => {
+    return this.serializeAs(target.name)(target, _context)
+  }
+
+  serializeAs<T extends Reviver>(reviver: string) {
+    return (target: T, _context: unknown = null) => {
+      target.prototype[ArborSerializeAs] = reviver || target.name
+
+      target.prototype.toJSON = function () {
+        const $value = {}
+
+        Object.keys(this).forEach((key) => {
+          $value[key] = this[key]
+        })
+
+        return {
+          $value,
+          $reviver: this[ArborSerializeAs],
+        }
+      }
+
+      this.register(target as Reviver)
+    }
+  }
 
   register(...revivers: Reviver[]) {
     revivers.forEach((reviver) => {
