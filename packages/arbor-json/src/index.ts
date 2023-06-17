@@ -51,7 +51,7 @@ export function serialize<T extends Function>(
   return serializeAs(target.name)(target, _context)
 }
 
-export class Serializer {
+export class Json {
   #revivers = new Map<string, Reviver>()
 
   register(...revivers: Reviver[]) {
