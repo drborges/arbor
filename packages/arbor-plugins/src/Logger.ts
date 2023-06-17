@@ -4,7 +4,10 @@ export class Logger<T extends object> implements Plugin<T> {
   constructor(readonly tag: string) {}
 
   async configure(store: Arbor<T>) {
+    let previousState = JSON.stringify(store.state)
+
     return store.subscribe((event) => {
+      const currentState = JSON.stringify(event.state)
       const operation = event.metadata?.operation?.toUpperCase()
       const path = event.mutationPath.toString()
       const props = event.metadata.props
@@ -20,14 +23,16 @@ export class Logger<T extends object> implements Plugin<T> {
       console.info(
         "  %ccurrent: %O",
         "color: lightgreen;",
-        JSON.parse(JSON.stringify(event.state.current))
+        JSON.parse(currentState)
       )
       console.info(
         "  %cprevious: %O",
         "color: #ff4040",
-        JSON.parse(JSON.stringify(event.state.previous))
+        JSON.parse(previousState)
       )
       console.info("")
+
+      previousState = currentState
     })
   }
 }

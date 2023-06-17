@@ -9,6 +9,9 @@ import { isGetter } from "./utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
+/**
+ * Default node handler implementation.
+ */
 export default class NodeHandler<T extends object = object>
   implements ProxyHandler<T>
 {
@@ -28,16 +31,40 @@ export default class NodeHandler<T extends object = object>
     readonly $subscribers = new Subscribers()
   ) {}
 
+  /**
+   * Checks if this node handler implementation can handle a given value belonging to
+   * the state tree.
+   *
+   * Since this implementation is the default node handler, it will always return true
+   * no matter the value passed in.
+   *
+   * @param _value node value to check. Ignored by this implementation.
+   * @returns always true.
+   */
   static accepts(_value: unknown) {
     return true
   }
 
+  /**
+   * Method used by Arbor in order to traverse a Node and access its children.
+   *
+   * By default Arbor assumes that the state tree is composed by either plain objects
+   * or Arrays, thus, the default traversing logic is via prop indexing, e.g. node[prop].
+   *
+   * @param key the key/prop used to index the child node.
+   * @returns the child node.
+   */
   $traverse(key: unknown) {
     if (!isNode<T>(this)) throw new NotAnArborNodeError()
 
     return this[key as string] as INode
   }
 
+  /**
+   * Unwraps the node returning its underlying value.
+   *
+   * @returns the unwrapped node value.
+   */
   $unwrap(): T {
     return this.$value
   }
@@ -49,6 +76,12 @@ export default class NodeHandler<T extends object = object>
       this.$subscribers,
       this.$children
     )
+  }
+
+  $getOrCreateChildNode<V extends object>(prop: string, value: V): INode<V> {
+    return this.$children.has(value)
+      ? this.$children.get(value)
+      : this.$createChildNode(prop, value)
   }
 
   get(target: T, prop: string, proxy: INode<T>) {
@@ -91,9 +124,7 @@ export default class NodeHandler<T extends object = object>
       return childValue
     }
 
-    return this.$children.has(childValue)
-      ? this.$children.get(childValue)
-      : this.$createChildNode(prop, childValue)
+    return this.$getOrCreateChildNode(prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: INode<T>): boolean {
@@ -147,10 +178,7 @@ export default class NodeHandler<T extends object = object>
     return true
   }
 
-  protected $createChildNode<V extends object>(
-    prop: string,
-    value: V
-  ): INode<V> {
+  private $createChildNode<V extends object>(prop: string, value: V): INode<V> {
     const childPath = this.$path.child(prop)
     const childNode = this.$tree.createNode(childPath, value)
     return this.$children.set(value, childNode)

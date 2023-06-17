@@ -1,13 +1,13 @@
 // eslint-disable-next-line max-classes-per-file
-import NodeArrayHandler from "./NodeArrayHandler"
+import ArrayNodeHandler from "./ArrayNodeHandler"
+import MapNodeHandler from "./MapNodeHandler"
 import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
-import NodeMapHandler from "./NodeMapHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
-import mutate, { Mutation, MutationMetadata } from "./mutate"
+import mutate, { Mutation } from "./mutate"
 import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 import { isDetached } from "./utilities"
 
@@ -128,7 +128,7 @@ export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
  * within the state tree as well as hook into write operations so that subscribers can
  * be notified accordingly and the next state tree generated via structural sharing.
  */
-const defaultNodeHandlers = [NodeArrayHandler, NodeMapHandler, NodeHandler]
+const defaultNodeHandlers = [ArrayNodeHandler, MapNodeHandler, NodeHandler]
 
 /**
  * Implements the Arbor state tree abstraction
@@ -164,12 +164,35 @@ export default class Arbor<T extends object = object> {
   #root: INode<T>
 
   /**
+   * List of node handlers used to extend Arbor's default proxying mechanism.
+   *
+   * The best way to extend Arbor is to subclass it with your list of node handlers:
+   *
+   * @example
+   *
+   * ```ts
+   * class TodoListNodeHandler extends NodeHandler<Map<unknown, TodoList>> {
+   *  static accepts(value: unknown) {
+   *    return value instanceof TodoList
+   *  }
+   *
+   *  // Omitted implementation details
+   * }
+   *
+   * class MyArbor extends Arbor<TodoList> {
+   *   extensions = [TodoListNodeHandler]
+   * }
+   * ```
+   */
+  protected readonly extensions: Handler[] = []
+
+  /**
    * Create a new Arbor instance.
    *
    * @param initialState the initial state tree value
    */
-  constructor(initialState: T, { handlers = [] }: ArborConfig = {}) {
-    this.#handlers = [...handlers, ...defaultNodeHandlers]
+  constructor(initialState: T) {
+    this.#handlers = [...this.extensions, ...defaultNodeHandlers]
     this.setState(initialState)
   }
 
@@ -180,17 +203,6 @@ export default class Arbor<T extends object = object> {
    *
    * @example
    *
-   * Mutating a node referenced by a path:
-   *
-   * ```ts
-   * const store = new Arbor({ users: [] })
-   * store.mutate(Path.parse("/users"), node => node.push({ name: "John Doe" }))
-   * store.state
-   * => { users: [{ name: "John Doe" }]}
-   * ```
-   *
-   * Or using a node reference:
-   *
    * ```ts
    * const store = new Arbor({ users: [] })
    * store.mutate(store.state.users, node => node.push({ name: "John Doe" }))
@@ -198,21 +210,12 @@ export default class Arbor<T extends object = object> {
    * => { users: [{ name: "John Doe" }]}
    * ```
    *
-   * @param pathOrNode the path or the node within the state tree to be mutated.
-   * @param mutation a function responsible for mutating the target node at the given path.
+   * @param node the node within the state tree to be mutated.
+   * @param mutation a function that performs the mutation to the node.
    */
   mutate<V extends object>(node: ArborNode<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(path: Path, mutation: Mutation<V>): void
   mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(
-    pathOrNode: ArborNode<V> | Path,
-    mutation: Mutation<V>
-  ): void {
-    const node =
-      pathOrNode instanceof Path
-        ? pathOrNode.walk(this.#root)
-        : (pathOrNode as INode<V>)
-
+  mutate<V extends object>(node: unknown, mutation: Mutation<V>): void {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
     // Nodes that are no longer in the state tree or were moved into a different
@@ -222,25 +225,14 @@ export default class Arbor<T extends object = object> {
       throw new DetachedNodeError()
     }
 
-    // TODO: This needs a little more thought. It would be nice to
-    // conditionally track snapshots of previous state trees since
-    // most use-cases do not require such tracking, thus, this
-    // serialization could be turned off by default.
-    const previousState = JSON.stringify(this.#root.$unwrap())
     const result = mutate(this.#root, node.$path, mutation)
 
     this.#root = result?.root
 
     notifyAffectedSubscribers({
-      store: this,
-      state: {
-        current: result?.root?.$unwrap(),
-        get previous() {
-          return JSON.parse(previousState) as T
-        },
-      },
-      metadata: result.metadata as MutationMetadata,
+      state: this.state,
       mutationPath: node.$path,
+      metadata: result.metadata ? result.metadata : null,
     })
   }
 
@@ -284,7 +276,6 @@ export default class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): ArborNode<T> {
-    const previous = this.#root?.$unwrap()
     const current = this.createNode(
       Path.root,
       value,
@@ -294,8 +285,7 @@ export default class Arbor<T extends object = object> {
     this.#root = current
 
     notifyAffectedSubscribers({
-      store: this,
-      state: { current, previous },
+      state: this.state,
       mutationPath: Path.root,
       metadata: {
         operation: "set",

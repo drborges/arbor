@@ -52,7 +52,7 @@ export function merge<T extends object>(
     throw new DetachedNodeError()
   }
 
-  node.$tree.mutate(node.$path, (value) => {
+  node.$tree.mutate(node as ArborNode<T>, (value) => {
     Object.assign(value, data)
     return {
       operation: "merge",

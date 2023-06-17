@@ -52,15 +52,13 @@ describe("Arbor", () => {
 
       expect(counter.count).toBe(1)
       expect(store.state.count).toBe(1)
-      expect(subscriber.mock.calls[0][0].state.previous.count).toBe(0)
-      expect(subscriber.mock.calls[0][0].state.current.count).toBe(1)
+      expect(subscriber.mock.calls[0][0].state.count).toBe(1)
 
       counter.count++
 
       expect(counter.count).toBe(2)
       expect(store.state.count).toBe(2)
-      expect(subscriber.mock.calls[1][0].state.previous.count).toBe(1)
-      expect(subscriber.mock.calls[1][0].state.current.count).toBe(2)
+      expect(subscriber.mock.calls[1][0].state.count).toBe(2)
     })
 
     it("keeps stale node references in sync with the current state tree", () => {
@@ -244,13 +242,8 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls.length).toBe(1)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
-      expect(subscriber.mock.calls[0][0].state.current).toEqual({
+      expect(subscriber.mock.calls[0][0].state).toEqual({
         "1": { text: "Clean the house" },
-      })
-
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
-        "1": { text: "Clean the house" },
-        "2": { text: "Walk the dogs" },
       })
     })
 
@@ -282,13 +275,8 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls.length).toBe(1)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
-      expect(subscriber.mock.calls[0][0].state.current).toEqual({
+      expect(subscriber.mock.calls[0][0].state).toEqual({
         "1": { text: "Clean the house" },
-      })
-
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual({
-        "1": { text: "Clean the house" },
-        "2": { text: "Walk the dogs" },
       })
     })
   })
@@ -326,8 +314,7 @@ describe("Arbor", () => {
           expect(event.mutationPath.toString()).toEqual("/")
           expect(event.metadata.props).toEqual(["count"])
           expect(event.metadata.operation).toEqual("set")
-          expect(event.state.previous).toEqual({ count: 0 })
-          expect(event.state.current).toEqual({ count: -1 })
+          expect(event.state).toEqual({ count: -1 })
           resolve(null)
         })
 
@@ -381,12 +368,7 @@ describe("Arbor", () => {
           expect(event.mutationPath.toString()).toEqual("/0")
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
-          expect(event.state.previous).toEqual([
-            { text: "Do the dishes", status: "todo" },
-            { text: "Clean the house", status: "doing" },
-          ])
-
-          expect(event.state.current).toEqual([
+          expect(event.state).toEqual([
             { text: "Do the dishes", status: "doing" },
             { text: "Clean the house", status: "doing" },
           ])
@@ -659,10 +641,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["1"])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("push")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Do the dishes", status: "todo" },
-      ])
+      expect(subscriber.mock.calls[0][0].state).toBe(store.state)
 
       expect(store.state).toEqual([
         { text: "Do the dishes", status: "todo" },
@@ -685,13 +664,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0", "1"])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("splice")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Do the dishes", status: "todo" },
-        { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" },
-      ])
-
+      expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(store.state).toEqual([{ text: "Clean the house", status: "todo" }])
     })
 
@@ -710,13 +683,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0"])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Do the dishes", status: "todo" },
-        { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" },
-      ])
-
+      expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(store.state).toEqual([
         { text: "Walk the dogs", status: "todo" },
         { text: "Clean the house", status: "todo" },
@@ -738,13 +705,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0"])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("shift")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Do the dishes", status: "todo" },
-        { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" },
-      ])
-
+      expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(shiftedTodo).toEqual({ text: "Do the dishes", status: "todo" })
       expect(store.state).toEqual([
         { text: "Walk the dogs", status: "todo" },
@@ -767,13 +728,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("pop")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Do the dishes", status: "todo" },
-        { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" },
-      ])
-
+      expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(poppedTodo).toEqual({ text: "Clean the house", status: "todo" })
       expect(store.state).toEqual([
         { text: "Do the dishes", status: "todo" },
@@ -798,12 +753,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("unshift")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Do the dishes", status: "todo" },
-        { text: "Walk the dogs", status: "todo" },
-      ])
-
+      expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(length).toEqual(3)
       expect(store.state).toEqual([
         { text: "Clean the house", status: "todo" },
@@ -826,12 +776,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("reverse")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Do the dishes", status: "todo" },
-        { text: "Walk the dogs", status: "todo" },
-      ])
-
+      expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(reversed).toBe(store.state)
       expect(store.state).toEqual([
         { text: "Walk the dogs", status: "todo" },
@@ -854,13 +799,7 @@ describe("Arbor", () => {
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
       expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("sort")
-      expect(subscriber.mock.calls[0][0].state.current).toEqual(store.state)
-      expect(subscriber.mock.calls[0][0].state.previous).toEqual([
-        { text: "Walk the dogs", status: "todo" },
-        { text: "Clean the house", status: "todo" },
-        { text: "Do the dishes", status: "todo" },
-      ])
-
+      expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(sorted).toBe(store.state)
       expect(store.state).toEqual([
         { text: "Clean the house", status: "todo" },
@@ -895,9 +834,7 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
-      expect(subscriber.mock.calls[0][0].state.current).toBe(
-        unwrap(store.state)
-      )
+      expect(subscriber.mock.calls[0][0].state).toBe(store.state)
       expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
       expect(store.state.todos.get("abc")).not.toBe(todosMap.get("abc"))
@@ -980,9 +917,7 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
-      expect(subscriber.mock.calls[0][0].state.current).toBe(
-        unwrap(store.state)
-      )
+      expect(subscriber.mock.calls[0][0].state).toBe(store.state)
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
@@ -1012,9 +947,7 @@ describe("Arbor", () => {
         Path.parse("/todos")
       )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("clear")
-      expect(subscriber.mock.calls[0][0].state.current).toBe(
-        unwrap(store.state)
-      )
+      expect(subscriber.mock.calls[0][0].state).toBe(store.state)
       expect(store.state.todos.get("123")).toBeUndefined()
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
