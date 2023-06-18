@@ -32,8 +32,11 @@ describe("Serializer", () => {
 
   describe("custom type", () => {
     const json = new Json()
+    const serialize = json.serialize
+    const stringify = json.stringify.bind(json)
+    const parse = json.parse.bind(json)
 
-    @json.serialize
+    @serialize
     class Todo {
       constructor(readonly uuid: string, public text: string) {}
 
@@ -42,7 +45,7 @@ describe("Serializer", () => {
       }
     }
 
-    @json.serialize
+    @serialize
     class TodoList extends Map<string, Todo> {
       constructor(...todos: Todo[]) {
         super(todos.map((todo) => [todo.uuid, todo]))
@@ -60,7 +63,7 @@ describe("Serializer", () => {
     it("serializes a custom type", () => {
       const todo = new Todo("a", "Clean the house")
 
-      const serialized = json.stringify(todo)
+      const serialized = stringify(todo)
 
       expect(serialized).toEqual(
         '{"$value":{"uuid":"a","text":"Clean the house"},"$type":"Todo"}'
@@ -70,8 +73,8 @@ describe("Serializer", () => {
     it("deserializes a custom type", () => {
       const todo = new Todo("a", "Clean the house")
 
-      const serialized = json.stringify(todo)
-      const deserialized = json.parse(serialized)
+      const serialized = stringify(todo)
+      const deserialized = parse(serialized)
 
       expect(deserialized).toBeInstanceOf(Todo)
       expect(deserialized).toEqual(todo)
@@ -84,7 +87,7 @@ describe("Serializer", () => {
         new Todo("c", "Walk the dogs")
       )
 
-      const serialized = json.stringify(todoList)
+      const serialized = stringify(todoList)
 
       expect(serialized).toEqual(
         '{"$value":[{"$value":{"uuid":"a","text":"Clean the house"},"$type":"Todo"},{"$value":{"uuid":"b","text":"Do the dishes"},"$type":"Todo"},{"$value":{"uuid":"c","text":"Walk the dogs"},"$type":"Todo"}],"$type":"TodoList"}'
@@ -98,8 +101,8 @@ describe("Serializer", () => {
         new Todo("c", "Walk the dogs")
       )
 
-      const serialized = json.stringify(todoList)
-      const deserialized = json.parse(serialized)
+      const serialized = stringify(todoList)
+      const deserialized = parse(serialized)
 
       expect(deserialized).toBeInstanceOf(TodoList)
       expect(deserialized).toEqual(todoList)

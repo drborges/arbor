@@ -130,8 +130,11 @@ Let's say you create `src/json.ts` to hide the serialization setup logic:
 import { Json } from "@arborjs/json"
 
 const json = new Json()
+const serialize = json.serialize
+const parse = json.parse.bind(json)
+const stringify = json.stringify.bind(json)
 
-export default json
+export { serialize, stringify, parse }
 ```
 
 You'd be able to import just the decorator you need in your `src/Todo.ts` implementing the `Todo` abstraction:
