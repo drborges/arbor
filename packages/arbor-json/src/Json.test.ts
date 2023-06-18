@@ -54,7 +54,7 @@ describe("Serializer", () => {
       const serialized = json.stringify(todo)
 
       expect(serialized).toEqual(
-        '{"$value":{"uuid":"a","text":"Clean the house"},"$reviver":"Todo"}'
+        '{"$value":{"uuid":"a","text":"Clean the house"},"$type":"Todo"}'
       )
     })
 
@@ -78,7 +78,7 @@ describe("Serializer", () => {
       const serialized = json.stringify(todoList)
 
       expect(serialized).toEqual(
-        '{"$value":[{"$value":{"uuid":"a","text":"Clean the house"},"$reviver":"Todo"},{"$value":{"uuid":"b","text":"Do the dishes"},"$reviver":"Todo"},{"$value":{"uuid":"c","text":"Walk the dogs"},"$reviver":"Todo"}],"$reviver":"TodoList"}'
+        '{"$value":[{"$value":{"uuid":"a","text":"Clean the house"},"$type":"Todo"},{"$value":{"uuid":"b","text":"Do the dishes"},"$type":"Todo"},{"$value":{"uuid":"c","text":"Walk the dogs"},"$type":"Todo"}],"$type":"TodoList"}'
       )
     })
 
@@ -97,7 +97,7 @@ describe("Serializer", () => {
     })
   })
 
-  describe("custom type with custom reviver key", () => {
+  describe("custom type with custom $type key", () => {
     const json = new Json()
 
     @json.serializeAs("MyTodo")
@@ -109,16 +109,16 @@ describe("Serializer", () => {
       }
     }
 
-    it("serializes a custom type decorated with @serializable and a custom reviver key", () => {
+    it("serializes a custom type decorated with @serializable and a custom $type key", () => {
       const todo = new DecoratedTodoCustomKey("a", "Clean the house")
       const serialized = json.stringify(todo)
 
       expect(serialized).toEqual(
-        '{"$value":{"uuid":"a","text":"Clean the house"},"$reviver":"MyTodo"}'
+        '{"$value":{"uuid":"a","text":"Clean the house"},"$type":"MyTodo"}'
       )
     })
 
-    it("deserializes a custom type decorated with @serializable and a custom reviver key", () => {
+    it("deserializes a custom type decorated with @serializable and a custom $type key", () => {
       const todo = new DecoratedTodoCustomKey("a", "Clean the house")
 
       const serialized = json.stringify(todo)

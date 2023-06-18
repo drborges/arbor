@@ -1,7 +1,7 @@
 export const ArborSerializeAs = Symbol.for("ArborSerializeAs")
 
 export type Typed = {
-  $reviver: string
+  $type: string
   $value: object
 }
 
@@ -20,7 +20,7 @@ export type Reviver<T = object> = Function & {
 }
 
 function isTyped(value: unknown): value is Typed {
-  return value?.["$reviver"] != null && value?.["$value"] != null
+  return value?.["$type"] != null && value?.["$value"] != null
 }
 
 /**
@@ -60,7 +60,7 @@ export class Json {
         if (toJSON) {
           return {
             $value: toJSON.call(this),
-            $reviver: this[ArborSerializeAs],
+            $type: this[ArborSerializeAs],
           }
         }
 
@@ -72,7 +72,7 @@ export class Json {
 
         return {
           $value,
-          $reviver: this[ArborSerializeAs],
+          $type: this[ArborSerializeAs],
         }
       }
 
@@ -128,7 +128,7 @@ export class Json {
 
   private reviver(_key: string, value: unknown) {
     if (isTyped(value)) {
-      const Type = this.#revivers.get(value.$reviver)
+      const Type = this.#revivers.get(value.$type)
 
       if (Type) {
         return Type.fromJSON(value.$value)
