@@ -137,4 +137,23 @@ describe("Serializer", () => {
       expect(deserialized).toEqual(todo)
     })
   })
+
+  describe("custom type with default deserializer", () => {
+    const json = new Json()
+
+    @json.serialize
+    class Todo {
+      constructor(readonly uuid: string, public text: string) {}
+    }
+
+    it("deserializes a custom type with a default deserialize logic", () => {
+      const todo = new Todo("a", "Clean the house")
+
+      const serialized = json.stringify(todo)
+      const deserialized = json.parse(serialized)
+
+      expect(deserialized).toBeInstanceOf(Todo)
+      expect(deserialized).toEqual(todo)
+    })
+  })
 })

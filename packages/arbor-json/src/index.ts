@@ -15,8 +15,16 @@ export type Serializable = {
   toJSON(): object
 }
 
-export type Reviver<T = object> = Function & {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Type = { new (...args: any[]): unknown }
+export type CustomDeserialization<T = object> = {
   fromJSON(obj: object): T
+}
+
+function hasCustomDeserialization(
+  value: unknown
+): value is CustomDeserialization {
+  return typeof value?.["fromJSON"] === "function"
 }
 
 function isTyped(value: unknown): value is Typed {
@@ -28,7 +36,7 @@ function isTyped(value: unknown): value is Typed {
  * adding support to user-defined types while adding very little boilerplate.
  */
 export class Json {
-  #revivers = new Map<string, Reviver>()
+  #types = new Map<string, Type>()
 
   /**
    * Decorator used to mark classes as serializable by @arborjs/json.
@@ -38,7 +46,7 @@ export class Json {
    */
   // NOTE: This must be an arrow function so "this" can be bound to the class instance when
   // called on the decorated class.
-  serialize = <T extends Reviver>(target: T, _context: unknown = null) => {
+  serialize = <T extends Type>(target: T, _context: unknown = null) => {
     return this.serializeAs(target.name)(target, _context)
   }
 
@@ -49,7 +57,7 @@ export class Json {
    * @param key key used to identify the class type so it can be deserialized back
    * to the correct type.
    */
-  serializeAs<T extends Reviver>(key: string) {
+  serializeAs<T extends Type>(key: string) {
     return (target: T, _context: unknown = null) => {
       const toJSON = target.prototype.toJSON
 
@@ -76,12 +84,12 @@ export class Json {
         }
       }
 
-      this.register(target as Reviver)
+      this.register(target as Type)
     }
   }
 
   /**
-   * Serializes an object into a JSON string while tracking which {@link Reviver}
+   * Serializes an object into a JSON string while tracking which {@link Type}
    * can be used to deserialize the value.
    *
    * @param value object to serialize into a string.
@@ -93,7 +101,7 @@ export class Json {
 
   /**
    * Parses a JSON string deserializing the data into its original type via
-   * the previously registered {@link Reviver} objects.
+   * the previously registered {@link Type} objects.
    *
    * @param value string to be parsed.
    * @returns the deserialized data type represented by the given string.
@@ -102,23 +110,22 @@ export class Json {
     return JSON.parse(value, this.reviver.bind(this))
   }
 
-  protected register(...revivers: Reviver[]) {
-    revivers.forEach((reviver) => {
-      const key = reviver.prototype[ArborSerializeAs] || reviver.name
-      this.registerReviver(key, reviver)
+  protected register(...types: Type[]) {
+    types.forEach((type) => {
+      const key = type.prototype[ArborSerializeAs] || type.name
+      this.#types.set(key, type)
     })
-  }
-
-  protected registerReviver(key: string, reviver: Reviver) {
-    this.#revivers.set(key, reviver)
   }
 
   private reviver(_key: string, value: unknown) {
     if (isTyped(value)) {
-      const Type = this.#revivers.get(value.$type)
+      const Type = this.#types.get(value.$type)
 
-      if (Type) {
+      if (hasCustomDeserialization(Type)) {
         return Type.fromJSON(value.$value)
+      } else if (Type) {
+        const instance = new Type()
+        return Object.assign(instance, value.$value)
       }
     }
 
