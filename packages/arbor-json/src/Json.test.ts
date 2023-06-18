@@ -1,53 +1,62 @@
 import { Json, Serialized, SerializedBy } from "./index"
 
-const json = new Json()
-
-@json.serialize
-class Todo {
-  constructor(readonly uuid: string, public text: string) {}
-
-  static fromJSON(value: Serialized<Todo>) {
-    return new Todo(value.uuid, value.text)
-  }
-}
-
-@json.serialize
-class TodoList extends Map<string, Todo> {
-  constructor(...todos: Todo[]) {
-    super(todos.map((todo) => [todo.uuid, todo]))
-  }
-
-  static fromJSON(value: SerializedBy<TodoList>) {
-    return new TodoList(...value)
-  }
-
-  toJSON() {
-    return Array.from(this.values())
-  }
-}
-
 describe("Serializer", () => {
   describe("simple object", () => {
     it("serializes a simple object", () => {
-      const todo = { uuid: "a", text: "Clean the house" }
+      const json = new Json()
+      const todos = [
+        { uuid: "a", text: "Clean the house" },
+        { uuid: "b", text: "Do the dishes" },
+      ]
 
-      const serialized = json.stringify(todo)
+      const serialized = json.stringify(todos)
 
-      expect(serialized).toEqual('{"uuid":"a","text":"Clean the house"}')
+      expect(serialized).toEqual(
+        '[{"uuid":"a","text":"Clean the house"},{"uuid":"b","text":"Do the dishes"}]'
+      )
     })
 
     it("deserializes a simple object", () => {
-      const todo = { uuid: "a", text: "Clean the house" }
+      const todos = [
+        { uuid: "a", text: "Clean the house" },
+        { uuid: "b", text: "Do the dishes" },
+      ]
 
       const json = new Json()
-      const serialized = json.stringify(todo)
+      const serialized = json.stringify(todos)
       const deserialized = json.parse(serialized)
 
-      expect(deserialized).toEqual(todo)
+      expect(deserialized).toEqual(todos)
     })
   })
 
   describe("custom type", () => {
+    const json = new Json()
+
+    @json.serialize
+    class Todo {
+      constructor(readonly uuid: string, public text: string) {}
+
+      static fromJSON(value: Serialized<Todo>) {
+        return new Todo(value.uuid, value.text)
+      }
+    }
+
+    @json.serialize
+    class TodoList extends Map<string, Todo> {
+      constructor(...todos: Todo[]) {
+        super(todos.map((todo) => [todo.uuid, todo]))
+      }
+
+      static fromJSON(value: SerializedBy<TodoList>) {
+        return new TodoList(...value)
+      }
+
+      toJSON() {
+        return Array.from(this.values())
+      }
+    }
+
     it("serializes a custom type", () => {
       const todo = new Todo("a", "Clean the house")
 
@@ -101,16 +110,16 @@ describe("Serializer", () => {
     const json = new Json()
 
     @json.serializeAs("MyTodo")
-    class DecoratedTodoCustomKey {
+    class Todo {
       constructor(readonly uuid: string, public text: string) {}
 
-      static fromJSON(value: Serialized<DecoratedTodoCustomKey>) {
-        return new DecoratedTodoCustomKey(value.uuid, value.text)
+      static fromJSON(value: Serialized<Todo>) {
+        return new Todo(value.uuid, value.text)
       }
     }
 
     it("serializes a custom type decorated with @serializable and a custom $type key", () => {
-      const todo = new DecoratedTodoCustomKey("a", "Clean the house")
+      const todo = new Todo("a", "Clean the house")
       const serialized = json.stringify(todo)
 
       expect(serialized).toEqual(
@@ -119,12 +128,12 @@ describe("Serializer", () => {
     })
 
     it("deserializes a custom type decorated with @serializable and a custom $type key", () => {
-      const todo = new DecoratedTodoCustomKey("a", "Clean the house")
+      const todo = new Todo("a", "Clean the house")
 
       const serialized = json.stringify(todo)
       const deserialized = json.parse(serialized)
 
-      expect(deserialized).toBeInstanceOf(DecoratedTodoCustomKey)
+      expect(deserialized).toBeInstanceOf(Todo)
       expect(deserialized).toEqual(todo)
     })
   })

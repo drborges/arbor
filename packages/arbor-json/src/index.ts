@@ -81,30 +81,6 @@ export class Json {
   }
 
   /**
-   * Registers one or many {@link Reviver}s used to deserialize data.
-   *
-   * @param revivers a list of {@link Reviver} objects.
-   */
-  register(...revivers: Reviver[]) {
-    revivers.forEach((reviver) => {
-      const key = reviver.prototype[ArborSerializeAs] || reviver.name
-      this.registerReviver(key, reviver)
-    })
-  }
-
-  /**
-   * Registers a {@link Reviver} identified by the given key.
-   *
-   * This can be used to register revivers for different types sharing the same name.
-   *
-   * @param key key that identifies the {@link Reviver} object.
-   * @param reviver a {@link Reviver} to be used in the deserialization process.
-   */
-  registerReviver(key: string, reviver: Reviver) {
-    this.#revivers.set(key, reviver)
-  }
-
-  /**
    * Serializes an object into a JSON string while tracking which {@link Reviver}
    * can be used to deserialize the value.
    *
@@ -124,6 +100,17 @@ export class Json {
    */
   parse<T>(value: string): T {
     return JSON.parse(value, this.reviver.bind(this))
+  }
+
+  protected register(...revivers: Reviver[]) {
+    revivers.forEach((reviver) => {
+      const key = reviver.prototype[ArborSerializeAs] || reviver.name
+      this.registerReviver(key, reviver)
+    })
+  }
+
+  protected registerReviver(key: string, reviver: Reviver) {
+    this.#revivers.set(key, reviver)
   }
 
   private reviver(_key: string, value: unknown) {
