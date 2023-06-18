@@ -6,7 +6,7 @@ const json = new Json()
 class Todo {
   constructor(readonly uuid: string, public text: string) {}
 
-  static $revive(value: Serialized<Todo>) {
+  static fromJSON(value: Serialized<Todo>) {
     return new Todo(value.uuid, value.text)
   }
 }
@@ -17,7 +17,7 @@ class TodoList extends Map<string, Todo> {
     super(todos.map((todo) => [todo.uuid, todo]))
   }
 
-  static $revive(value: SerializedBy<TodoList>) {
+  static fromJSON(value: SerializedBy<TodoList>) {
     return new TodoList(...value)
   }
 
@@ -104,7 +104,7 @@ describe("Serializer", () => {
     class DecoratedTodoCustomKey {
       constructor(readonly uuid: string, public text: string) {}
 
-      static $revive(value: Serialized<DecoratedTodoCustomKey>) {
+      static fromJSON(value: Serialized<DecoratedTodoCustomKey>) {
         return new DecoratedTodoCustomKey(value.uuid, value.text)
       }
     }

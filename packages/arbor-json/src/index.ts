@@ -16,7 +16,7 @@ export type Serializable = {
 }
 
 export type Reviver<T = object> = Function & {
-  $revive(obj: object): T
+  fromJSON(obj: object): T
 }
 
 function isTyped(value: unknown): value is Typed {
@@ -131,7 +131,7 @@ export class Json {
       const Type = this.#revivers.get(value.$reviver)
 
       if (Type) {
-        return Type.$revive(value.$value)
+        return Type.fromJSON(value.$value)
       }
     }
 
