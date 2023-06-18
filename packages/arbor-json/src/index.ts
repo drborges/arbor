@@ -8,7 +8,7 @@ export type Typed = {
 export type SerializedBy<T extends Serializable> = ReturnType<T["toJSON"]>
 
 export type Serialized<T> = {
-  [K in keyof T]: T[K]
+  [K in keyof T as T[K] extends Function ? never : K]: T[K]
 }
 
 export type Serializable = {
