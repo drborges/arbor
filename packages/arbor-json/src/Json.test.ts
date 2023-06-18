@@ -1,4 +1,11 @@
-import { Json, Serialized, SerializedBy } from "./index"
+import {
+  Json,
+  Serialized,
+  SerializedBy,
+  parse,
+  serialize,
+  stringify,
+} from "./index"
 
 describe("Serializer", () => {
   describe("simple object", () => {
@@ -31,11 +38,6 @@ describe("Serializer", () => {
   })
 
   describe("custom type", () => {
-    const json = new Json()
-    const serialize = json.serialize
-    const stringify = json.stringify.bind(json)
-    const parse = json.parse.bind(json)
-
     @serialize
     class Todo {
       constructor(readonly uuid: string, public text: string) {}

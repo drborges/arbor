@@ -2,16 +2,56 @@
 
 Provides a mechanism to easily serialize/deserialize custom user-defined types via an API similar to `JSON.stringify` and `JSON.parse` + some decorator "magic".
 
+## Installation
+
+**npm**
+
+```sh
+npm install @arborjs/json
+```
+
+**yarn**
+
+```sh
+yarn add @arborjs/json
+```
+
 ## Usage
 
-For most use-cases, the usage is extreamelly simple, with very little boilerplate, one needs to:
+For most use-cases, the usage is extreamelly simple, with very little boilerplate:
+
+1. Decorate your class with the `serialize` decorator;
+2. Use the `stringify` function to serialize instances of the decorated class;
+3. Use the `parse` function to deserialize data strings representing instances of the decorated class.
+
+```ts
+import { serialize, stringify, parse } from "@arborjs/json"
+
+@serialize
+class Todo {
+  constructor(readonly uuid: string, public text: string) {}
+}
+
+const todo = new Todo("my-uuid", "Clean the house")
+
+const serialized = stringify(todo)
+=> '{"$value":{"uuid":"my-uuid","text":"Clean the house"},"$type":"Todo"}'
+
+const deserialized = parse(serialized)
+expect(deserialized).toEqual(todo)
+=> true
+```
+
+### Managing multiple serializers
+
+In case you need to manage multiple instances of the `Json` serializer in your app, you can:
 
 1. Create an instance of the `Json` class;
-2. Decorate their classes marking them as serializable by the instance of Json;
+2. Decorate your classes with the decorators provided by the `Json` instance;
 3. Leverage the `Json#stringify` to serialize your object;
 4. And `Json#parse` to deserialize the string data back into an instance of your serialized type.
 
-### Simple use case
+Example:
 
 1. Instantiate the `Json` class:
 
@@ -117,16 +157,10 @@ const serializedProjectSettings = json.stringify(projectSettings)
 
 ### Reducing boilerplate
 
-Here's one recommended/opinionated way to organize your code:
-
-1. Create a `json.ts` file to hide the serialization setup code;
-2. Expose only the important bits to your App so it does not have to deal with boilerplate.
-
-Example:
-
-Let's say you create `src/json.ts` to hide the serialization setup logic:
+You may choose to move the `Json` serializer setup into different modules in order to make its usage a little more friendly and with less boilerplate to the final user:
 
 ```ts
+// src/json1.ts
 import { Json } from "@arborjs/json"
 
 const json = new Json()
@@ -135,32 +169,16 @@ const parse = json.parse.bind(json)
 const stringify = json.stringify.bind(json)
 
 export { serialize, stringify, parse }
-```
 
-You'd be able to import just the decorator you need in your `src/Todo.ts` implementing the `Todo` abstraction:
+// src/json2.ts
+import { Json } from "@arborjs/json"
 
-```ts
-import { serialize } from "./json"
+const json = new Json()
+const serialize = json.serialize
+const parse = json.parse.bind(json)
+const stringify = json.stringify.bind(json)
 
-@serialize
-class Todo {
-  constructor(readonly uuid: string, public text: string) {}
-}
-```
-
-And the serialization/deserialization methods where you need them:
-
-```ts
-import { stringify, parse } from "./json"
-
-const todo = new Todo("my-uuid", "Clean the house")
-
-const serialized = stringify(todo)
-=> '{"$value":{"uuid":"my-uuid","text":"Clean the house"},"$type":"Todo"}'
-
-const deserialized = parse(serialized)
-expect(deserialized).toEqual(todo)
-=> true
+export { serialize, stringify, parse }
 ```
 
 ## License
