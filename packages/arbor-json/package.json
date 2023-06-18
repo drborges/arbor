@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/json",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "sideEffects": false,
   "description": "A JSON serializer with support to custom types focused on @arborjs/store use-cases",
   "keywords": [
@@ -63,7 +63,6 @@
     "dev": "jest --watch",
     "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
     "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc",
-    "prepublish": "yarn build",
-    "publish": "np"
+    "prepublish": "yarn build"
   }
 }
