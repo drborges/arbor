@@ -5,16 +5,14 @@ export type Typed = {
   $value: object
 }
 
-export type SerializedExplicitly<T extends Serializable> = ReturnType<
-  T["toJSON"]
->["$value"]
+export type SerializedBy<T extends Serializable> = ReturnType<T["toJSON"]>
 
 export type Serialized<T> = {
   [K in keyof T]: T[K]
 }
 
 export type Serializable = {
-  toJSON(): Typed
+  toJSON(): object
 }
 
 export type Reviver<T = object> = Function & {
@@ -53,9 +51,19 @@ export class Json {
    */
   serializeAs<T extends Reviver>(key: string) {
     return (target: T, _context: unknown = null) => {
+      const toJSON = target.prototype.toJSON
+
       target.prototype[ArborSerializeAs] = key || target.name
 
       target.prototype.toJSON = function () {
+        // Leverage user-defined serialization logic if one is present
+        if (toJSON) {
+          return {
+            $value: toJSON.call(this),
+            $reviver: this[ArborSerializeAs],
+          }
+        }
+
         const $value = {}
 
         Object.keys(this).forEach((key) => {
