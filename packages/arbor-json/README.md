@@ -165,4 +165,4 @@ expect(deserialized).toEqual(todo)
 
 ## License
 
-All packages in this monorepo ar [MIT licensed](../../LICENSE).
+All packages in this monorepo ar [MIT licensed](../../LICENSE.md).

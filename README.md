@@ -20,7 +20,7 @@ import { useArbor } from "@arborjs/react"
  * Create a store to hold the counter state
  */
 const store = new Arbor({
-  count: 0,
+  count: 0
 })
 
 /*
@@ -82,4 +82,4 @@ Help us improve our docs, PRs are very welcome!
 
 ## License
 
-Arbor is [MIT licensed](./LICENSE).
+Arbor is [MIT licensed](./LICENSE.md).
