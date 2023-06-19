@@ -1,4 +1,4 @@
-export const ArborSerializeAs = Symbol.for("ArborSerializeAs")
+export const ArborSerializableAs = Symbol.for("ArborSerializableAs")
 
 export type Typed = {
   $type: string
@@ -46,8 +46,8 @@ export class Json {
    */
   // NOTE: This must be an arrow function so "this" can be bound to the class instance when
   // called on the decorated class.
-  serialize = <T extends Type>(target: T, _context: unknown = null) => {
-    return this.serializeAs(target.name)(target, _context)
+  serializable = <T extends Type>(target: T, _context: unknown = null) => {
+    return this.serializableAs(target.name)(target, _context)
   }
 
   /**
@@ -57,18 +57,18 @@ export class Json {
    * @param key key used to identify the class type so it can be deserialized back
    * to the correct type.
    */
-  serializeAs<T extends Type>(key: string) {
+  serializableAs<T extends Type>(key: string) {
     return (target: T, _context: unknown = null) => {
       const toJSON = target.prototype.toJSON
 
-      target.prototype[ArborSerializeAs] = key || target.name
+      target.prototype[ArborSerializableAs] = key || target.name
 
       target.prototype.toJSON = function () {
         // Leverage user-defined serialization logic if one is present
         if (toJSON) {
           return {
             $value: toJSON.call(this),
-            $type: this[ArborSerializeAs],
+            $type: this[ArborSerializableAs],
           }
         }
 
@@ -80,7 +80,7 @@ export class Json {
 
         return {
           $value,
-          $type: this[ArborSerializeAs],
+          $type: this[ArborSerializableAs],
         }
       }
 
@@ -112,7 +112,7 @@ export class Json {
 
   protected register(...types: Type[]) {
     types.forEach((type) => {
-      const key = type.prototype[ArborSerializeAs] || type.name
+      const key = type.prototype[ArborSerializableAs] || type.name
       this.#types.set(key, type)
     })
   }

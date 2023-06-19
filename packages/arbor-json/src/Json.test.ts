@@ -3,11 +3,11 @@ import {
   Serialized,
   SerializedBy,
   parse,
-  serialize,
+  serializable,
   stringify,
 } from "./index"
 
-describe("Serializer", () => {
+describe("Json", () => {
   describe("simple object", () => {
     it("serializes a simple object", () => {
       const json = new Json()
@@ -38,7 +38,7 @@ describe("Serializer", () => {
   })
 
   describe("custom type", () => {
-    @serialize
+    @serializable
     class Todo {
       constructor(readonly uuid: string, public text: string) {}
 
@@ -47,7 +47,7 @@ describe("Serializer", () => {
       }
     }
 
-    @serialize
+    @serializable
     class TodoList extends Map<string, Todo> {
       constructor(...todos: Todo[]) {
         super(todos.map((todo) => [todo.uuid, todo]))
@@ -114,7 +114,7 @@ describe("Serializer", () => {
   describe("custom type with custom $type key", () => {
     const json = new Json()
 
-    @json.serializeAs("MyTodo")
+    @json.serializableAs("MyTodo")
     class Todo {
       constructor(readonly uuid: string, public text: string) {}
 
@@ -146,7 +146,7 @@ describe("Serializer", () => {
   describe("custom type with default deserializer", () => {
     const json = new Json()
 
-    @json.serialize
+    @json.serializable
     class Todo {
       constructor(readonly uuid: string, public text: string) {}
     }

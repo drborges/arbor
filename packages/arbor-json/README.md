@@ -20,14 +20,14 @@ yarn add @arborjs/json
 
 For most use-cases, the usage is extreamelly simple, with very little boilerplate:
 
-1. Decorate your class with the `serialize` decorator;
+1. Decorate your class with the `serializable` decorator;
 2. Use the `stringify` function to serialize instances of the decorated class;
 3. Use the `parse` function to deserialize data strings representing instances of the decorated class.
 
 ```ts
-import { serialize, stringify, parse } from "@arborjs/json"
+import { serializable, stringify, parse } from "@arborjs/json"
 
-@serialize
+@serializable
 class Todo {
   constructor(readonly uuid: string, public text: string) {}
 }
@@ -65,7 +65,7 @@ const json = new Json()
 2. Decorate your class so it can be known by the `Json` instance:
 
 ```ts
-@json.serialize
+@json.serializable
 class Todo {
   constructor(readonly uuid: string, public text: string) {}
 }
@@ -94,7 +94,7 @@ expect(deserialized).toEqual(todo)
 In certain situations, you will want to provide your own serialization/deserialization logic, here's how to achieve that:
 
 ```ts
-@json.serialize
+@json.serializable
 class TodoList extends Map<string, Todo> {
   constructor(...todos: Todo[]) {
     super(todos.map((todo) => [todo.uuid, todo]))
@@ -122,7 +122,7 @@ In case you end up with different types sharing the same name in your applicatio
 
 ```ts
 // models/users/Settings.ts
-@json.serializeAs("UserSettings")
+@json.serializableAs("UserSettings")
 class Settings {
   constructor(
     readonly uuid: string,
@@ -132,7 +132,7 @@ class Settings {
 }
 
 // models/projects/Settings.ts
-@json.serializeAs("ProjectSettings")
+@json.serializableAs("ProjectSettings")
 class Settings {
   constructor(
     readonly uuid: string,
@@ -142,7 +142,7 @@ class Settings {
 }
 ```
 
-The `serializeAs` decorator instructs `@arborjs/json` to use the provided key to identify the decorated type so that it can differentiate different types with the same name in its registry, ultimatelly allowing proper serialization/deserialization of these types:
+The `serializableAs` decorator instructs `@arborjs/json` to use the provided key to identify the decorated type so that it can differentiate different types with the same name in its registry, ultimatelly allowing proper serialization/deserialization of these types:
 
 ```ts
 const userSettings = new UserSettings("user-settings-uuid", "user-id", true)
@@ -164,21 +164,19 @@ You may choose to move the `Json` serializer setup into different modules in ord
 import { Json } from "@arborjs/json"
 
 const json = new Json()
-const serialize = json.serialize
-const parse = json.parse.bind(json)
-const stringify = json.stringify.bind(json)
-
-export { serialize, stringify, parse }
+export const parse = json.parse.bind(json)
+export const stringify = json.stringify.bind(json)
+export const serializable = json.serializable.bind(json)
+export const serializableAs = json.serializableAs.bind(json)
 
 // src/json2.ts
 import { Json } from "@arborjs/json"
 
 const json = new Json()
-const serialize = json.serialize
-const parse = json.parse.bind(json)
-const stringify = json.stringify.bind(json)
-
-export { serialize, stringify, parse }
+export const parse = json.parse.bind(json)
+export const stringify = json.stringify.bind(json)
+export const serializable = json.serializable.bind(json)
+export const serializableAs = json.serializableAs.bind(json)
 ```
 
 ## License
