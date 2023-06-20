@@ -100,10 +100,6 @@ export type INode<T extends object = object, K extends object = T> = T & {
   readonly $subscribers: Subscribers<T>
 }
 
-export type ArborConfig = {
-  handlers?: Handler[]
-}
-
 /**
  * Describes an Arbor Plugin
  */
