@@ -36,18 +36,17 @@ export interface Handler {
 }
 
 /**
- * Recursively marks proxiable node fields as being Arbor nodes.
+ * Recursively marks proxiable nodes in the state tree as being Arbor nodes.
  *
- * This is a type cue that informs developers that a given value is
- * bound to Arbor's state tree and thus is reactive, e.g. mutations
- * to the value will cause update notifications to be triggered.
+ * This type hints to developers which values are reactive, e.g. will cause
+ * store updates when mutating.
  */
 export type ArborNode<T extends object> = {
-  [P in keyof T]: T[P] extends object
-    ? T[P] extends Function
-      ? T[P]
-      : ArborNode<T[P]>
-    : T[P]
+  [K in keyof T]: T[K] extends Function
+    ? T[K]
+    : T[K] extends object
+    ? ArborNode<T[K]>
+    : T[K]
 }
 
 /**
