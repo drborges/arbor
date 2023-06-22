@@ -1,5 +1,5 @@
 export { default as Arbor } from "./Arbor"
-export type { ArborNode, AttributesOf, Handler, Node, Plugin } from "./Arbor"
+export type { ArborNode, Handler, Node, Plugin } from "./Arbor"
 export { default as ArrayNodeHandler } from "./ArrayNodeHandler"
 export { default as Children } from "./Children"
 export { default as NodeHandler } from "./NodeHandler"

@@ -114,8 +114,6 @@ export interface Plugin<T extends object> {
   configure(store: Arbor<T>): Promise<Unsubscribe>
 }
 
-export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
-
 /*
  * Default list of state tree node Proxy handlers.
  *
