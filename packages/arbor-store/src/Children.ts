@@ -1,4 +1,4 @@
-import { Node } from "./Arbor"
+import type { Node } from "./types"
 
 export default class Children {
   #nodes = new WeakMap<object, Node>()

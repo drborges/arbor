@@ -1,5 +1,6 @@
-import Arbor, { ArborNode, Node } from "./Arbor"
+import Arbor from "./Arbor"
 import { ArborProxiable } from "./decorators"
+import type { ArborNode, Node } from "./types"
 
 export function isNode<T extends object>(value: unknown): value is Node<T> {
   const isNodeValue = value as Node<T>

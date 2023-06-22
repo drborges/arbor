@@ -1,15 +1,5 @@
-import type { Node } from "./Arbor"
 import Path from "./Path"
-
-export type MutationMetadata = {
-  operation?: string
-  props: string[]
-}
-
-/**
- * A mutation function used to update an Arbor tree node.
- */
-export type Mutation<T extends object> = (arg0: T) => void | MutationMetadata
+import type { Mutation, Node } from "./types"
 
 /**
  * Mutates a given node by traversing the given path and applying the

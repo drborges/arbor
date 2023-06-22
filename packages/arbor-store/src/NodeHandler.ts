@@ -1,10 +1,11 @@
-import Arbor, { Node } from "./Arbor"
+import Arbor from "./Arbor"
 import Children from "./Children"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
 import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
+import type { Node } from "./types"
 import { isGetter } from "./utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]

@@ -1,5 +1,4 @@
-import { Node } from "./Arbor"
-import { MutationEvent } from "./Subscribers"
+import type { MutationEvent, Node } from "./types"
 
 export function notifyAffectedSubscribers<T extends object>(
   event: MutationEvent<T>

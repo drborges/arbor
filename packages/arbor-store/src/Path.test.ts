@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import Arbor, { ArborNode } from "./Arbor"
+import Arbor from "./Arbor"
 import Path from "./Path"
 import { InvalidArgumentError } from "./errors"
+import type { ArborNode } from "./types"
 
 describe("Path", () => {
   describe("#toString", () => {
