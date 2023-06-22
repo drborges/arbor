@@ -57,7 +57,7 @@ export type ArborNode<T extends object> = {
  * This type is meant to be used internally for the most part and
  * may be removed from Arbor's public API.
  */
-export type INode<T extends object = object, K extends object = T> = T & {
+export type Node<T extends object = object, K extends object = T> = T & {
   /**
    * Returns the underlying value wrapped by the state tree node.
    */
@@ -68,7 +68,7 @@ export type INode<T extends object = object, K extends object = T> = T & {
    * Used as part of the structural sharing algorithm for generating new
    * state trees upon mutations.
    */
-  $clone(): INode<T>
+  $clone(): Node<T>
   /**
    * Accesses a child node indexed by the given key.
    *
@@ -79,7 +79,7 @@ export type INode<T extends object = object, K extends object = T> = T & {
    * @returns the child Node indexed by the key. `undefined` is returned in case
    * the key does not belong to any child node.
    */
-  $traverse(key: unknown): INode<T> | undefined
+  $traverse(key: unknown): Node<T> | undefined
   /**
    * Reference to the state tree data structure.
    */
@@ -156,7 +156,7 @@ export default class Arbor<T extends object = object> {
   /**
    * Reference to the root node of the state tree
    */
-  #root: INode<T>
+  #root: Node<T>
 
   /**
    * List of node handlers used to extend Arbor's default proxying mechanism.
@@ -246,12 +246,12 @@ export default class Arbor<T extends object = object> {
     value: V,
     subscribers = new Subscribers<T>(),
     children = new NodeCache()
-  ): INode<V> {
+  ): Node<V> {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
     const node = new Proxy<V>(value, handler)
 
-    return node as INode<V>
+    return node as Node<V>
   }
 
   /**

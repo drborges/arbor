@@ -1,4 +1,4 @@
-import Arbor, { INode } from "./Arbor"
+import Arbor, { Node } from "./Arbor"
 import NodeCache from "./NodeCache"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
@@ -57,7 +57,7 @@ export default class NodeHandler<T extends object = object>
   $traverse(key: unknown) {
     if (!isNode<T>(this)) throw new NotAnArborNodeError()
 
-    return this[key as string] as INode
+    return this[key as string] as Node
   }
 
   /**
@@ -69,7 +69,7 @@ export default class NodeHandler<T extends object = object>
     return this.$value
   }
 
-  $clone(): INode<T> {
+  $clone(): Node<T> {
     return this.$tree.createNode(
       this.$path,
       this.$value,
@@ -78,13 +78,13 @@ export default class NodeHandler<T extends object = object>
     )
   }
 
-  $getOrCreateChildNode<V extends object>(prop: string, value: V): INode<V> {
+  $getOrCreateChildNode<V extends object>(prop: string, value: V): Node<V> {
     return this.$children.has(value)
       ? this.$children.get(value)
       : this.$createChildNode(prop, value)
   }
 
-  get(target: T, prop: string, proxy: INode<T>) {
+  get(target: T, prop: string, proxy: Node<T>) {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
 
@@ -127,7 +127,7 @@ export default class NodeHandler<T extends object = object>
     return this.$getOrCreateChildNode(prop, childValue)
   }
 
-  set(target: T, prop: string, newValue: unknown, proxy: INode<T>): boolean {
+  set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
     // Automatically unwraps values when they are already Arbor nodes,
     // this prevents proxying proxies and thus forcing stale node references
     // to be kept in memmory unnecessarily.
@@ -178,7 +178,7 @@ export default class NodeHandler<T extends object = object>
     return true
   }
 
-  private $createChildNode<V extends object>(prop: string, value: V): INode<V> {
+  private $createChildNode<V extends object>(prop: string, value: V): Node<V> {
     const childPath = this.$path.child(prop)
     const childNode = this.$tree.createNode(childPath, value)
     return this.$children.set(value, childNode)

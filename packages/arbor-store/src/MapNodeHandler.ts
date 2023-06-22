@@ -1,4 +1,4 @@
-import { INode } from "./Arbor"
+import { Node } from "./Arbor"
 import NodeHandler from "./NodeHandler"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import { isNode, isProxiable } from "./guards"
@@ -13,7 +13,7 @@ export default class MapNodeHandler<
   $traverse(key: unknown) {
     if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
 
-    return this.get(key) as INode<T>
+    return this.get(key) as Node<T>
   }
 
   *[Symbol.iterator]() {
@@ -43,7 +43,7 @@ export default class MapNodeHandler<
   get(
     target: Map<unknown, T>,
     prop: string,
-    proxy: INode<Map<unknown, T>>
+    proxy: Node<Map<unknown, T>>
   ): unknown {
     if (prop === "get") {
       return (key: string) => {

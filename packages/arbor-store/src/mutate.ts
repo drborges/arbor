@@ -1,4 +1,4 @@
-import type { INode } from "./Arbor"
+import type { Node } from "./Arbor"
 import Path from "./Path"
 
 export type MutationMetadata = {
@@ -21,14 +21,14 @@ export type Mutation<T extends object> = (arg0: T) => void | MutationMetadata
  * @returns the resulting node after the mutation is applied.
  */
 export default function mutate<T extends object, K extends object>(
-  node: INode<T>,
+  node: Node<T>,
   path: Path,
   mutation: Mutation<K>
 ) {
   try {
     const root = node.$clone()
 
-    const targetNode = path.walk<INode>(root, (child: INode, parent: INode) => {
+    const targetNode = path.walk<Node>(root, (child: Node, parent: Node) => {
       const childCopy = child.$clone()
       const childValue = childCopy.$unwrap()
 

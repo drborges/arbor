@@ -1,4 +1,4 @@
-import { ArborNode, INode } from "./Arbor"
+import { ArborNode, Node } from "./Arbor"
 import Path from "./Path"
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
@@ -90,7 +90,7 @@ export function path<T extends object>(node: ArborNode<T>): Path {
 export function isDetached<T extends object>(node: T): boolean {
   if (!isNode(node)) return true
 
-  const reloadedNode = node.$tree.getNodeAt<INode>(node.$path)
+  const reloadedNode = node.$tree.getNodeAt<Node>(node.$path)
 
   // Node no longer exists within the state tree
   if (!reloadedNode) return true
