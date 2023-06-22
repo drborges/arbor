@@ -134,6 +134,7 @@ describe("Arbor", () => {
 
       store.state[0].count++
       store.state[0].tracker.count++
+      store.state[0].tracker = { count: 4 }
 
       expect(subscriber).not.toHaveBeenCalled()
     })
