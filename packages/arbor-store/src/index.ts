@@ -1,7 +1,7 @@
 export { default as Arbor } from "./Arbor"
 export type { ArborNode, AttributesOf, Handler, Node, Plugin } from "./Arbor"
 export { default as ArrayNodeHandler } from "./ArrayNodeHandler"
-export { default as NodeCache } from "./NodeCache"
+export { default as Children } from "./Children"
 export { default as NodeHandler } from "./NodeHandler"
 export { default as Path } from "./Path"
 export { default as Subscribers } from "./Subscribers"

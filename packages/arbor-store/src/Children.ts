@@ -1,6 +1,6 @@
 import { Node } from "./Arbor"
 
-export default class NodeCache {
+export default class Children {
   #nodes = new WeakMap<object, Node>()
 
   delete(value: object): boolean {

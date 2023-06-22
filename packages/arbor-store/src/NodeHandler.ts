@@ -1,5 +1,5 @@
 import Arbor, { Node } from "./Arbor"
-import NodeCache from "./NodeCache"
+import Children from "./Children"
 import Path from "./Path"
 import Subscribers from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
@@ -27,7 +27,7 @@ export default class NodeHandler<T extends object = object>
     readonly $tree: Arbor,
     readonly $path: Path,
     readonly $value: T,
-    readonly $children = new NodeCache(),
+    readonly $children = new Children(),
     readonly $subscribers = new Subscribers()
   ) {}
 

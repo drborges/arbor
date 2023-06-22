@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import ArrayNodeHandler from "./ArrayNodeHandler"
+import Children from "./Children"
 import MapNodeHandler from "./MapNodeHandler"
-import NodeCache from "./NodeCache"
 import NodeHandler from "./NodeHandler"
 import Path from "./Path"
 import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
@@ -23,7 +23,7 @@ export interface Handler {
     $tree: Arbor,
     $path: Path,
     $value: unknown,
-    $children: NodeCache,
+    $children: Children,
     $subscribers: Subscribers
   ): NodeHandler
 
@@ -91,7 +91,7 @@ export type Node<T extends object = object, K extends object = T> = T & {
   /**
    * Cache containing all children nodes of this node.
    */
-  readonly $children: NodeCache
+  readonly $children: Children
   /**
    * Tracks subscribers of this Node.
    *
@@ -245,7 +245,7 @@ export default class Arbor<T extends object = object> {
     path: Path,
     value: V,
     subscribers = new Subscribers<T>(),
-    children = new NodeCache()
+    children = new Children()
   ): Node<V> {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
