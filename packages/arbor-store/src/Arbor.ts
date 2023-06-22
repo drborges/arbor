@@ -244,7 +244,7 @@ export default class Arbor<T extends object = object> {
     value: V,
     subscribers = new Subscribers<T>(),
     children = new Children()
-  ): Node<V> {
+  ) {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
     const node = new Proxy<V>(value, handler)
@@ -258,8 +258,8 @@ export default class Arbor<T extends object = object> {
    * @param path the path of the node to be retrieved.
    * @returns the node at the given path.
    */
-  getNodeAt<V extends object>(path: Path) {
-    return path.walk(this.#root) as ArborNode<V>
+  getNodeAt<V extends object>(path: Path): ArborNode<V> {
+    return path.walk(this.#root)
   }
 
   /**
