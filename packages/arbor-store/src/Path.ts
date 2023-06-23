@@ -141,8 +141,17 @@ export default class Path {
    * @returns true if mutations to this path affects the given node, false otherwise
    */
   affects(pathOrNode: Path | ArborNode<object>): boolean {
-    const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-    return this.toString().startsWith(path.toString())
+    if (pathOrNode instanceof Path) {
+      return this.toString().startsWith(pathOrNode.toString())
+    }
+
+    if (isNode(pathOrNode)) {
+      return this.toString().startsWith(pathOrNode.$path.toString())
+    }
+
+    throw new InvalidArgumentError(
+      "Argument must be either an instance of Path or an ArborNode"
+    )
   }
 
   /**

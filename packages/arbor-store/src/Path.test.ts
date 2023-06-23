@@ -183,5 +183,11 @@ describe("Path", () => {
       expect(Path.parse("/users").affects(Path.parse("/posts"))).toBe(false)
       expect(Path.parse("/users").affects(Path.parse("/users/123"))).toBe(false)
     })
+
+    it("throws an error if the argument passed in is not a Path nor an ArborNode", () => {
+      expect(() =>
+        Path.parse(".").affects("Not a path nor node" as unknown as Path)
+      ).toThrow(InvalidArgumentError)
+    })
   })
 })
