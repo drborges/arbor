@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
 import ArrayNodeHandler from "./ArrayNodeHandler"
 import Children from "./Children"
 import MapNodeHandler from "./MapNodeHandler"
@@ -7,7 +6,6 @@ import Path from "./Path"
 import Subscribers from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
-import mutate from "./mutate"
 import type {
   ArborNode,
   Handler,
@@ -18,6 +16,33 @@ import type {
   Unsubscribe,
 } from "./types"
 import { isDetached } from "./utilities"
+
+function mutate<T extends object, K extends object>(
+  node: Node<T>,
+  path: Path,
+  mutation: Mutation<K>
+) {
+  try {
+    const root = node.$clone()
+
+    const targetNode = path.walk<Node<K>>(root, (child: Node, parent: Node) => {
+      const childCopy = child.$clone()
+
+      parent.$children.set(childCopy.$value, childCopy)
+
+      return childCopy
+    })
+
+    const metadata = mutation(targetNode.$value)
+
+    return {
+      root,
+      metadata,
+    }
+  } catch (e) {
+    return undefined
+  }
+}
 
 /*
  * Default list of state tree node Proxy handlers.
