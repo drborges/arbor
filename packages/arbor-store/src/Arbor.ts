@@ -17,6 +17,48 @@ import type {
 } from "./types"
 import { isDetached } from "./utilities"
 
+/**
+ * Refreshes the nodes affected by the mutation path via structural sharing
+ * at the state tree level, not affecting the values wrapped by the state
+ * tree nodes.
+ *
+ * The algorithm is simple and allows computing diffs of the state tree
+ * via simple referential equality checks, which comes quite handy in
+ * contexts such as React's which can optimally re-compute re-renders
+ * via reference checks.
+ *
+ * Here's a more concrete example, take the following store:
+ *
+ * cosnt store = new Arbor({
+ *   todos: [
+ *     { id: 1, text: "Clean the house", done: false },
+ *      { id: 2, text: "Walk the dogs", done: false },
+ *   ]
+ * })
+ *
+ * That can be represented by the following state tree:
+ *
+ *               "/"
+ *                |
+ *             "todos"
+ *           _____|_____
+ *          |           |
+ *         "0"         "1"
+ *
+ * where the follow is true:
+ *
+ * 1. `store.state` is referenced by the state tree path `"/"`
+ * 2. `store.state.todos` is referenced by the state tree path `"/todos"`
+ * 3. `store.state.todos[0]` is referenced by the state tree path `"/todos/0"`
+ * 4. `store.state.todos[1]` is referenced by the state tree path `"/todos/1"`
+ *
+ * When mutations are applied to say path `"/todos/0"`, all nodes belonging to that path
+ * are refreshed via structural sharing, ultimately not affecting nodes outside of that path,
+ * for example:
+ *
+ * `store.state.todos[0].done = true`: causes all nodes intersecting `"/todos/0"` to be refreshed, e.g.
+ * `"/"`, `"/todos"` and `"/todos/0"`, leaving `"/todos/1"` untouched.
+ */
 function mutate<T extends object, K extends object>(
   node: Node<T>,
   path: Path,
