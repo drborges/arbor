@@ -18,16 +18,15 @@ export default function mutate<T extends object, K extends object>(
   try {
     const root = node.$clone()
 
-    const targetNode = path.walk<Node>(root, (child: Node, parent: Node) => {
+    const targetNode = path.walk<Node<K>>(root, (child: Node, parent: Node) => {
       const childCopy = child.$clone()
-      const childValue = childCopy.$unwrap()
 
-      parent.$children.set(childValue, childCopy)
+      parent.$children.set(childCopy.$unwrap(), childCopy)
 
       return childCopy
     })
 
-    const metadata = mutation(targetNode.$unwrap() as unknown as K)
+    const metadata = mutation(targetNode.$unwrap())
 
     return {
       root,
