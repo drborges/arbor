@@ -59,7 +59,7 @@ export default class MapNodeHandler<
 
     if (prop === "set") {
       return (key: string, newValue: T) => {
-        const value = isNode<T>(newValue) ? newValue.$unwrap() : newValue
+        const value = isNode<T>(newValue) ? newValue.$value : newValue
 
         if (target.get(key) !== value) {
           if (this.$children.has(value)) {

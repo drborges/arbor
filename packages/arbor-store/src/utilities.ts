@@ -28,7 +28,7 @@ export function detach<T extends object>(node: ArborNode<T>): T {
   const parentNode = node.$tree.getNodeAt(node.$path.parent)
   delete parentNode[nodeParentProp]
 
-  return node.$unwrap()
+  return node.$value
 }
 
 /**
@@ -95,8 +95,8 @@ export function isDetached<T extends object>(node: T): boolean {
   // Node no longer exists within the state tree
   if (!reloadedNode) return true
 
-  const reloadedValue = reloadedNode.$unwrap()
-  const value = node.$unwrap()
+  const reloadedValue = reloadedNode.$value
+  const value = node.$value
   if (value === reloadedValue) return false
   if (global.DEBUG) {
     // eslint-disable-next-line no-console
@@ -118,7 +118,7 @@ export function isDetached<T extends object>(node: T): boolean {
 export function unwrap<T extends object>(node: ArborNode<T>): T {
   if (!isNode<T>(node)) throw new NotAnArborNodeError()
 
-  return node.$unwrap()
+  return node.$value
 }
 
 /**

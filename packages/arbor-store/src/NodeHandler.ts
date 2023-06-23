@@ -61,15 +61,6 @@ export default class NodeHandler<T extends object = object>
     return this[key as string] as Node
   }
 
-  /**
-   * Unwraps the node returning its underlying value.
-   *
-   * @returns the unwrapped node value.
-   */
-  $unwrap(): T {
-    return this.$value
-  }
-
   $clone(): Node<T> {
     return this.$tree.createNode(
       this.$path,
@@ -106,7 +97,7 @@ export default class NodeHandler<T extends object = object>
     // This is done for consistency at the moment to ensure that node values are not proxies
     // but the actual proxied value. This decision can be revisited if needed.
     if (isNode(childValue)) {
-      childValue = childValue.$unwrap()
+      childValue = childValue.$value
     }
 
     // Method and function props are all bound to the proxy and cached internally
@@ -132,7 +123,7 @@ export default class NodeHandler<T extends object = object>
     // Automatically unwraps values when they are already Arbor nodes,
     // this prevents proxying proxies and thus forcing stale node references
     // to be kept in memmory unnecessarily.
-    const value = isNode(newValue) ? newValue.$unwrap() : newValue
+    const value = isNode(newValue) ? newValue.$value : newValue
 
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true

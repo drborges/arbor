@@ -52,10 +52,6 @@ export type ArborNode<T extends object> = {
  */
 export type Node<T extends object = object, K extends object = T> = T & {
   /**
-   * Returns the underlying value wrapped by the state tree node.
-   */
-  $unwrap(): T
-  /**
    * Clones the node intance.
    *
    * Used as part of the structural sharing algorithm for generating new
@@ -77,6 +73,10 @@ export type Node<T extends object = object, K extends object = T> = T & {
    * Reference to the state tree data structure.
    */
   readonly $tree: Arbor<K>
+  /**
+   * Returns the underlying value wrapped by the state tree node.
+   */
+  readonly $value: T
   /**
    * The path within the state tree where the Node resides in.
    */
