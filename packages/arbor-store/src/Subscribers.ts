@@ -1,7 +1,16 @@
-import { MutationEvent, Subscriber, Unsubscribe } from "./types"
+import { MutationEvent, Node, Subscriber, Unsubscribe } from "./types"
 
 export default class Subscribers<T extends object = object> {
   constructor(private readonly subscribers: Set<Subscriber<T>> = new Set()) {}
+
+  static notify(event: MutationEvent<object>) {
+    const root = event.state as Node
+    root.$subscribers.notify(event)
+
+    event.mutationPath.walk(root, (child: Node) => {
+      child.$subscribers.notify(event)
+    })
+  }
 
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
     this.subscribers.add(subscriber)

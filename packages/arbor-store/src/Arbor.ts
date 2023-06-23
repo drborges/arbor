@@ -8,7 +8,6 @@ import Subscribers from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import mutate from "./mutate"
-import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
 import type {
   ArborNode,
   Handler,
@@ -128,7 +127,7 @@ export default class Arbor<T extends object = object> {
 
     this.#root = result?.root
 
-    notifyAffectedSubscribers({
+    Subscribers.notify({
       state: this.state,
       mutationPath: node.$path,
       metadata: result.metadata ? result.metadata : null,
@@ -183,7 +182,7 @@ export default class Arbor<T extends object = object> {
 
     this.#root = current
 
-    notifyAffectedSubscribers({
+    Subscribers.notify({
       state: this.state,
       mutationPath: Path.root,
       metadata: {
