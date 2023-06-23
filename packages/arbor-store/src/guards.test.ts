@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable no-new-wrappers */
-import Arbor from "./Arbor"
+import { Arbor } from "./Arbor"
 import { ArborProxiable, proxiable } from "./decorators"
 import { isNode, isProxiable } from "./guards"
 

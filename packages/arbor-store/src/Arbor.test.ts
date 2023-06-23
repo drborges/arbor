@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import Arbor from "./Arbor"
-import Path from "./Path"
+import { Arbor } from "./Arbor"
+import { Path } from "./Path"
 import { ArborProxiable, detached, proxiable } from "./decorators"
 import {
   ArborError,

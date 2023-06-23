@@ -7,7 +7,7 @@ import type { ArborNode } from "./types"
  *
  * Paths point to potential nodes within the state tree.
  */
-export default class Path {
+export class Path {
   props: string[]
 
   /**

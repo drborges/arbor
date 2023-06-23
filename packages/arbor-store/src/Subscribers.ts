@@ -1,6 +1,6 @@
 import { MutationEvent, Node, Subscriber, Unsubscribe } from "./types"
 
-export default class Subscribers<T extends object = object> {
+export class Subscribers<T extends object = object> {
   constructor(private readonly subscribers: Set<Subscriber<T>> = new Set()) {}
 
   static notify(event: MutationEvent<object>) {

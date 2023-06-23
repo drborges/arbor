@@ -1,11 +1,11 @@
-import NodeHandler from "./NodeHandler"
+import { NodeHandler } from "./NodeHandler"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 import type { Node } from "./types"
 
-export default class MapNodeHandler<
-  T extends object = object
-> extends NodeHandler<Map<unknown, T>> {
+export class MapNodeHandler<T extends object = object> extends NodeHandler<
+  Map<unknown, T>
+> {
   static accepts(value: unknown) {
     return value instanceof Map
   }

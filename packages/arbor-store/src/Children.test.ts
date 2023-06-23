@@ -1,6 +1,6 @@
-import Arbor from "./Arbor"
-import Children from "./Children"
-import Path from "./Path"
+import { Arbor } from "./Arbor"
+import { Children } from "./Children"
+import { Path } from "./Path"
 
 interface User {
   name: string

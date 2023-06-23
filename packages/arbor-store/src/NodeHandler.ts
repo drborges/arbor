@@ -1,7 +1,7 @@
-import Arbor from "./Arbor"
-import Children from "./Children"
-import Path from "./Path"
-import Subscribers from "./Subscribers"
+import { Arbor } from "./Arbor"
+import { Children } from "./Children"
+import { Path } from "./Path"
+import { Subscribers } from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
 import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
@@ -13,9 +13,7 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 /**
  * Default node handler implementation.
  */
-export default class NodeHandler<T extends object = object>
-  implements ProxyHandler<T>
-{
+export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   /**
    * Caches all method / function props in the proxied object while
    * binding them to the proxy instance itself so that all logic

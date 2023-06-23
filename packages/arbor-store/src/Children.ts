@@ -1,6 +1,6 @@
 import type { Node } from "./types"
 
-export default class Children {
+export class Children {
   #nodes = new WeakMap<object, Node>()
 
   delete(value: object): boolean {

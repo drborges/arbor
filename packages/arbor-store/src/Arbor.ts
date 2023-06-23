@@ -1,9 +1,9 @@
-import ArrayNodeHandler from "./ArrayNodeHandler"
-import Children from "./Children"
-import MapNodeHandler from "./MapNodeHandler"
-import NodeHandler from "./NodeHandler"
-import Path from "./Path"
-import Subscribers from "./Subscribers"
+import { ArrayNodeHandler } from "./ArrayNodeHandler"
+import { Children } from "./Children"
+import { MapNodeHandler } from "./MapNodeHandler"
+import { NodeHandler } from "./NodeHandler"
+import { Path } from "./Path"
+import { Subscribers } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import type {
@@ -68,7 +68,7 @@ const defaultNodeHandlers = [ArrayNodeHandler, MapNodeHandler, NodeHandler]
  * ```
  *
  */
-export default class Arbor<T extends object = object> {
+export class Arbor<T extends object = object> {
   /**
    * List of proxy handlers used to determine at Runtime which handling strategy to use
    * for proxying a given node within the state tree.
