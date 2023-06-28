@@ -1,28 +1,16 @@
-import { ArborNode } from "./Arbor"
-import { MutationMetadata } from "./mutate"
-import Path from "./Path"
+import { MutationEvent, Node, Subscriber, Unsubscribe } from "./types"
 
-/**
- * Describes a function used by users to cancel their state updates subscription.
- */
-export type Unsubscribe = () => void
-
-/**
- * Describes a mutation event passed to subscribers
- */
-export type MutationEvent<T extends object> = {
-  state: ArborNode<T>
-  mutationPath: Path
-  metadata: MutationMetadata
-}
-
-/**
- * Subscriber function used to listen to mutation events triggered by the state tree.
- */
-export type Subscriber<T extends object> = (event: MutationEvent<T>) => void
-
-export default class Subscribers<T extends object = object> {
+export class Subscribers<T extends object = object> {
   constructor(private readonly subscribers: Set<Subscriber<T>> = new Set()) {}
+
+  static notify(event: MutationEvent<object>) {
+    const root = event.state as Node
+    root.$subscribers.notify(event)
+
+    event.mutationPath.walk(root, (child: Node) => {
+      child.$subscribers.notify(event)
+    })
+  }
 
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
     this.subscribers.add(subscriber)

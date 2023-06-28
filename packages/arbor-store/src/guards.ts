@@ -1,8 +1,9 @@
-import Arbor, { ArborNode, INode } from "./Arbor"
+import { Arbor } from "./Arbor"
 import { ArborProxiable } from "./decorators"
+import type { ArborNode, Node } from "./types"
 
-export function isNode<T extends object>(value: unknown): value is INode<T> {
-  const isNodeValue = value as INode<T>
+export function isNode<T extends object>(value: unknown): value is Node<T> {
+  const isNodeValue = value as Node<T>
   return isNodeValue?.$tree instanceof Arbor
 }
 

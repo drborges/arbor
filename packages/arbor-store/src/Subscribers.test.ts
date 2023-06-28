@@ -1,6 +1,6 @@
-import Arbor from "./Arbor"
-import Path from "./Path"
-import Subscribers from "./Subscribers"
+import { Arbor } from "./Arbor"
+import { Path } from "./Path"
+import { Subscribers } from "./Subscribers"
 
 describe("Subscribers", () => {
   it("notifies subscribers of mutation events", () => {

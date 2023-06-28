@@ -1,16 +1,16 @@
-import Arbor from "./Arbor"
-import NodeCache from "./NodeCache"
-import Path from "./Path"
+import { Arbor } from "./Arbor"
+import { Children } from "./Children"
+import { Path } from "./Path"
 
 interface User {
   name: string
 }
 
-describe("NodeCache", () => {
+describe("Children", () => {
   describe("#set", () => {
     it("caches a node by its value", () => {
       const tree = new Arbor<User[]>([])
-      const cache = new NodeCache()
+      const cache = new Children()
       const value = { name: "Bob" }
       const node = tree.createNode(new Path("0"), value)
 
@@ -25,7 +25,7 @@ describe("NodeCache", () => {
   describe("#delete", () => {
     it("removes a node from the cache by its value", () => {
       const tree = new Arbor<User[]>([])
-      const cache = new NodeCache()
+      const cache = new Children()
       const value = { name: "Bob" }
       const node = tree.createNode(new Path("0"), value)
 
@@ -42,7 +42,7 @@ describe("NodeCache", () => {
   describe("#get", () => {
     it("retrieves a node from the cache by its value", () => {
       const tree = new Arbor<User[]>([])
-      const cache = new NodeCache()
+      const cache = new Children()
       const value = { name: "Bob" }
       const node = tree.createNode(new Path("0"), value)
 
@@ -55,7 +55,7 @@ describe("NodeCache", () => {
   describe("#reset", () => {
     it("clears up the cache", () => {
       const tree = new Arbor<User[]>([])
-      const cache = new NodeCache()
+      const cache = new Children()
       const value1 = { name: "Bob" }
       const node1 = tree.createNode(new Path("0"), value1)
       const value2 = { name: "Bob" }

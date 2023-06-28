@@ -1,10 +1,11 @@
-import Arbor, { INode } from "./Arbor"
-import NodeCache from "./NodeCache"
-import Path from "./Path"
-import Subscribers from "./Subscribers"
+import { Arbor } from "./Arbor"
+import { Children } from "./Children"
+import { Path } from "./Path"
+import { Subscribers } from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
 import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
+import type { Node } from "./types"
 import { isGetter } from "./utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
@@ -12,9 +13,7 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 /**
  * Default node handler implementation.
  */
-export default class NodeHandler<T extends object = object>
-  implements ProxyHandler<T>
-{
+export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   /**
    * Caches all method / function props in the proxied object while
    * binding them to the proxy instance itself so that all logic
@@ -27,7 +26,7 @@ export default class NodeHandler<T extends object = object>
     readonly $tree: Arbor,
     readonly $path: Path,
     readonly $value: T,
-    readonly $children = new NodeCache(),
+    readonly $children = new Children(),
     readonly $subscribers = new Subscribers()
   ) {}
 
@@ -57,19 +56,10 @@ export default class NodeHandler<T extends object = object>
   $traverse(key: unknown) {
     if (!isNode<T>(this)) throw new NotAnArborNodeError()
 
-    return this[key as string] as INode
+    return this[key as string] as Node
   }
 
-  /**
-   * Unwraps the node returning its underlying value.
-   *
-   * @returns the unwrapped node value.
-   */
-  $unwrap(): T {
-    return this.$value
-  }
-
-  $clone(): INode<T> {
+  $clone(): Node<T> {
     return this.$tree.createNode(
       this.$path,
       this.$value,
@@ -78,13 +68,13 @@ export default class NodeHandler<T extends object = object>
     )
   }
 
-  $getOrCreateChildNode<V extends object>(prop: string, value: V): INode<V> {
+  $getOrCreateChildNode<V extends object>(prop: string, value: V): Node<V> {
     return this.$children.has(value)
       ? this.$children.get(value)
       : this.$createChildNode(prop, value)
   }
 
-  get(target: T, prop: string, proxy: INode<T>) {
+  get(target: T, prop: string, proxy: Node<T>) {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
 
@@ -105,7 +95,7 @@ export default class NodeHandler<T extends object = object>
     // This is done for consistency at the moment to ensure that node values are not proxies
     // but the actual proxied value. This decision can be revisited if needed.
     if (isNode(childValue)) {
-      childValue = childValue.$unwrap()
+      childValue = childValue.$value
     }
 
     // Method and function props are all bound to the proxy and cached internally
@@ -127,11 +117,11 @@ export default class NodeHandler<T extends object = object>
     return this.$getOrCreateChildNode(prop, childValue)
   }
 
-  set(target: T, prop: string, newValue: unknown, proxy: INode<T>): boolean {
+  set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
     // Automatically unwraps values when they are already Arbor nodes,
     // this prevents proxying proxies and thus forcing stale node references
     // to be kept in memmory unnecessarily.
-    const value = isNode(newValue) ? newValue.$unwrap() : newValue
+    const value = isNode(newValue) ? newValue.$value : newValue
 
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true
@@ -178,7 +168,7 @@ export default class NodeHandler<T extends object = object>
     return true
   }
 
-  private $createChildNode<V extends object>(prop: string, value: V): INode<V> {
+  private $createChildNode<V extends object>(prop: string, value: V): Node<V> {
     const childPath = this.$path.child(prop)
     const childNode = this.$tree.createNode(childPath, value)
     return this.$children.set(value, childNode)

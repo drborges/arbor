@@ -1,7 +1,7 @@
-import { ArborNode, INode } from "./Arbor"
-import Path from "./Path"
+import { Path } from "./Path"
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
+import type { ArborNode, Node } from "./types"
 
 /**
  * Detaches a given ArborNode from the state tree.
@@ -28,7 +28,7 @@ export function detach<T extends object>(node: ArborNode<T>): T {
   const parentNode = node.$tree.getNodeAt(node.$path.parent)
   delete parentNode[nodeParentProp]
 
-  return node.$unwrap()
+  return node.$value
 }
 
 /**
@@ -90,13 +90,13 @@ export function path<T extends object>(node: ArborNode<T>): Path {
 export function isDetached<T extends object>(node: T): boolean {
   if (!isNode(node)) return true
 
-  const reloadedNode = node.$tree.getNodeAt<INode>(node.$path)
+  const reloadedNode = node.$tree.getNodeAt<Node>(node.$path)
 
   // Node no longer exists within the state tree
   if (!reloadedNode) return true
 
-  const reloadedValue = reloadedNode.$unwrap()
-  const value = node.$unwrap()
+  const reloadedValue = reloadedNode.$value
+  const value = node.$value
   if (value === reloadedValue) return false
   if (global.DEBUG) {
     // eslint-disable-next-line no-console
@@ -118,7 +118,7 @@ export function isDetached<T extends object>(node: T): boolean {
 export function unwrap<T extends object>(node: ArborNode<T>): T {
   if (!isNode<T>(node)) throw new NotAnArborNodeError()
 
-  return node.$unwrap()
+  return node.$value
 }
 
 /**

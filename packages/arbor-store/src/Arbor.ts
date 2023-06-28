@@ -1,125 +1,90 @@
-// eslint-disable-next-line max-classes-per-file
-import ArrayNodeHandler from "./ArrayNodeHandler"
-import MapNodeHandler from "./MapNodeHandler"
-import NodeCache from "./NodeCache"
-import NodeHandler from "./NodeHandler"
-import Path from "./Path"
-import Subscribers, { Subscriber, Unsubscribe } from "./Subscribers"
+import { ArrayNodeHandler } from "./ArrayNodeHandler"
+import { Children } from "./Children"
+import { MapNodeHandler } from "./MapNodeHandler"
+import { NodeHandler } from "./NodeHandler"
+import { Path } from "./Path"
+import { Subscribers } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
-import mutate, { Mutation } from "./mutate"
-import { notifyAffectedSubscribers } from "./notifyAffectedSubscribers"
+import type {
+  ArborNode,
+  Handler,
+  Mutation,
+  Node,
+  Plugin,
+  Subscriber,
+  Unsubscribe,
+} from "./types"
 import { isDetached } from "./utilities"
 
 /**
- * Describes a Node Hnalder constructor capable of determining which
- * kinds of nodes it is able to handle.
- */
-export interface Handler {
-  /**
-   * Creates a new instance of the node handling strategy.
-   */
-  new (
-    $tree: Arbor,
-    $path: Path,
-    $value: unknown,
-    $children: NodeCache,
-    $subscribers: Subscribers
-  ): NodeHandler
-
-  /**
-   * Checks if the strategy can handle the given value.
-   *
-   * @param value a potential node in the state tree.
-   */
-  accepts(value: unknown): boolean
-}
-
-/**
- * Recursively marks proxiable node fields as being Arbor nodes.
+ * Refreshes the nodes affected by the mutation path via structural sharing
+ * at the state tree level, not affecting the values wrapped by the state
+ * tree nodes.
  *
- * This is a type cue that informs developers that a given value is
- * bound to Arbor's state tree and thus is reactive, e.g. mutations
- * to the value will cause update notifications to be triggered.
- */
-export type ArborNode<T extends object> = {
-  [P in keyof T]: T[P] extends object
-    ? T[P] extends Function
-      ? T[P]
-      : ArborNode<T[P]>
-    : T[P]
-}
-
-/**
- * Represents an Arbor state tree node with all of its internal API exposed.
+ * The algorithm is simple and allows computing diffs of the state tree
+ * via simple referential equality checks, which comes quite handy in
+ * contexts such as React's which can optimally re-compute re-renders
+ * via reference checks.
  *
- * @internal
+ * Here's a more concrete example, take the following store:
  *
- * This type is meant to be used internally for the most part and
- * may be removed from Arbor's public API.
+ * cosnt store = new Arbor({
+ *   todos: [
+ *     { id: 1, text: "Clean the house", done: false },
+ *      { id: 2, text: "Walk the dogs", done: false },
+ *   ]
+ * })
+ *
+ * That can be represented by the following state tree:
+ *
+ *               "/"
+ *                |
+ *             "todos"
+ *           _____|_____
+ *          |           |
+ *         "0"         "1"
+ *
+ * where the follow is true:
+ *
+ * 1. `store.state` is referenced by the state tree path `"/"`
+ * 2. `store.state.todos` is referenced by the state tree path `"/todos"`
+ * 3. `store.state.todos[0]` is referenced by the state tree path `"/todos/0"`
+ * 4. `store.state.todos[1]` is referenced by the state tree path `"/todos/1"`
+ *
+ * When mutations are applied to say path `"/todos/0"`, all nodes belonging to that path
+ * are refreshed via structural sharing, ultimately not affecting nodes outside of that path,
+ * for example:
+ *
+ * `store.state.todos[0].done = true`: causes all nodes intersecting `"/todos/0"` to be refreshed, e.g.
+ * `"/"`, `"/todos"` and `"/todos/0"`, leaving `"/todos/1"` untouched.
  */
-export type INode<T extends object = object, K extends object = T> = T & {
-  /**
-   * Returns the underlying value wrapped by the state tree node.
-   */
-  $unwrap(): T
-  /**
-   * Clones the node intance.
-   *
-   * Used as part of the structural sharing algorithm for generating new
-   * state trees upon mutations.
-   */
-  $clone(): INode<T>
-  /**
-   * Accesses a child node indexed by the given key.
-   *
-   * This allows Arbor to consistenly traverse any Node implementation that
-   * may be used to compose the state tree.
-   *
-   * @param key the key used to index a chield node.
-   * @returns the child Node indexed by the key. `undefined` is returned in case
-   * the key does not belong to any child node.
-   */
-  $traverse(key: unknown): INode<T> | undefined
-  /**
-   * Reference to the state tree data structure.
-   */
-  readonly $tree: Arbor<K>
-  /**
-   * The path within the state tree where the Node resides in.
-   */
-  readonly $path: Path
-  /**
-   * Cache containing all children nodes of this node.
-   */
-  readonly $children: NodeCache
-  /**
-   * Tracks subscribers of this Node.
-   *
-   * Subscribers are notified of any mutation event affecting this node.
-   */
-  readonly $subscribers: Subscribers<T>
-}
+function mutate<T extends object, K extends object>(
+  node: Node<T>,
+  path: Path,
+  mutation: Mutation<K>
+) {
+  try {
+    const root = node.$clone()
 
-export type ArborConfig = {
-  handlers?: Handler[]
-}
+    const targetNode = path.walk<Node<K>>(root, (child: Node, parent: Node) => {
+      const childCopy = child.$clone()
 
-/**
- * Describes an Arbor Plugin
- */
-export interface Plugin<T extends object> {
-  /**
-   * Allows the plugin to configure itself with the given state tree instance.
-   *
-   * @param store an instance of a state tree
-   * @returns a resolved promise that resolves when the plugin completes its
-   * initialization. In case of an error, the promise is rejected.
-   */
-  configure(store: Arbor<T>): Promise<Unsubscribe>
-}
+      parent.$children.set(childCopy.$value, childCopy)
 
-export type AttributesOf<T extends object> = { [P in keyof T]: T[P] }
+      return childCopy
+    })
+
+    const metadata = mutation(targetNode.$value)
+
+    return {
+      root,
+      metadata,
+    }
+  } catch (e) {
+    return undefined
+  }
+}
 
 /*
  * Default list of state tree node Proxy handlers.
@@ -145,7 +110,7 @@ const defaultNodeHandlers = [ArrayNodeHandler, MapNodeHandler, NodeHandler]
  * ```
  *
  */
-export default class Arbor<T extends object = object> {
+export class Arbor<T extends object = object> {
   /**
    * List of proxy handlers used to determine at Runtime which handling strategy to use
    * for proxying a given node within the state tree.
@@ -161,7 +126,7 @@ export default class Arbor<T extends object = object> {
   /**
    * Reference to the root node of the state tree
    */
-  #root: INode<T>
+  #root: Node<T>
 
   /**
    * List of node handlers used to extend Arbor's default proxying mechanism.
@@ -229,7 +194,7 @@ export default class Arbor<T extends object = object> {
 
     this.#root = result?.root
 
-    notifyAffectedSubscribers({
+    Subscribers.notify({
       state: this.state,
       mutationPath: node.$path,
       metadata: result.metadata ? result.metadata : null,
@@ -250,13 +215,13 @@ export default class Arbor<T extends object = object> {
     path: Path,
     value: V,
     subscribers = new Subscribers<T>(),
-    children = new NodeCache()
-  ): INode<V> {
+    children = new Children()
+  ) {
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
     const node = new Proxy<V>(value, handler)
 
-    return node as INode<V>
+    return node as Node<V>
   }
 
   /**
@@ -265,8 +230,8 @@ export default class Arbor<T extends object = object> {
    * @param path the path of the node to be retrieved.
    * @returns the node at the given path.
    */
-  getNodeAt<V extends object>(path: Path) {
-    return path.walk(this.#root) as ArborNode<V>
+  getNodeAt<V extends object>(path: Path): ArborNode<V> {
+    return path.walk(this.#root)
   }
 
   /**
@@ -284,7 +249,7 @@ export default class Arbor<T extends object = object> {
 
     this.#root = current
 
-    notifyAffectedSubscribers({
+    Subscribers.notify({
       state: this.state,
       mutationPath: Path.root,
       metadata: {

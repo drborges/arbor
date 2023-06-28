@@ -1,8 +1,8 @@
-import NodeHandler from "./NodeHandler"
+import { NodeHandler } from "./NodeHandler"
 
-export default class ArrayNodeHandler<
-  T extends object = object
-> extends NodeHandler<T[]> {
+export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
+  T[]
+> {
   static accepts(value: unknown) {
     return Array.isArray(value)
   }

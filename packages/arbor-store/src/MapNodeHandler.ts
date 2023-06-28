@@ -1,11 +1,11 @@
-import { INode } from "./Arbor"
-import NodeHandler from "./NodeHandler"
+import { NodeHandler } from "./NodeHandler"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import { isNode, isProxiable } from "./guards"
+import type { Node } from "./types"
 
-export default class MapNodeHandler<
-  T extends object = object
-> extends NodeHandler<Map<unknown, T>> {
+export class MapNodeHandler<T extends object = object> extends NodeHandler<
+  Map<unknown, T>
+> {
   static accepts(value: unknown) {
     return value instanceof Map
   }
@@ -13,7 +13,7 @@ export default class MapNodeHandler<
   $traverse(key: unknown) {
     if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
 
-    return this.get(key) as INode<T>
+    return this.get(key) as Node<T>
   }
 
   *[Symbol.iterator]() {
@@ -43,7 +43,7 @@ export default class MapNodeHandler<
   get(
     target: Map<unknown, T>,
     prop: string,
-    proxy: INode<Map<unknown, T>>
+    proxy: Node<Map<unknown, T>>
   ): unknown {
     if (prop === "get") {
       return (key: string) => {
@@ -59,7 +59,7 @@ export default class MapNodeHandler<
 
     if (prop === "set") {
       return (key: string, newValue: T) => {
-        const value = isNode<T>(newValue) ? newValue.$unwrap() : newValue
+        const value = isNode<T>(newValue) ? newValue.$value : newValue
 
         if (target.get(key) !== value) {
           if (this.$children.has(value)) {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import Arbor, { ArborNode } from "./Arbor"
-import Path from "./Path"
+import { Arbor } from "./Arbor"
+import { Path } from "./Path"
 import { ArborProxiable, detached, proxiable } from "./decorators"
 import {
   ArborError,
@@ -9,6 +9,7 @@ import {
   NotAnArborNodeError,
   ValueAlreadyBoundError,
 } from "./errors"
+import type { ArborNode } from "./types"
 
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
@@ -134,6 +135,7 @@ describe("Arbor", () => {
 
       store.state[0].count++
       store.state[0].tracker.count++
+      store.state[0].tracker = { count: 4 }
 
       expect(subscriber).not.toHaveBeenCalled()
     })
