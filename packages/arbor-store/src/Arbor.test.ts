@@ -183,7 +183,7 @@ describe("Arbor", () => {
       expect(subscriber3).toHaveBeenCalledTimes(1)
     })
 
-    it("does not trigger notifications when mutations are performed on stale nodes", () => {
+    it("does not trigger notifications when mutations are performed on detached nodes", () => {
       const store = new Arbor([
         { name: "Alice", age: 30 },
         { name: "Bob", age: 25 },
@@ -638,6 +638,26 @@ describe("Arbor", () => {
   })
 
   describe("Example: Reactive Array API", () => {
+    it("can update stale item references that were moved into new positions within the array", () => {
+      const store = new Arbor([
+        { text: "Clean the house", done: false },
+        { text: "Do the dishes", done: false },
+      ])
+
+      const todo0 = store.state[0]
+      const todo1 = store.state[1]
+
+      store.state[0] = todo1
+      store.state[1] = todo0
+
+      todo0.done = true
+
+      expect(store.state[0].done).toBe(false)
+      expect(store.state[1].done).toBe(true)
+      expect(unwrap(store.state[0])).toBe(unwrap(todo1))
+      expect(unwrap(store.state[1])).toBe(unwrap(todo0))
+    })
+
     it("makes Array#push reactive", () => {
       const subscriber = jest.fn()
       const store = new Arbor([{ text: "Do the dishes", status: "todo" }])
