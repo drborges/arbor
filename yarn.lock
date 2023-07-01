@@ -100,12 +100,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@arborjs/store-perf@workspace:perf"
   dependencies:
-    "@arborjs/store": 0.0.1-alpha.60
+    "@arborjs/store": "workspace:*"
     immer: ^9.0.12
   languageName: unknown
   linkType: soft
 
-"@arborjs/store@0.0.1-alpha.60, @arborjs/store@workspace:^, @arborjs/store@workspace:packages/arbor-store":
+"@arborjs/store@0.0.1-alpha.60, @arborjs/store@workspace:*, @arborjs/store@workspace:^, @arborjs/store@workspace:packages/arbor-store":
   version: 0.0.0-use.local
   resolution: "@arborjs/store@workspace:packages/arbor-store"
   dependencies:
