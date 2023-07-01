@@ -15,7 +15,6 @@ import type {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { isDetached } from "./utilities"
 
 /**
  * Refreshes the nodes affected by the mutation path via structural sharing
@@ -183,14 +182,11 @@ export class Arbor<T extends object = object> {
   mutate<V extends object>(node: unknown, mutation: Mutation<V>): void {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    // Nodes that are no longer in the state tree or were moved into a different
-    // path are considered detatched nodes and cannot be mutated otherwise we risk
-    // computing incorrect state trees with values that are no longer valid.
-    if (isDetached(node)) {
+    const result = mutate(this.#root, node.$path, mutation)
+
+    if (!result) {
       throw new DetachedNodeError()
     }
-
-    const result = mutate(this.#root, node.$path, mutation)
 
     this.#root = result?.root
 

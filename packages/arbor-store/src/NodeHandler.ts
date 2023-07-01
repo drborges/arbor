@@ -3,7 +3,6 @@ import { Children } from "./Children"
 import { Path } from "./Path"
 import { Subscribers } from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
-import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 import type { Node } from "./types"
 import { isGetter } from "./utilities"
@@ -44,21 +43,6 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return true
   }
 
-  /**
-   * Method used by Arbor in order to traverse a Node and access its children.
-   *
-   * By default Arbor assumes that the state tree is composed by either plain objects
-   * or Arrays, thus, the default traversing logic is via prop indexing, e.g. node[prop].
-   *
-   * @param key the key/prop used to index the child node.
-   * @returns the child node.
-   */
-  $traverse(key: unknown) {
-    if (!isNode<T>(this)) throw new NotAnArborNodeError()
-
-    return this[key as string] as Node
-  }
-
   $clone(): Node<T> {
     return this.$tree.createNode(
       this.$path,
@@ -68,10 +52,16 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     )
   }
 
-  $getOrCreateChildNode<V extends object>(prop: string, value: V): Node<V> {
-    return this.$children.has(value)
-      ? this.$children.get(value)
-      : this.$createChildNode(prop, value)
+  $detachChild(childValue: unknown) {
+    const [childProp] = Object.entries(this.$value).find(
+      ([_, value]) => value === childValue
+    )
+
+    delete this[childProp]
+  }
+
+  $getChild<V extends object>(value: V): Node<V> {
+    return this.$children.get(value) || this.$createChildNode(value)
   }
 
   get(target: T, prop: string, proxy: Node<T>) {
@@ -114,7 +104,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return childValue
     }
 
-    return this.$getOrCreateChildNode(prop, childValue)
+    return this.$getChild(childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
@@ -168,8 +158,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return true
   }
 
-  private $createChildNode<V extends object>(prop: string, value: V): Node<V> {
-    const childPath = this.$path.child(prop)
+  private $createChildNode<V extends object>(value: V): Node<V> {
+    const childPath = this.$path.child(value)
     const childNode = this.$tree.createNode(childPath, value)
     return this.$children.set(value, childNode)
   }
