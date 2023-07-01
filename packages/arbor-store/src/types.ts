@@ -102,7 +102,7 @@ export interface Plugin<T extends object> {
 
 export type MutationMetadata = {
   operation?: string
-  props: string[]
+  props: (string | number | Symbol)[]
 }
 
 /**
