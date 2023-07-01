@@ -3,8 +3,8 @@
 import { Arbor } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
-import useArbor from "./useArbor"
-import { watchMapItems } from "./watchMapItems"
+import { useArbor } from "./useArbor"
+import { watchItems } from "./watchItems"
 
 interface Post {
   content: string
@@ -35,7 +35,7 @@ class Users extends Map<string, User> {
   }
 }
 
-describe("watchMapItems of a Map", () => {
+describe("watchItems of a Map", () => {
   it("does not update if mutation does not target any of the listed children props", () => {
     const store = new Arbor<State>({
       users: new Users(
@@ -50,7 +50,7 @@ describe("watchMapItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchMapItems("name", "age"))
+      useArbor(store.state.users, watchItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -81,7 +81,7 @@ describe("watchMapItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchMapItems("name", "age"))
+      useArbor(store.state.users, watchItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -107,7 +107,7 @@ describe("watchMapItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchMapItems("name", "age"))
+      useArbor(store.state.users, watchItems("name", "age"))
     )
 
     expect(result.all.length).toBe(1)
@@ -151,7 +151,7 @@ describe("watchMapItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchMapItems())
+      useArbor(store.state.users, watchItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -177,7 +177,7 @@ describe("watchMapItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchMapItems())
+      useArbor(store.state.users, watchItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -208,7 +208,7 @@ describe("watchMapItems of a Map", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users, watchMapItems())
+      useArbor(store.state.users, watchItems())
     )
 
     expect(result.all.length).toBe(1)
@@ -229,24 +229,24 @@ describe("watchMapItems of a Map", () => {
       store.state.users.get("a")!.posts.push({ content: "new post" })
     })
 
-    expect(result.all.length).toBe(4)
+    expect(result.all.length).toBe(3)
 
     act(() => {
       store.state.users.get("a")!.posts[0].content = "Updated content"
     })
 
-    expect(result.all.length).toBe(5)
+    expect(result.all.length).toBe(3)
 
     act(() => {
       store.state.users.get("b")!.name = "Bob updated"
     })
 
-    expect(result.all.length).toBe(6)
+    expect(result.all.length).toBe(4)
 
     act(() => {
       store.state.users.get("b")!.age++
     })
 
-    expect(result.all.length).toBe(7)
+    expect(result.all.length).toBe(5)
   })
 })
