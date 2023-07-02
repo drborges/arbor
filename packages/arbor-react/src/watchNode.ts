@@ -6,7 +6,7 @@ export type PropsOf<T> = {
 
 export function watchNode<T extends object>(...props: PropsOf<T>[]) {
   return (node: ArborNode<T>, event: MutationEvent<T>) => {
-    if (!event.mutationPath.targets(node)) return false
+    if (!event.mutationPath.matches(node)) return false
     if (props.length === 0) return true
 
     return event.metadata.props.some((prop) =>

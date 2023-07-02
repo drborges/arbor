@@ -10,17 +10,19 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
     return value instanceof Map
   }
 
-  $traverse(key: unknown) {
-    if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
-
-    return this.get(key) as Node<T>
-  }
-
   *[Symbol.iterator]() {
     if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
 
     for (const entry of this.entries()) {
       yield entry
+    }
+  }
+
+  $detachChild(childValue: unknown) {
+    for (const [key, value] of this.$value.entries()) {
+      if (value === childValue) {
+        delete this[key as string]
+      }
     }
   }
 
@@ -53,7 +55,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
           return value
         }
 
-        return this.$getOrCreateChildNode(key, value)
+        return this.$getChild(value)
       }
     }
 
@@ -63,12 +65,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
 
         if (target.get(key) !== value) {
           if (this.$children.has(value)) {
-            const node = this.$children.get(value)
-            throw new ValueAlreadyBoundError(
-              `Cannot set value to path ${this.$path
-                .child(key)
-                .toString()}. Value is already bound to path ${node.$path.toString()}.`
-            )
+            throw new ValueAlreadyBoundError()
           }
 
           this.$tree.mutate(this, (map) => {

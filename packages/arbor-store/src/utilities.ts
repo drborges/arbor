@@ -24,9 +24,9 @@ export function detach<T extends object>(node: ArborNode<T>): T {
     throw new ArborError("Cannot detach store's root node")
   }
 
-  const nodeParentProp = node.$path.props[node.$path.props.length - 1]
-  const parentNode = node.$tree.getNodeAt(node.$path.parent)
-  delete parentNode[nodeParentProp]
+  const parentNode = node.$tree.getNodeAt<Node>(node.$path.parent)
+
+  parentNode.$detachChild(node.$value)
 
   return node.$value
 }
@@ -91,19 +91,9 @@ export function isDetached<T extends object>(node: T): boolean {
   if (!isNode(node)) return true
 
   const reloadedNode = node.$tree.getNodeAt<Node>(node.$path)
-
-  // Node no longer exists within the state tree
   if (!reloadedNode) return true
 
-  const reloadedValue = reloadedNode.$value
-  const value = node.$value
-  if (value === reloadedValue) return false
-  if (global.DEBUG) {
-    // eslint-disable-next-line no-console
-    console.warn(`Stale node pointing to path ${node.$path.toString()}`)
-  }
-
-  return true
+  return false
 }
 
 /**

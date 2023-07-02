@@ -1,7 +1,7 @@
-import { Arbor, ArborNode, Path, proxiable } from "@arborjs/store"
+import { Arbor, ArborNode, path, proxiable } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react-hooks"
 
-import useArbor, { Watcher } from "./useArbor"
+import { useArbor, Watcher } from "./useArbor"
 
 interface User {
   name: string
@@ -155,7 +155,7 @@ describe("useArbor", () => {
     const watchSecondUser =
       (): Watcher<State> =>
       (_node: ArborNode<State>, { mutationPath }) =>
-        mutationPath.targets(Path.parse("/users/1"))
+        mutationPath.matches(path(store.state.users[1]))
 
     const { result } = renderHook(() => useArbor(store, watchSecondUser()))
 

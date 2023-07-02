@@ -1,192 +1,220 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { Arbor } from "./Arbor"
 import { Path } from "./Path"
 import { InvalidArgumentError } from "./errors"
-import type { ArborNode } from "./types"
+import { unwrap } from "./utilities"
 
 describe("Path", () => {
-  describe("#toString", () => {
-    it("represents an empty path as '/'", () => {
-      const path = new Path()
-
-      expect(path.toString()).toEqual("/")
-    })
-
-    it("returns a URI representation of the object", () => {
-      const path = new Path("users", "0", "preferences")
-
-      expect(path.toString()).toEqual("/users/0/preferences")
-    })
-  })
+  const state = {
+    todos: [{ text: "Clean the house" }],
+  }
 
   describe("#child", () => {
     it("creates a child path", () => {
-      const parent = new Path("users")
-      const child = parent.child("0")
+      const parent = Path.root.child(state).child(state.todos)
+      const child = parent.child(state.todos[0])
 
-      expect(child.toString()).toEqual("/users/0")
+      expect(child.segments[0]).toBe(state)
+      expect(child.segments[1]).toBe(state.todos)
+      expect(child.segments[2]).toBe(state.todos[0])
     })
   })
 
   describe("#isRoot", () => {
     it("checks if a path points to the root of a state tree", () => {
-      expect(Path.parse("").isRoot()).toBe(true)
-      expect(Path.parse("/").isRoot()).toBe(true)
-      expect(Path.parse("/users").isRoot()).toBe(false)
+      expect(
+        Path.root.child(state).child(state.todos).child(state.todos[0]).isRoot()
+      ).toBe(false)
+      expect(Path.root.child(state).child(state.todos).isRoot()).toBe(false)
+      expect(Path.root.child(state).isRoot()).toBe(false)
+      expect(Path.root.isRoot()).toBe(true)
     })
   })
 
   describe("#parent", () => {
     it("returns the parent path", () => {
-      const path = new Path("users", "0")
+      const parent = Path.root.child(state).child(state.todos)
+      const child = parent.child(state.todos[0])
 
-      expect(path.parent.toString()).toEqual("/users")
+      expect(child.parent).toEqual(parent)
     })
 
     it("returns the parent path of a root path", () => {
-      const path = new Path()
-
-      expect(path.parent).toEqual(null)
-    })
-  })
-
-  describe("#parse", () => {
-    it("parses the given string into a Path object", () => {
-      const path1 = Path.parse("")
-      const path2 = Path.parse("/")
-      const path3 = Path.parse("/users")
-
-      expect(path1.props).toEqual([])
-      expect(path2.props).toEqual([])
-      expect(path3.props).toEqual(["users"])
-    })
-
-    it("returns the parent path of a root path", () => {
-      const path = new Path()
-
-      expect(path.parent).toEqual(null)
-    })
-  })
-
-  describe(".root", () => {
-    it("creates a root path", () => {
       const path = Path.root
 
-      expect(path.props).toEqual([])
+      expect(path.parent).toEqual(null)
     })
   })
 
   describe("#walk", () => {
     it("traverses a given state tree node until it reaches the value referenced by the path", () => {
-      const path = Path.parse("/data/users/1")
-      const store = new Arbor({
-        data: {
-          users: [{ name: "User 1" }, { name: "User 2" }],
-        },
-      })
+      const path1 = Path.root
+      const path2 = Path.root.child(state.todos)
+      const path3 = Path.root.child(state.todos).child(state.todos[0])
 
-      expect(path.walk(store.state)).toBe(store.state.data.users[1])
+      const store = new Arbor(state)
+      // Since Arbor generates the state tree in a lazy manner
+      // we need to ensure the tree is generated in order to
+      // test for the scenarios below.
+      store.state.todos[0]
+
+      expect(unwrap(path1.walk(store.state))).toBe(state)
+      expect(unwrap(path2.walk(store.state))).toBe(state.todos)
+      expect(unwrap(path3.walk(store.state))).toBe(state.todos[0])
     })
 
     it("returns undefined if path does not reference any nodes within the state tree", () => {
-      const path = Path.parse("/data/todos/1")
-      const store = new Arbor({
-        data: {
-          users: [{ name: "User 1" }, { name: "User 2" }],
-        },
-      })
+      const path = Path.root.child(state)
 
-      expect(path.walk(store.state)).toBeUndefined()
+      const store = new Arbor(state)
+      store.state.todos[0]
+
+      expect(path.walk(store.state)).toBe(undefined)
     })
   })
 
-  describe("#targets", () => {
-    it("checks if a path targets another given path", () => {
-      expect(Path.root.targets(Path.root)).toBe(true)
-      expect(Path.parse("/").targets(Path.root)).toBe(true)
-      expect(new Path("users").targets(Path.parse("/users"))).toBe(true)
-      expect(Path.parse("/users").targets(Path.parse("/users"))).toBe(true)
+  describe("#matches", () => {
+    it("checks if a path matches another given path", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Do the dishes" }],
+      }
 
-      expect(Path.parse("/users").targets(Path.root)).toBe(false)
-      expect(new Path("users").targets(Path.parse("/"))).toBe(false)
-      expect(Path.parse("/users/123").targets(Path.parse("/users"))).toBe(false)
+      const rootPath = Path.root
+      const todosPath = rootPath.child(state.todos)
+      const todo0Path = todosPath.child(state.todos[0])
+      const todo1Path = todosPath.child(state.todos[1])
+
+      expect(rootPath.matches(Path.root)).toBe(true)
+      expect(todosPath.matches(Path.root)).toBe(false)
+      expect(todo0Path.matches(Path.root)).toBe(false)
+      expect(todo1Path.matches(Path.root)).toBe(false)
+      expect(rootPath.matches(todosPath)).toBe(false)
+      expect(rootPath.matches(todo0Path)).toBe(false)
+      expect(rootPath.matches(todo1Path)).toBe(false)
+
+      expect(todosPath.matches(todo0Path)).toBe(false)
+      expect(todosPath.matches(todo1Path)).toBe(false)
+
+      expect(todo0Path.matches(todo1Path)).toBe(false)
+
+      expect(todosPath.matches(Path.root.child(state.todos))).toBe(true)
+      expect(
+        todo0Path.matches(Path.root.child(state.todos).child(state.todos[0]))
+      ).toBe(true)
+      expect(
+        todo1Path.matches(Path.root.child(state.todos).child(state.todos[1]))
+      ).toBe(true)
     })
 
-    it("checks if a path targets a given ArborNode", () => {
-      const node1 = {
-        get $tree() {
-          return new Arbor({})
-        },
-        $path: Path.parse("/users"),
-      } as ArborNode<object>
+    it("checks if a path matches a given ArborNode", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Do the dishes" }],
+      }
 
-      const node2 = {
-        get $tree() {
-          return new Arbor({})
-        },
-        $path: Path.parse("/users/123"),
-      } as ArborNode<object>
+      const store = new Arbor(state)
 
-      expect(Path.parse("/").targets(node1)).toBe(false)
-      expect(Path.parse("/").targets(node2)).toBe(false)
-      expect(Path.parse("/users").targets(node1)).toBe(true)
-      expect(Path.parse("/users").targets(node2)).toBe(false)
-      expect(Path.parse("/users/123").targets(node1)).toBe(false)
-      expect(Path.parse("/users/123").targets(node2)).toBe(true)
+      const rootPath = Path.root
+      const todosPath = rootPath.child(state.todos)
+      const todo0Path = todosPath.child(state.todos[0])
+      const todo1Path = todosPath.child(state.todos[1])
+
+      expect(rootPath.matches(store.state)).toBe(true)
+      expect(rootPath.matches(store.state.todos)).toBe(false)
+      expect(rootPath.matches(store.state.todos[0])).toBe(false)
+      expect(rootPath.matches(store.state.todos[1])).toBe(false)
+
+      expect(todosPath.matches(store.state)).toBe(false)
+      expect(todosPath.matches(store.state.todos)).toBe(true)
+      expect(todosPath.matches(store.state.todos[0])).toBe(false)
+      expect(todosPath.matches(store.state.todos[1])).toBe(false)
+
+      expect(todo0Path.matches(store.state)).toBe(false)
+      expect(todo0Path.matches(store.state.todos)).toBe(false)
+      expect(todo0Path.matches(store.state.todos[0])).toBe(true)
+      expect(todo0Path.matches(store.state.todos[1])).toBe(false)
+
+      expect(todo1Path.matches(store.state)).toBe(false)
+      expect(todo1Path.matches(store.state.todos)).toBe(false)
+      expect(todo1Path.matches(store.state.todos[0])).toBe(false)
+      expect(todo1Path.matches(store.state.todos[1])).toBe(true)
     })
 
     it("throws an error if the argument passed in is not a Path nor an ArborNode", () => {
       expect(() =>
-        Path.parse(".").targets("Not a path nor node" as unknown as Path)
+        Path.root.matches("Not a path nor node" as unknown as Path)
       ).toThrow(InvalidArgumentError)
     })
   })
 
   describe("#affects", () => {
-    it("checks if a path affects a given node", () => {
-      const node1 = {
-        get $tree() {
-          return new Arbor({})
-        },
-        $path: Path.parse("/users"),
-      } as ArborNode<object>
+    it("checks if a path affects another given path", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Do the dishes" }],
+      }
 
-      const node2 = {
-        get $tree() {
-          return new Arbor({})
-        },
-        $path: Path.parse("/users/123"),
-      } as ArborNode<object>
+      const rootPath = Path.root
+      const todosPath = rootPath.child(state.todos)
+      const todo0Path = todosPath.child(state.todos[0])
+      const todo1Path = todosPath.child(state.todos[1])
 
-      expect(Path.parse("/users").affects(node1)).toBe(true)
-      expect(Path.parse("/users/321").affects(node1)).toBe(true)
-      expect(Path.parse("/users/123").affects(node1)).toBe(true)
-      expect(Path.parse("/users/123").affects(node2)).toBe(true)
+      expect(rootPath.affects(Path.root)).toBe(true)
+      expect(rootPath.affects(todosPath)).toBe(false)
+      expect(rootPath.affects(todo0Path)).toBe(false)
+      expect(rootPath.affects(todo1Path)).toBe(false)
 
-      expect(Path.parse("/posts").affects(node1)).toBe(false)
-      expect(Path.parse("/posts").affects(node2)).toBe(false)
-      expect(Path.parse("/users").affects(node2)).toBe(false)
-      expect(Path.parse("/users/321").affects(node2)).toBe(false)
+      expect(todosPath.affects(Path.root)).toBe(true)
+      expect(todo0Path.affects(Path.root)).toBe(true)
+      expect(todo1Path.affects(Path.root)).toBe(true)
+
+      expect(todosPath.affects(todo0Path)).toBe(false)
+      expect(todosPath.affects(todo1Path)).toBe(false)
+
+      expect(todo0Path.affects(todo1Path)).toBe(false)
+
+      expect(todosPath.affects(Path.root.child(state.todos))).toBe(true)
+      expect(
+        todo0Path.affects(Path.root.child(state.todos).child(state.todos[0]))
+      ).toBe(true)
+      expect(
+        todo1Path.affects(Path.root.child(state.todos).child(state.todos[1]))
+      ).toBe(true)
     })
 
-    it("checks if a path affects a given path", () => {
-      expect(Path.parse("/users").affects(Path.parse("/"))).toBe(true)
-      expect(Path.parse("/users").affects(Path.parse("/users"))).toBe(true)
-      expect(Path.parse("/users/123").affects(Path.parse("/users"))).toBe(true)
-      expect(
-        Path.parse("/users/123/preferences").affects(Path.parse("/users"))
-      ).toBe(true)
-      expect(
-        Path.parse("/users/123/preferences").affects(Path.parse("/users/123"))
-      ).toBe(true)
-      expect(Path.parse("/").affects(Path.parse("/users"))).toBe(false)
-      expect(Path.parse("/users").affects(Path.parse("/posts"))).toBe(false)
-      expect(Path.parse("/users").affects(Path.parse("/users/123"))).toBe(false)
+    it("checks if a path affects a given ArborNode", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Do the dishes" }],
+      }
+
+      const store = new Arbor(state)
+
+      const rootPath = Path.root
+      const todosPath = rootPath.child(state.todos)
+      const todo0Path = todosPath.child(state.todos[0])
+      const todo1Path = todosPath.child(state.todos[1])
+
+      expect(rootPath.affects(store.state)).toBe(true)
+      expect(rootPath.affects(store.state.todos)).toBe(false)
+      expect(rootPath.affects(store.state.todos[0])).toBe(false)
+      expect(rootPath.affects(store.state.todos[1])).toBe(false)
+
+      expect(todosPath.affects(store.state)).toBe(true)
+      expect(todosPath.affects(store.state.todos)).toBe(true)
+      expect(todosPath.affects(store.state.todos[0])).toBe(false)
+      expect(todosPath.affects(store.state.todos[1])).toBe(false)
+
+      expect(todo0Path.affects(store.state)).toBe(true)
+      expect(todo0Path.affects(store.state.todos)).toBe(true)
+      expect(todo0Path.affects(store.state.todos[0])).toBe(true)
+      expect(todo0Path.affects(store.state.todos[1])).toBe(false)
+
+      expect(todo1Path.affects(store.state)).toBe(true)
+      expect(todo1Path.affects(store.state.todos)).toBe(true)
+      expect(todo1Path.affects(store.state.todos[0])).toBe(false)
+      expect(todo1Path.affects(store.state.todos[1])).toBe(true)
     })
 
     it("throws an error if the argument passed in is not a Path nor an ArborNode", () => {
       expect(() =>
-        Path.parse(".").affects("Not a path nor node" as unknown as Path)
+        Path.root.affects("Not a path nor node" as unknown as Path)
       ).toThrow(InvalidArgumentError)
     })
   })

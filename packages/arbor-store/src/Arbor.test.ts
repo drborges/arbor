@@ -9,8 +9,7 @@ import {
   NotAnArborNodeError,
   ValueAlreadyBoundError,
 } from "./errors"
-import type { ArborNode } from "./types"
-
+import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 describe("Arbor", () => {
@@ -184,7 +183,7 @@ describe("Arbor", () => {
       expect(subscriber3).toHaveBeenCalledTimes(1)
     })
 
-    it("does not trigger notifications when mutations are performed on stale nodes", () => {
+    it("does not trigger notifications when mutations are performed on detached nodes", () => {
       const store = new Arbor([
         { name: "Alice", age: 30 },
         { name: "Bob", age: 25 },
@@ -313,7 +312,7 @@ describe("Arbor", () => {
 
       return new Promise((resolve) => {
         store.subscribe((event) => {
-          expect(event.mutationPath.toString()).toEqual("/")
+          expect(event.mutationPath.isRoot()).toBe(true)
           expect(event.metadata.props).toEqual(["count"])
           expect(event.metadata.operation).toEqual("set")
           expect(event.state).toEqual({ count: -1 })
@@ -367,7 +366,8 @@ describe("Arbor", () => {
 
       return new Promise((resolve) => {
         store.subscribe((event) => {
-          expect(event.mutationPath.toString()).toEqual("/0")
+          expect(event.mutationPath.segments.length).toBe(1)
+          expect(event.mutationPath.segments[0]).toBe(unwrap(store.state[0]))
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
           expect(event.state).toEqual([
@@ -397,9 +397,12 @@ describe("Arbor", () => {
       todo1.status = "doing"
       todo2.status = "done"
 
+      const mutationPath1 = subscriber.mock.calls[0][0].mutationPath as Path
+      const mutationPath2 = subscriber.mock.calls[1][0].mutationPath as Path
+
       expect(subscriber.mock.calls.length).toBe(2)
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.parse("/0"))
-      expect(subscriber.mock.calls[1][0].mutationPath).toEqual(Path.parse("/1"))
+      expect(mutationPath1.matches(path(store.state[0]))).toBe(true)
+      expect(mutationPath2.matches(path(store.state[1]))).toBe(true)
     })
 
     it("subscribes to mutations on a specific state tree node", () => {
@@ -419,14 +422,13 @@ describe("Arbor", () => {
       todo1.status = "doing"
       todo2.status = "done"
 
+      const mutationPath1 = subscriber1.mock.calls[0][0].mutationPath as Path
+      const mutationPath2 = subscriber2.mock.calls[0][0].mutationPath as Path
+
       expect(subscriber1.mock.calls.length).toBe(1)
-      expect(subscriber1.mock.calls[0][0].mutationPath).toEqual(
-        Path.parse("/0")
-      )
       expect(subscriber2.mock.calls.length).toBe(1)
-      expect(subscriber2.mock.calls[0][0].mutationPath).toEqual(
-        Path.parse("/1")
-      )
+      expect(mutationPath1.matches(path(store.state[0]))).toBe(true)
+      expect(mutationPath2.matches(path(store.state[1]))).toBe(true)
     })
 
     it("mutations cause a new state tree to be generated via structural sharing", () => {
@@ -548,8 +550,10 @@ describe("Arbor", () => {
       expect(activeTodos[0].id).toBe(2)
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
-      expect(path(activeTodos[0]).toString()).toBe("/todos/1")
       expect(activeTodos[0]).toBe(store.state.todos[1])
+      expect(path(activeTodos[0]).matches(path(store.state.todos[1]))).toBe(
+        true
+      )
     })
 
     it("allows using object literal getters to select nodes within the state tree", () => {
@@ -582,8 +586,10 @@ describe("Arbor", () => {
       expect(activeTodos[0].id).toBe(2)
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
-      expect(path(activeTodos[0]).toString()).toBe("/todos/1")
       expect(activeTodos[0]).toBe(store.state.todos[1])
+      expect(path(activeTodos[0]).matches(path(store.state.todos[1]))).toBe(
+        true
+      )
     })
 
     it("accounts for getters in the prototype chain", () => {
@@ -626,12 +632,32 @@ describe("Arbor", () => {
       expect(activeTodos[0].id).toBe("b")
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
-      expect(path(activeTodos[0]).toString()).toBe("/items/b")
       expect(activeTodos[0]).toBe(store.state.all[1])
+      expect(path(activeTodos[0]).matches(path(store.state.all[1]))).toBe(true)
     })
   })
 
   describe("Example: Reactive Array API", () => {
+    it("can update stale item references that were moved into new positions within the array", () => {
+      const store = new Arbor([
+        { text: "Clean the house", done: false },
+        { text: "Do the dishes", done: false },
+      ])
+
+      const todo0 = store.state[0]
+      const todo1 = store.state[1]
+
+      store.state[0] = todo1
+      store.state[1] = todo0
+
+      todo0.done = true
+
+      expect(store.state[0].done).toBe(false)
+      expect(store.state[1].done).toBe(true)
+      expect(unwrap(store.state[0])).toBe(unwrap(todo1))
+      expect(unwrap(store.state[1])).toBe(unwrap(todo0))
+    })
+
     it("makes Array#push reactive", () => {
       const subscriber = jest.fn()
       const store = new Arbor([{ text: "Do the dishes", status: "todo" }])
@@ -639,9 +665,11 @@ describe("Arbor", () => {
       store.subscribe(subscriber)
       store.state.push({ text: "Walk the dogs", status: "todo" })
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["1"])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("push")
       expect(subscriber.mock.calls[0][0].state).toBe(store.state)
 
@@ -662,9 +690,11 @@ describe("Arbor", () => {
       store.subscribe(subscriber)
       store.state.splice(0, 2)
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0", "1"])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("splice")
       expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(store.state).toEqual([{ text: "Clean the house", status: "todo" }])
@@ -681,9 +711,11 @@ describe("Arbor", () => {
       store.subscribe(subscriber)
       delete store.state[0]
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0"])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
       expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(store.state).toEqual([
@@ -703,9 +735,11 @@ describe("Arbor", () => {
       store.subscribe(subscriber)
       const shiftedTodo = store.state.shift()
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["0"])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("shift")
       expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(shiftedTodo).toEqual({ text: "Do the dishes", status: "todo" })
@@ -726,9 +760,11 @@ describe("Arbor", () => {
       store.subscribe(subscriber)
       const poppedTodo = store.state.pop()
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["2"])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("pop")
       expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(poppedTodo).toEqual({ text: "Clean the house", status: "todo" })
@@ -751,9 +787,11 @@ describe("Arbor", () => {
         status: "todo",
       })
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("unshift")
       expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(length).toEqual(3)
@@ -774,9 +812,11 @@ describe("Arbor", () => {
       store.subscribe(subscriber)
       const reversed = store.state.reverse()
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("reverse")
       expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(reversed).toBe(store.state)
@@ -797,9 +837,11 @@ describe("Arbor", () => {
       store.subscribe(subscriber)
       const sorted = store.state.sort((a, b) => a.text.localeCompare(b.text))
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(Path.root)
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("sort")
       expect(subscriber.mock.calls[0][0].state).toEqual(store.state)
       expect(sorted).toBe(store.state)
@@ -830,11 +872,11 @@ describe("Arbor", () => {
 
       store.state.todos.set("abc", new Todo("Clean the house"))
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(
-        Path.parse("/todos")
-      )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
       expect(subscriber.mock.calls[0][0].state).toBe(store.state)
       expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
@@ -913,11 +955,11 @@ describe("Arbor", () => {
 
       store.state.todos.delete("abc")
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(
-        Path.parse("/todos")
-      )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
       expect(subscriber.mock.calls[0][0].state).toBe(store.state)
       expect(store.state.todos.get("123")).toEqual(new Todo("Walk the dogs"))
@@ -943,11 +985,11 @@ describe("Arbor", () => {
 
       store.state.todos.clear()
 
+      const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
+
+      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
-      expect(subscriber.mock.calls[0][0].mutationPath).toEqual(
-        Path.parse("/todos")
-      )
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("clear")
       expect(subscriber.mock.calls[0][0].state).toBe(store.state)
       expect(store.state.todos.get("123")).toBeUndefined()
@@ -1026,9 +1068,11 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      const node = store.getNodeAt(Path.parse("/todos/123"))
+      const todo = store.state.todos.get("123")!
 
-      expect(node).toBe(store.state.todos.get("123"))
+      const node = store.getNodeAt(path(todo))
+
+      expect(node).toBe(todo)
     })
 
     it("traverses children nodes successfully when notifying about mutations", () => {
@@ -1195,10 +1239,15 @@ describe("Arbor", () => {
           ],
         })
 
-        expect(path(store.state)).toEqual(Path.parse("/"))
-        expect(path(store.state.todos)).toEqual(Path.parse("/todos"))
-        expect(path(store.state.todos[0])).toEqual(Path.parse("/todos/0"))
-        expect(path(store.state.todos[1])).toEqual(Path.parse("/todos/1"))
+        const rootPath = Path.root
+        const todosPath = rootPath.child(unwrap(store.state.todos))
+        const todo0Path = todosPath.child(unwrap(store.state.todos[0]))
+        const todo1Path = todosPath.child(unwrap(store.state.todos[1]))
+
+        expect(path(store.state).matches(rootPath)).toBe(true)
+        expect(path(store.state.todos).matches(todosPath)).toBe(true)
+        expect(path(store.state.todos[0]).matches(todo0Path)).toBe(true)
+        expect(path(store.state.todos[1]).matches(todo1Path)).toBe(true)
       })
     })
 

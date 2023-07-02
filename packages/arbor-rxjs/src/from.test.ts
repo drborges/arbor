@@ -26,7 +26,9 @@ describe("from", () => {
 
     expect(mutationEvents.length).toBe(1)
     expect(mutationEvents[0].metadata.props).toContain("name")
-    expect(mutationEvents[0].mutationPath.toString()).toBe("/users/0")
+    expect(mutationEvents[0].mutationPath.matches(store.state.users[0])).toBe(
+      true
+    )
   })
 
   it("cancels a subscription", () => {

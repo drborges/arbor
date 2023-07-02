@@ -16,17 +16,17 @@ export type Watcher<T extends object> = (
   event: MutationEvent<T>
 ) => boolean
 
-function useArbor<T extends object>(
+export function useArbor<T extends object>(
   store: Arbor<T>,
   watcher?: Watcher<T>
 ): ArborNode<T>
 
-function useArbor<T extends object>(
+export function useArbor<T extends object>(
   node: ArborNode<T>,
   watcher?: Watcher<T>
 ): ArborNode<T>
 
-function useArbor<T extends object>(
+export function useArbor<T extends object>(
   state: T,
   watcher?: Watcher<T>
 ): ArborNode<T>
@@ -63,7 +63,7 @@ function useArbor<T extends object>(
  * @param watcher a watcher implementation that tells Arbor when to react to a given mutation event.
  * @returns the current state of the Arbor state tree.
  */
-function useArbor<T extends object>(
+export function useArbor<T extends object>(
   target: ArborNode<T> | Arbor<T> | T,
   watcher: Watcher<T> = watchAny()
 ): ArborNode<T> {
@@ -106,5 +106,3 @@ function useArbor<T extends object>(
 
   return state
 }
-
-export default useArbor

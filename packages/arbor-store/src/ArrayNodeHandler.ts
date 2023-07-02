@@ -7,6 +7,11 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
     return Array.isArray(value)
   }
 
+  $detachChild(childValue: unknown) {
+    const index = this.$value.findIndex((item) => item === childValue)
+    delete this[index]
+  }
+
   deleteProperty(_target: T[], prop: string): boolean {
     this.$tree.mutate(this, (node: T[]) => {
       node.splice(parseInt(prop, 10), 1)

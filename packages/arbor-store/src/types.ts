@@ -58,17 +58,10 @@ export type Node<T extends object = object, K extends object = T> = T & {
    * state trees upon mutations.
    */
   $clone(): Node<T>
-  /**
-   * Accesses a child node indexed by the given key.
-   *
-   * This allows Arbor to consistenly traverse any Node implementation that
-   * may be used to compose the state tree.
-   *
-   * @param key the key used to index a chield node.
-   * @returns the child Node indexed by the key. `undefined` is returned in case
-   * the key does not belong to any child node.
-   */
-  $traverse(key: unknown): Node<T> | undefined
+
+  $getChild<V extends object>(value: V): Node<V>
+
+  $detachChild(childValue: unknown)
   /**
    * Reference to the state tree data structure.
    */
@@ -109,7 +102,7 @@ export interface Plugin<T extends object> {
 
 export type MutationMetadata = {
   operation?: string
-  props: string[]
+  props: (string | number | Symbol)[]
 }
 
 /**
