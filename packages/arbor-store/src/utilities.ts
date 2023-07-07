@@ -3,6 +3,21 @@ import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import type { ArborNode, Node } from "./types"
 
+export class Seed {}
+const ArborSeed = Symbol.for("ArborSeed")
+
+export function seed(value: object): Seed {
+  if (!value[ArborSeed]) {
+    Object.defineProperty(value, ArborSeed, {
+      value: new Seed(),
+      writable: false,
+      enumerable: false,
+    })
+  }
+
+  return value[ArborSeed]
+}
+
 /**
  * Detaches a given ArborNode from the state tree.
  *

@@ -15,6 +15,7 @@ import type {
   Subscriber,
   Unsubscribe,
 } from "./types"
+import { seed } from "./utilities"
 
 /**
  * Refreshes the nodes affected by the mutation path via structural sharing
@@ -213,11 +214,10 @@ export class Arbor<T extends object = object> {
     subscribers = new Subscribers<T>(),
     children = new Children()
   ) {
+    seed(value)
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
-    const node = new Proxy<V>(value, handler)
-
-    return node as Node<V>
+    return new Proxy<V>(value, handler) as Node<V>
   }
 
   /**

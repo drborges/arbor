@@ -10,7 +10,15 @@ import {
   ValueAlreadyBoundError,
 } from "./errors"
 import { ArborNode } from "./types"
-import { detach, isDetached, merge, path, unwrap } from "./utilities"
+import {
+  Seed,
+  detach,
+  isDetached,
+  merge,
+  path,
+  seed,
+  unwrap,
+} from "./utilities"
 
 describe("Arbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -37,6 +45,29 @@ describe("Arbor", () => {
       expect(store.state.users).toBe(users)
       expect(store.state.users[0]).toBe(user0)
       expect(store.state.users[1]).toBe(user1)
+    })
+
+    it("sets an non unumerable seed property to each value in the state tree so nodes can be tracked across snapshots", () => {
+      const store = new Arbor({
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      })
+
+      const rootSeed = seed(store.state)
+      const todosSeed = seed(store.state.todos)
+      const todo0Seed = seed(store.state.todos[0])
+      const todo1Seed = seed(store.state.todos[1])
+
+      expect(rootSeed).toBeInstanceOf(Seed)
+      expect(todosSeed).toBeInstanceOf(Seed)
+      expect(todo0Seed).toBeInstanceOf(Seed)
+      expect(todo1Seed).toBeInstanceOf(Seed)
+
+      store.state.todos[0].text = "Clean the living room"
+
+      expect(seed(store.state)).toBe(rootSeed)
+      expect(seed(store.state.todos)).toBe(todosSeed)
+      expect(seed(store.state.todos[0])).toBe(todo0Seed)
+      expect(seed(store.state.todos[1])).toBe(todo1Seed)
     })
 
     it("ensures stale node references are also updated", () => {
