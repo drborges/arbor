@@ -397,8 +397,8 @@ describe("Arbor", () => {
 
       return new Promise((resolve) => {
         store.subscribe((event) => {
-          expect(event.mutationPath.segments.length).toBe(1)
-          expect(event.mutationPath.segments[0]).toBe(unwrap(store.state[0]))
+          expect(event.mutationPath.seeds.length).toBe(1)
+          expect(event.mutationPath.seeds[0]).toBe(unwrap(store.state[0]))
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
           expect(event.state).toEqual([

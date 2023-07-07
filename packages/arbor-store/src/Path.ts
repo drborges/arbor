@@ -1,14 +1,13 @@
 import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import type { ArborNode, Node } from "./types"
+import { Seed } from "./utilities"
 
 /**
  * Represent a path within the state tree.
- *
- * Paths point to potential nodes within the state tree.
  */
 export class Path {
-  readonly segments: object[]
+  readonly seeds: Seed[]
 
   /**
    * Creates a new instance of Path.
@@ -16,12 +15,12 @@ export class Path {
    * @param values list of node values representing a path within a state tree
    * @returns a new instance of Path.
    */
-  private constructor(...segments: object[]) {
-    this.segments = segments
+  private constructor(...seeds: Seed[]) {
+    this.seeds = seeds
   }
 
   child(value: object): Path {
-    return new Path(...this.segments.concat([value]))
+    return new Path(...this.seeds.concat([value]))
   }
 
   walk<T extends object = object>(
@@ -33,8 +32,8 @@ export class Path {
         throw new NotAnArborNodeError()
       }
 
-      return this.segments.reduce<Node>((parent, part) => {
-        const child = parent.$children.get(part)
+      return this.seeds.reduce<Node>((parent, seed) => {
+        const child = parent.$children.get(seed)
 
         if (cb) cb(child, parent)
 
@@ -54,7 +53,7 @@ export class Path {
       return null
     }
 
-    return new Path(...this.segments.slice(0, this.segments.length - 1))
+    return new Path(...this.seeds.slice(0, this.seeds.length - 1))
   }
 
   affects(pathOrNode: Path | ArborNode<object>): boolean {
@@ -66,9 +65,7 @@ export class Path {
 
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
 
-    return path.segments.every(
-      (segment, index) => segment === this.segments[index]
-    )
+    return path.seeds.every((seed, index) => seed === this.seeds[index])
   }
 
   matches(pathOrNode: Path | ArborNode<object>) {
@@ -80,13 +77,11 @@ export class Path {
 
     const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
 
-    if (path.segments.length !== this.segments.length) {
+    if (path.seeds.length !== this.seeds.length) {
       return false
     }
 
-    return path.segments.every(
-      (segment, index) => this.segments[index] === segment
-    )
+    return path.seeds.every((seed, index) => this.seeds[index] === seed)
   }
 
   /**
@@ -95,6 +90,6 @@ export class Path {
    * @returns true if the path points to the root of a state tree, false otherwise.
    */
   isRoot() {
-    return this.segments.length === 0
+    return this.seeds.length === 0
   }
 }

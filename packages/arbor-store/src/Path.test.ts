@@ -13,9 +13,9 @@ describe("Path", () => {
       const parent = Path.root.child(state).child(state.todos)
       const child = parent.child(state.todos[0])
 
-      expect(child.segments[0]).toBe(state)
-      expect(child.segments[1]).toBe(state.todos)
-      expect(child.segments[2]).toBe(state.todos[0])
+      expect(child.seeds[0]).toBe(state)
+      expect(child.seeds[1]).toBe(state.todos)
+      expect(child.seeds[2]).toBe(state.todos[0])
     })
   })
 
