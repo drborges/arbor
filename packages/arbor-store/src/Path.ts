@@ -1,7 +1,7 @@
 import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import type { ArborNode, Node } from "./types"
-import { Seed } from "./utilities"
+import { Seed, seedFrom } from "./utilities"
 
 /**
  * Represent a path within the state tree.
@@ -20,7 +20,7 @@ export class Path {
   }
 
   child(value: object): Path {
-    return new Path(...this.seeds.concat([value]))
+    return new Path(...this.seeds.concat([seedFrom(value)]))
   }
 
   walk<T extends object = object>(

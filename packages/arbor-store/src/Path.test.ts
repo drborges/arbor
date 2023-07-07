@@ -1,7 +1,7 @@
 import { Arbor } from "./Arbor"
 import { Path } from "./Path"
 import { InvalidArgumentError } from "./errors"
-import { unwrap } from "./utilities"
+import { seedFrom, unwrap } from "./utilities"
 
 describe("Path", () => {
   const state = {
@@ -13,9 +13,9 @@ describe("Path", () => {
       const parent = Path.root.child(state).child(state.todos)
       const child = parent.child(state.todos[0])
 
-      expect(child.seeds[0]).toBe(state)
-      expect(child.seeds[1]).toBe(state.todos)
-      expect(child.seeds[2]).toBe(state.todos[0])
+      expect(child.seeds[0]).toBe(seedFrom(state))
+      expect(child.seeds[1]).toBe(seedFrom(state.todos))
+      expect(child.seeds[2]).toBe(seedFrom(state.todos[0]))
     })
   })
 

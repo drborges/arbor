@@ -16,7 +16,7 @@ import {
   isDetached,
   merge,
   path,
-  seed,
+  seedFrom,
   unwrap,
 } from "./utilities"
 
@@ -52,10 +52,10 @@ describe("Arbor", () => {
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
       })
 
-      const rootSeed = seed(store.state)
-      const todosSeed = seed(store.state.todos)
-      const todo0Seed = seed(store.state.todos[0])
-      const todo1Seed = seed(store.state.todos[1])
+      const rootSeed = seedFrom(store.state)
+      const todosSeed = seedFrom(store.state.todos)
+      const todo0Seed = seedFrom(store.state.todos[0])
+      const todo1Seed = seedFrom(store.state.todos[1])
 
       expect(rootSeed).toBeInstanceOf(Seed)
       expect(todosSeed).toBeInstanceOf(Seed)
@@ -64,10 +64,10 @@ describe("Arbor", () => {
 
       store.state.todos[0].text = "Clean the living room"
 
-      expect(seed(store.state)).toBe(rootSeed)
-      expect(seed(store.state.todos)).toBe(todosSeed)
-      expect(seed(store.state.todos[0])).toBe(todo0Seed)
-      expect(seed(store.state.todos[1])).toBe(todo1Seed)
+      expect(seedFrom(store.state)).toBe(rootSeed)
+      expect(seedFrom(store.state.todos)).toBe(todosSeed)
+      expect(seedFrom(store.state.todos[0])).toBe(todo0Seed)
+      expect(seedFrom(store.state.todos[1])).toBe(todo1Seed)
     })
 
     it("ensures stale node references are also updated", () => {
@@ -398,7 +398,7 @@ describe("Arbor", () => {
       return new Promise((resolve) => {
         store.subscribe((event) => {
           expect(event.mutationPath.seeds.length).toBe(1)
-          expect(event.mutationPath.seeds[0]).toBe(unwrap(store.state[0]))
+          expect(event.mutationPath.seeds[0]).toBe(seedFrom(store.state[0]))
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
           expect(event.state).toEqual([

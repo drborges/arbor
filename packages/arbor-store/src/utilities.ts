@@ -6,6 +6,10 @@ import type { ArborNode, Node } from "./types"
 export class Seed {}
 const ArborSeed = Symbol.for("ArborSeed")
 
+export function seedFrom(valueOrSeed: Seed | object) {
+  return valueOrSeed instanceof Seed ? valueOrSeed : seed(valueOrSeed)
+}
+
 export function seed(value: object): Seed {
   if (!value[ArborSeed]) {
     Object.defineProperty(value, ArborSeed, {

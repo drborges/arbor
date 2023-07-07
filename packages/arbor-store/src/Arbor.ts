@@ -15,7 +15,6 @@ import type {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { seed } from "./utilities"
 
 /**
  * Refreshes the nodes affected by the mutation path via structural sharing
@@ -70,7 +69,7 @@ function mutate<T extends object, K extends object>(
     const targetNode = path.walk<Node<K>>(root, (child: Node, parent: Node) => {
       const childCopy = child.$clone()
 
-      parent.$children.set(childCopy.$value, childCopy)
+      parent.$children.set(childCopy)
 
       return childCopy
     })
@@ -214,7 +213,6 @@ export class Arbor<T extends object = object> {
     subscribers = new Subscribers<T>(),
     children = new Children()
   ) {
-    seed(value)
     const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, path, value, children, subscribers)
     return new Proxy<V>(value, handler) as Node<V>

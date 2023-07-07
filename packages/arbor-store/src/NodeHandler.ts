@@ -61,7 +61,11 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   }
 
   $getChild<V extends object>(value: V): Node<V> {
-    return this.$children.get(value) || this.$createChildNode(value)
+    if (!this.$children.has(value)) {
+      return this.$createChildNode(value)
+    }
+
+    return this.$children.get(value)
   }
 
   get(target: T, prop: string, proxy: Node<T>) {
@@ -161,6 +165,6 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   private $createChildNode<V extends object>(value: V): Node<V> {
     const childPath = this.$path.child(value)
     const childNode = this.$tree.createNode(childPath, value)
-    return this.$children.set(value, childNode)
+    return this.$children.set(childNode)
   }
 }
