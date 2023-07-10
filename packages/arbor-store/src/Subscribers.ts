@@ -1,7 +1,7 @@
 import { MutationEvent, Node, Subscriber, Unsubscribe } from "./types"
 
 export class Subscribers<T extends object = object> {
-  constructor(private readonly subscribers: Set<Subscriber<T>> = new Set()) {}
+  constructor(private subscribers: Set<Subscriber<T>> = new Set()) {}
 
   static notify(event: MutationEvent<object>) {
     const root = event.state as Node
@@ -9,6 +9,7 @@ export class Subscribers<T extends object = object> {
 
     event.mutationPath.walk(root, (child: Node) => {
       child.$subscribers.notify(event)
+      return child
     })
   }
 
@@ -24,6 +25,10 @@ export class Subscribers<T extends object = object> {
     this.subscribers.forEach((subscriber) => {
       subscriber(event)
     })
+  }
+
+  reset() {
+    this.subscribers = new Set<Subscriber<T>>()
   }
 
   get size() {

@@ -25,8 +25,8 @@ export function detach<T extends object>(node: ArborNode<T>): T {
   }
 
   const parentNode = node.$tree.getNodeAt<Node>(node.$path.parent)
-
-  parentNode.$detachChild(node.$value)
+  const link = node.$tree.links.get(node.$seed)
+  delete parentNode[link]
 
   return node.$value
 }
@@ -52,7 +52,7 @@ export function merge<T extends object>(
     throw new DetachedNodeError()
   }
 
-  node.$tree.mutate(node as ArborNode<T>, (value) => {
+  node.$tree.mutate(node, (value) => {
     Object.assign(value, data)
     return {
       operation: "merge",
@@ -90,7 +90,8 @@ export function path<T extends object>(node: ArborNode<T>): Path {
 export function isDetached<T extends object>(node: T): boolean {
   if (!isNode(node)) return true
 
-  const reloadedNode = node.$tree.getNodeAt<Node>(node.$path)
+  const reloadedNode = node.$tree.getNodeFor<Node>(node)
+
   if (!reloadedNode) return true
 
   return false

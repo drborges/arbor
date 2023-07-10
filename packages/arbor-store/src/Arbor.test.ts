@@ -2,6 +2,7 @@
 /* eslint-disable max-classes-per-file */
 import { Arbor } from "./Arbor"
 import { Path } from "./Path"
+import { Seed } from "./Seed"
 import { ArborProxiable, detached, proxiable } from "./decorators"
 import {
   ArborError,
@@ -192,6 +193,7 @@ describe("Arbor", () => {
       const user0 = store.state[0]
       const subscriber1 = jest.fn()
       const subscriber2 = jest.fn()
+
       delete store.state[0]
 
       store.subscribe(subscriber1)
@@ -366,8 +368,8 @@ describe("Arbor", () => {
 
       return new Promise((resolve) => {
         store.subscribe((event) => {
-          expect(event.mutationPath.segments.length).toBe(1)
-          expect(event.mutationPath.segments[0]).toBe(unwrap(store.state[0]))
+          expect(event.mutationPath.seeds.length).toBe(1)
+          expect(event.mutationPath.seeds[0]).toBe(Seed.from(store.state[0]))
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
           expect(event.state).toEqual([
@@ -401,8 +403,8 @@ describe("Arbor", () => {
       const mutationPath2 = subscriber.mock.calls[1][0].mutationPath as Path
 
       expect(subscriber.mock.calls.length).toBe(2)
-      expect(mutationPath1.matches(path(store.state[0]))).toBe(true)
-      expect(mutationPath2.matches(path(store.state[1]))).toBe(true)
+      expect(mutationPath1.matches(store.state[0])).toBe(true)
+      expect(mutationPath2.matches(store.state[1])).toBe(true)
     })
 
     it("subscribes to mutations on a specific state tree node", () => {
@@ -427,8 +429,8 @@ describe("Arbor", () => {
 
       expect(subscriber1.mock.calls.length).toBe(1)
       expect(subscriber2.mock.calls.length).toBe(1)
-      expect(mutationPath1.matches(path(store.state[0]))).toBe(true)
-      expect(mutationPath2.matches(path(store.state[1]))).toBe(true)
+      expect(mutationPath1.matches(store.state[0])).toBe(true)
+      expect(mutationPath2.matches(store.state[1])).toBe(true)
     })
 
     it("mutations cause a new state tree to be generated via structural sharing", () => {
@@ -551,9 +553,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.todos[1])
-      expect(path(activeTodos[0]).matches(path(store.state.todos[1]))).toBe(
-        true
-      )
+      expect(path(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
     })
 
     it("allows using object literal getters to select nodes within the state tree", () => {
@@ -587,9 +587,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.todos[1])
-      expect(path(activeTodos[0]).matches(path(store.state.todos[1]))).toBe(
-        true
-      )
+      expect(path(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
     })
 
     it("accounts for getters in the prototype chain", () => {
@@ -633,7 +631,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.all[1])
-      expect(path(activeTodos[0]).matches(path(store.state.all[1]))).toBe(true)
+      expect(path(activeTodos[0]).matches(store.state.all[1])).toBe(true)
     })
   })
 
@@ -874,7 +872,7 @@ describe("Arbor", () => {
 
       const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
 
-      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
+      expect(mutationPath.matches(store.state.todos)).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
@@ -900,26 +898,6 @@ describe("Arbor", () => {
       store.state.todos.set("123", store.state.todos.get("123")!)
 
       expect(subscriber).not.toHaveBeenCalled()
-    })
-
-    it("automatically unwraps state tree nodes when used as values", () => {
-      const todosMap = new Map<string, { text: string }>()
-      const doneMap = new Map<string, { text: string }>()
-      todosMap.set("123", { text: "Walk the dogs" })
-      doneMap.set("abc", { text: "Clean the house" })
-
-      const store = new Arbor({
-        done: doneMap,
-        todos: todosMap,
-      })
-
-      const abc = store.state.done.get("abc")!
-
-      store.state.todos.set("123", abc)
-
-      expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
-      expect(store.state.todos.get("123")).not.toBe(doneMap.get("abc"))
-      expect(unwrap(store.state.todos.get("123")!)).toBe(doneMap.get("abc"))
     })
 
     it("TODO: nodes proxying the same value are conflicting (will have to think more about this)", () => {
@@ -957,7 +935,7 @@ describe("Arbor", () => {
 
       const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
 
-      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
+      expect(mutationPath.matches(store.state.todos)).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
@@ -987,7 +965,7 @@ describe("Arbor", () => {
 
       const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
 
-      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
+      expect(mutationPath.matches(store.state.todos)).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("clear")
@@ -1240,14 +1218,14 @@ describe("Arbor", () => {
         })
 
         const rootPath = Path.root
-        const todosPath = rootPath.child(unwrap(store.state.todos))
-        const todo0Path = todosPath.child(unwrap(store.state.todos[0]))
-        const todo1Path = todosPath.child(unwrap(store.state.todos[1]))
+        const todosPath = rootPath.child(Seed.from(store.state.todos))
+        const todo0Path = todosPath.child(Seed.from(store.state.todos[0]))
+        const todo1Path = todosPath.child(Seed.from(store.state.todos[1]))
 
-        expect(path(store.state).matches(rootPath)).toBe(true)
-        expect(path(store.state.todos).matches(todosPath)).toBe(true)
-        expect(path(store.state.todos[0]).matches(todo0Path)).toBe(true)
-        expect(path(store.state.todos[1]).matches(todo1Path)).toBe(true)
+        expect(rootPath.matches(store.state)).toBe(true)
+        expect(todosPath.matches(store.state.todos)).toBe(true)
+        expect(todo0Path.matches(store.state.todos[0])).toBe(true)
+        expect(todo1Path.matches(store.state.todos[1])).toBe(true)
       })
     })
 

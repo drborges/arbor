@@ -1,7 +1,8 @@
 import { NodeHandler } from "./NodeHandler"
+import { Seed } from "./Seed"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import { isNode, isProxiable } from "./guards"
-import type { Node } from "./types"
+import type { Link, Node } from "./types"
 
 export class MapNodeHandler<T extends object = object> extends NodeHandler<
   Map<unknown, T>
@@ -18,18 +19,18 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
     }
   }
 
-  $detachChild(childValue: unknown) {
-    for (const [key, value] of this.$value.entries()) {
-      if (value === childValue) {
-        delete this[key as string]
-      }
-    }
+  $traverse<C extends object>(link: Link): C {
+    return this.$value.get(link) as unknown as C
+  }
+
+  $attach<C extends object>(link: Link, value: C) {
+    this.$value.set(link, value as unknown as T)
   }
 
   deleteProperty(target: Map<string, T>, prop: string): boolean {
     const child = target.get(prop)
 
-    this.$children.delete(child)
+    this.$tree.deleteNodeFor(child)
     this.$tree.mutate(this, (map) => {
       map.delete(prop)
 
@@ -55,7 +56,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
           return value
         }
 
-        return this.$getChild(value)
+        return this.$getOrCreateChild(key, value)
       }
     }
 
@@ -64,7 +65,8 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
         const value = isNode<T>(newValue) ? newValue.$value : newValue
 
         if (target.get(key) !== value) {
-          if (this.$children.has(value)) {
+          const link = this.$tree.links.get(Seed.from(value))
+          if (link && link !== key) {
             throw new ValueAlreadyBoundError()
           }
 

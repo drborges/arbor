@@ -1,20 +1,26 @@
 import { ArrayNodeHandler } from "./ArrayNodeHandler"
-import { Children } from "./Children"
+import { EagerMutationEngine } from "./EagerMutationEngine"
 import { MapNodeHandler } from "./MapNodeHandler"
 import { NodeHandler } from "./NodeHandler"
 import { Path } from "./Path"
+import { Seed } from "./Seed"
+import { SnapshotMutationEngine } from "./SnapshotMutationEngine"
 import { Subscribers } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import type {
   ArborNode,
   Handler,
+  Link,
   Mutation,
+  MutationEngine,
   Node,
   Plugin,
+  Store,
   Subscriber,
   Unsubscribe,
 } from "./types"
+import { isDetached } from "./utilities"
 
 /**
  * Refreshes the nodes affected by the mutation path via structural sharing
@@ -58,32 +64,6 @@ import type {
  * `store.state.todos[0].done = true`: causes all nodes intersecting `"/todos/0"` to be refreshed, e.g.
  * `"/"`, `"/todos"` and `"/todos/0"`, leaving `"/todos/1"` untouched.
  */
-function mutate<T extends object, K extends object>(
-  node: Node<T>,
-  path: Path,
-  mutation: Mutation<K>
-) {
-  try {
-    const root = node.$clone()
-
-    const targetNode = path.walk<Node<K>>(root, (child: Node, parent: Node) => {
-      const childCopy = child.$clone()
-
-      parent.$children.set(childCopy.$value, childCopy)
-
-      return childCopy
-    })
-
-    const metadata = mutation(targetNode.$value)
-
-    return {
-      root,
-      metadata,
-    }
-  } catch (e) {
-    return undefined
-  }
-}
 
 /*
  * Default list of state tree node Proxy handlers.
@@ -120,12 +100,11 @@ export class Arbor<T extends object = object> {
    * Users can extend this list with new strategies allowing them to customize the proxying
    * behavior of Arbor.
    */
-  #handlers: Handler[]
+  private readonly handlers: Handler[]
 
-  /**
-   * Reference to the root node of the state tree
-   */
-  #root: Node<T>
+  protected readonly engine: MutationEngine<T> = new EagerMutationEngine<T>(
+    this
+  )
 
   /**
    * List of node handlers used to extend Arbor's default proxying mechanism.
@@ -151,13 +130,36 @@ export class Arbor<T extends object = object> {
   protected readonly extensions: Handler[] = []
 
   /**
+   * Reference to the root node of the state tree
+   */
+  root: Node<T>
+
+  readonly links = new WeakMap<Seed, Link>()
+  readonly nodes = new WeakMap<Seed, Node>()
+
+  /**
    * Create a new Arbor instance.
    *
    * @param initialState the initial state tree value
    */
   constructor(initialState: T) {
-    this.#handlers = [...this.extensions, ...defaultNodeHandlers]
+    this.handlers = [...this.extensions, ...defaultNodeHandlers]
     this.setState(initialState)
+  }
+
+  getNodeFor<V extends object>(value: V): Node<V> | undefined {
+    return this.nodes.get(Seed.from(value)) as Node<V>
+  }
+
+  getNodeAt<V extends object>(path: Path): Node<V> | undefined {
+    return path.walk(this.root)
+  }
+
+  deleteNodeFor<V extends object>(value: V) {
+    const seed = Seed.from(value)
+    this.nodes.get(seed)?.$subscribers.reset()
+    this.nodes.delete(seed)
+    this.links.delete(seed)
   }
 
   /**
@@ -177,18 +179,26 @@ export class Arbor<T extends object = object> {
    * @param node the node within the state tree to be mutated.
    * @param mutation a function that performs the mutation to the node.
    */
-  mutate<V extends object>(node: ArborNode<V>, mutation: Mutation<V>): void
+  mutate<V extends object>(node: Node<V>, mutation: Mutation<V>): void
   mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
   mutate<V extends object>(node: unknown, mutation: Mutation<V>): void {
-    if (!isNode(node)) throw new NotAnArborNodeError()
+    if (!isNode(node)) {
+      throw new NotAnArborNodeError()
+    }
 
-    const result = mutate(this.#root, node.$path, mutation)
+    if (isDetached(node)) {
+      throw new DetachedNodeError()
+    }
 
+    const result = this.engine.mutate(node.$path, mutation)
+
+    // TODO: Try to get rid of this condition, if the node is detached we should
+    // catch this on line 186...
     if (!result) {
       throw new DetachedNodeError()
     }
 
-    this.#root = result?.root
+    this.root = result?.root
 
     Subscribers.notify({
       state: this.state,
@@ -210,24 +220,20 @@ export class Arbor<T extends object = object> {
   createNode<V extends object>(
     path: Path,
     value: V,
-    subscribers = new Subscribers<T>(),
-    children = new Children()
-  ) {
-    const Handler = this.#handlers.find((F) => F.accepts(value))
-    const handler = new Handler(this, path, value, children, subscribers)
-    const node = new Proxy<V>(value, handler)
+    link?: Link,
+    subscribers = new Subscribers<V>()
+  ): Node<V> {
+    const seed = Seed.plant(value)
+    const Handler = this.handlers.find((F) => F.accepts(value))
+    const handler = new Handler(this, path, value, subscribers)
+    const node = new Proxy<V>(value, handler) as Node<V>
+    this.nodes.set(seed, node)
 
-    return node as Node<V>
-  }
+    if (link) {
+      this.links.set(seed, link)
+    }
 
-  /**
-   * Retrieves a node from the state tree by its path.
-   *
-   * @param path the path of the node to be retrieved.
-   * @returns the node at the given path.
-   */
-  getNodeAt<V extends object>(path: Path): ArborNode<V> {
-    return path.walk(this.#root)
+    return node
   }
 
   /**
@@ -237,13 +243,9 @@ export class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): ArborNode<T> {
-    const current = this.createNode(
-      Path.root,
-      value,
-      this.#root?.$subscribers || new Subscribers<T>()
-    )
+    const current = this.createNode(Path.root, value)
 
-    this.#root = current
+    this.root = current
 
     Subscribers.notify({
       state: this.state,
@@ -264,7 +266,7 @@ export class Arbor<T extends object = object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
+    return this.subscribeTo(this.root as ArborNode<T>, subscriber)
   }
 
   /**
@@ -274,8 +276,8 @@ export class Arbor<T extends object = object> {
    * @param subscriber a subscriber function to be called whenever a mutation affecting the given node takes place.
    * @returns an unsubscribe function that when called cancels the related subscription.
    */
-  subscribeTo<K extends object>(
-    node: ArborNode<K>,
+  subscribeTo<V extends object>(
+    node: ArborNode<V>,
     subscriber: Subscriber<T>
   ): Unsubscribe {
     if (!isNode(node)) throw new NotAnArborNodeError()
@@ -290,13 +292,17 @@ export class Arbor<T extends object = object> {
    * @returns a promise that gets resolved when the plugin completes its configuration steps.
    */
   use(plugin: Plugin<T>) {
-    return plugin.configure(this)
+    return plugin.configure(this as Store<T>)
   }
 
   /**
    * Returns the current state of the store
    */
   get state(): ArborNode<T> {
-    return this.#root
+    return this.root
   }
+}
+
+export class ImmutableArbor<T extends object> extends Arbor<T> {
+  protected engine = new SnapshotMutationEngine(this)
 }

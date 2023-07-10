@@ -7,12 +7,9 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
     return Array.isArray(value)
   }
 
-  $detachChild(childValue: unknown) {
-    const index = this.$value.findIndex((item) => item === childValue)
-    delete this[index]
-  }
+  deleteProperty(target: T[], prop: string): boolean {
+    this.$tree.deleteNodeFor(target[prop])
 
-  deleteProperty(_target: T[], prop: string): boolean {
     this.$tree.mutate(this, (node: T[]) => {
       node.splice(parseInt(prop, 10), 1)
 
@@ -21,8 +18,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
         props: [prop],
       }
     })
-
-    this.$children.reset()
 
     return true
   }
@@ -53,8 +48,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
-
     return this.$tree.getNodeAt(this.$path)
   }
 
@@ -71,8 +64,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.delete(popped)
-
     return popped
   }
 
@@ -88,8 +79,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
-
     return shifted
   }
 
@@ -102,8 +91,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
         props: [],
       }
     })
-
-    this.$children.reset()
 
     return this.$tree.getNodeAt(this.$path)
   }
@@ -122,8 +109,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
-
     return deleted
   }
 
@@ -138,8 +123,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
         props: [],
       }
     })
-
-    this.$children.reset()
 
     return size
   }

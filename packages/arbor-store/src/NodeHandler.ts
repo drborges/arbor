@@ -1,10 +1,10 @@
 import { Arbor } from "./Arbor"
-import { Children } from "./Children"
 import { Path } from "./Path"
+import { Seed } from "./Seed"
 import { Subscribers } from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
 import { isNode, isProxiable } from "./guards"
-import type { Node } from "./types"
+import type { Link, Node } from "./types"
 import { isGetter } from "./utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
@@ -25,8 +25,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     readonly $tree: Arbor,
     readonly $path: Path,
     readonly $value: T,
-    readonly $children = new Children(),
-    readonly $subscribers = new Subscribers()
+    readonly $subscribers = new Subscribers<T>()
   ) {}
 
   /**
@@ -43,25 +42,32 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return true
   }
 
-  $clone(): Node<T> {
-    return this.$tree.createNode(
-      this.$path,
-      this.$value,
-      this.$subscribers,
-      this.$children
-    )
+  get $seed() {
+    return Seed.from(this.$value)
   }
 
-  $detachChild(childValue: unknown) {
-    const [childProp] = Object.entries(this.$value).find(
-      ([_, value]) => value === childValue
-    )
-
-    delete this[childProp]
+  get $link() {
+    return this.$tree.links.get(this.$seed)
   }
 
-  $getChild<V extends object>(value: V): Node<V> {
-    return this.$children.get(value) || this.$createChildNode(value)
+  get $lastRevision() {
+    return this.$tree.getNodeAt(this.$path)
+  }
+
+  $is(node: Node) {
+    if (!node) {
+      return false
+    }
+
+    return this.$seed === node.$seed
+  }
+
+  $traverse<C extends object>(link: Link): Node<C> {
+    return this.$value[link]
+  }
+
+  $attach<C extends object>(link: Link, value: C) {
+    this.$value[link] = value
   }
 
   get(target: T, prop: string, proxy: Node<T>) {
@@ -104,7 +110,11 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return childValue
     }
 
-    return this.$getChild(childValue)
+    if (!this.$tree.getNodeFor(childValue)) {
+      this.$createChildNode(prop, childValue)
+    }
+
+    return this.$tree.getNodeFor(childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
@@ -152,15 +162,31 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
         }
       })
 
-      this.$children.delete(childValue as object)
+      this.$tree.deleteNodeFor(childValue as object)
     }
 
     return true
   }
 
-  private $createChildNode<V extends object>(value: V): Node<V> {
-    const childPath = this.$path.child(value)
-    const childNode = this.$tree.createNode(childPath, value)
-    return this.$children.set(value, childNode)
+  protected $getOrCreateChild<V extends object>(link: Link, value: V): Node<V> {
+    const childValue = this.$lastRevision.$traverse(link)
+    // Ensures that traversing "stale" revisions won't cause detached nodes (such as deleted array items)
+    // to be incorrectly re-attached to the state tree.
+    const shouldCreateChildNode = childValue != null
+
+    if (!this.$tree.getNodeFor(value) && shouldCreateChildNode) {
+      const seed = Seed.plant(value)
+      const path = this.$path.child(seed)
+
+      return this.$tree.createNode(path, value, link)
+    }
+
+    return this.$tree.getNodeFor(value)
+  }
+
+  protected $createChildNode<V extends object>(link: Link, value: V): Node<V> {
+    const seed = Seed.plant(value)
+    const childPath = this.$path.child(seed)
+    return this.$tree.createNode<V>(childPath, value, link)
   }
 }
