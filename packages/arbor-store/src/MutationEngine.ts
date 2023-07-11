@@ -62,11 +62,11 @@ export class MutationEngine<T extends object> {
     try {
       const root = this.clone(this.tree.root)
 
-      const targetNode = path.walk<V>(root, (child, parent, link) => {
+      const targetNode = path.walk<V>(root, (child, parent) => {
         const childCopy = this.clone(child)
 
         if (this.mode === "snapshot") {
-          parent.$attach(link, childCopy.$value)
+          parent.$attach(childCopy.$link, childCopy.$value)
         }
 
         this.tree.nodes.set(childCopy.$seed, childCopy)

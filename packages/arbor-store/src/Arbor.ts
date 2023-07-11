@@ -152,10 +152,12 @@ export class Arbor<T extends object = object> {
   }
 
   deleteNodeFor<V extends object>(value: V) {
-    const seed = Seed.from(value)
-    this.nodes.get(seed)?.$subscribers.reset()
-    this.nodes.delete(seed)
-    this.links.delete(seed)
+    const node = this.getNodeFor(value)
+    if (!node) return
+
+    node.$subscribers.reset()
+    this.nodes.delete(node.$seed)
+    this.links.delete(node.$seed)
   }
 
   /**

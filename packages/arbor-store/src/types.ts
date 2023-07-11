@@ -86,7 +86,7 @@ export type Store<T extends object> = {
   ): Unsubscribe
 }
 
-export type Visitor = (child: Node, parent: Node, link: Link) => Node
+export type Visitor = (child: Node, parent: Node) => Node
 
 export type MutationMetadata = {
   readonly operation: string

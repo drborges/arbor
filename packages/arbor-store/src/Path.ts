@@ -31,9 +31,7 @@ export class Path {
 
       return this.seeds.reduce<Node>((parent, seed) => {
         const child = parent.$tree.getNodeFor(seed)
-        const link = parent.$tree.links.get(seed)
-
-        return visit(child, parent, link)
+        return visit(child, parent)
       }, node) as Node<T>
     } catch (e) {
       return undefined

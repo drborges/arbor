@@ -25,8 +25,7 @@ export function detach<T extends object>(node: ArborNode<T>): T {
   }
 
   const parentNode = node.$tree.getNodeAt<Node>(node.$path.parent)
-  const link = node.$tree.links.get(node.$seed)
-  delete parentNode[link]
+  delete parentNode[node.$link]
 
   return node.$value
 }
