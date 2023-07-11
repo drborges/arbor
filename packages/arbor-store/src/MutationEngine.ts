@@ -1,7 +1,7 @@
 import { Arbor } from "./Arbor"
 import { Path } from "./Path"
 import { Seed } from "./Seed"
-import { Mutation, MutationEngine, MutationResult, Node } from "./types"
+import { Mutation, MutationResult, Node } from "./types"
 
 type Clonnable<T extends object> = {
   $clone(): T
@@ -38,15 +38,18 @@ function clone<T extends object>(value: T): T {
   return clonedValue
 }
 
-export class SnapshotMutationEngine<T extends object>
-  implements MutationEngine<T>
-{
-  constructor(private readonly tree: Arbor<T>) {}
+export type MutationMode = "eager" | "snapshot"
+
+export class MutationEngine<T extends object> {
+  constructor(
+    private readonly tree: Arbor<T>,
+    private readonly mode: MutationMode = "eager"
+  ) {}
 
   clone<V extends object>(node: Node<V>): Node<V> {
     return this.tree.createNode<V>(
       node.$path,
-      clone(node.$value),
+      this.mode === "snapshot" ? clone(node.$value) : node.$value,
       node.$link,
       node.$subscribers
     )
@@ -61,7 +64,11 @@ export class SnapshotMutationEngine<T extends object>
 
       const targetNode = path.walk<V>(root, (child, parent, link) => {
         const childCopy = this.clone(child)
-        parent.$attach(link, childCopy.$value)
+
+        if (this.mode === "snapshot") {
+          parent.$attach(link, childCopy.$value)
+        }
+
         this.tree.nodes.set(childCopy.$seed, childCopy)
         return childCopy
       })

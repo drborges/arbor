@@ -99,14 +99,3 @@ export type MutationResult<T extends object> = {
   root: Node<T>
   metadata: MutationMetadata
 }
-
-export type MutationEngine<T extends object> = {
-  clone<V extends object>(node: Node<V>): Node<V>
-  mutate<V extends object>(
-    path: Path,
-    mutation: Mutation<V>
-  ): {
-    root: Node<T>
-    metadata: MutationMetadata
-  }
-}

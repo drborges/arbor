@@ -1,10 +1,9 @@
 import { ArrayNodeHandler } from "./ArrayNodeHandler"
-import { EagerMutationEngine } from "./EagerMutationEngine"
 import { MapNodeHandler } from "./MapNodeHandler"
+import { MutationEngine } from "./MutationEngine"
 import { NodeHandler } from "./NodeHandler"
 import { Path } from "./Path"
 import { Seed } from "./Seed"
-import { SnapshotMutationEngine } from "./SnapshotMutationEngine"
 import { Subscribers } from "./Subscribers"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
@@ -13,7 +12,6 @@ import type {
   Handler,
   Link,
   Mutation,
-  MutationEngine,
   Node,
   Plugin,
   Store,
@@ -102,9 +100,7 @@ export class Arbor<T extends object = object> {
    */
   private readonly handlers: Handler[]
 
-  protected readonly engine: MutationEngine<T> = new EagerMutationEngine<T>(
-    this
-  )
+  protected readonly engine = new MutationEngine<T>(this)
 
   /**
    * List of node handlers used to extend Arbor's default proxying mechanism.
@@ -304,5 +300,5 @@ export class Arbor<T extends object = object> {
 }
 
 export class ImmutableArbor<T extends object> extends Arbor<T> {
-  protected engine = new SnapshotMutationEngine(this)
+  protected readonly engine = new MutationEngine<T>(this, "snapshot")
 }

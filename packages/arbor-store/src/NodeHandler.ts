@@ -169,15 +169,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   }
 
   protected $getOrCreateChild<V extends object>(link: Link, value: V): Node<V> {
-    const childValue = this.$lastRevision.$traverse(link)
-    // Ensures that traversing "stale" revisions won't cause detached nodes (such as deleted array items)
-    // to be incorrectly re-attached to the state tree.
-    const shouldCreateChildNode = childValue != null
-
-    if (!this.$tree.getNodeFor(value) && shouldCreateChildNode) {
-      const seed = Seed.plant(value)
-      const path = this.$path.child(seed)
-
+    if (!this.$tree.getNodeFor(value)) {
+      const path = this.$path.child(Seed.plant(value))
       return this.$tree.createNode(path, value, link)
     }
 
