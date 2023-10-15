@@ -78,7 +78,7 @@ describe("ImmutableArbor", () => {
       delete store.state.todos[0]
 
       // todos[0] should still exist in the previous snapshot
-      expect(todos[0]).toBeDefined()
+      expect(todos.length).toEqual(2)
       expect(unwrap(todos[0])).toBe(state.todos[0])
 
       expect(store.state).toEqual({ todos: [{ text: "Walk the dogs" }] })
@@ -102,6 +102,23 @@ describe("ImmutableArbor", () => {
       counter.count++
 
       expect(store.state.count).toBe(1)
+    })
+
+    it("does not bring detached nodes back when they are mutated", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      }
+
+      const store = new ImmutableArbor(state)
+
+      const todo0 = store.root.todos[0]
+
+      delete store.root.todos[0]
+
+      expect(() => { todo0.text = "No longer in the state tree" }).toThrow(DetachedNodeError)
+      expect(store.root).toEqual({
+        todos: [{ text: "Walk the dogs" }],
+      })
     })
   })
 })
