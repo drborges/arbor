@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/rxjs",
-  "version": "0.0.1-alpha.62",
+  "version": "0.0.1-alpha.64",
   "sideEffects": false,
   "description": "rxjs binding for @arborjs/store",
   "keywords": [
@@ -55,7 +55,7 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "@arborjs/store": "0.0.1-alpha.62",
+    "@arborjs/store": "0.0.1-alpha.64",
     "rxjs": "*"
   },
   "scripts": {

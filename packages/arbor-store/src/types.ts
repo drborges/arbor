@@ -82,7 +82,7 @@ export type Store<T extends object> = {
   subscribe(subscriber: Subscriber<T>): Unsubscribe
   subscribeTo<V extends object>(
     node: ArborNode<V>,
-    subscriber: Subscriber<V>
+    subscriber: Subscriber<T>
   ): Unsubscribe
 }
 
