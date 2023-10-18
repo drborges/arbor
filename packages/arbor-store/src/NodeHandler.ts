@@ -131,6 +131,15 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return true
     }
 
+    // Detaches the previous node from the state tree since it's being overwritten
+    this.$tree.deleteNodeFor(this.$traverse(prop))
+
+    // In case the new value happens to be an existing node, we preemptively add it back to the
+    // state tree so that stale references to this node can continue to trigger mutations.
+    if (isNode(newValue)) {
+      this.$createChildNode(prop, newValue.$value)
+    }
+
     // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
