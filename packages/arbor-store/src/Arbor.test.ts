@@ -37,6 +37,7 @@ describe("ImmutableArbor", () => {
       expect(store.state.todos[1]).toBe(todo1)
       expect(store.state.users).toBe(users)
       expect(store.state.users[0]).toBe(user0)
+
       expect(store.state.users[1]).toBe(user1)
     })
 
@@ -288,6 +289,69 @@ describe("Arbor", () => {
       })
       expect(unwrap(store.state.todos)).toEqual([{ text: "Walk the dogs" }])
       expect(unwrap(store.state.todos[0])).toEqual({ text: "Walk the dogs" })
+    })
+
+    it("accounts for nodes changing location in the state tree", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      }
+
+      const store = new Arbor(state)
+
+      const todo0 = state.todos[0]
+      const todo1 = state.todos[1]
+      const todo0Node = store.root.todos[0]
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+      store.root.todos[1] = todo0Node
+
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs" },
+        { text: "Clean the house" },
+      ])
+
+      expect(unwrap(store.root.todos[0])).toBe(todo1)
+      expect(unwrap(store.root.todos[1])).toBe(todo0)
+      expect(todo1Node.text).toEqual("Walk the dogs")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs")
+      expect(store.root.todos[1].text).toEqual("Clean the house")
+
+      todo1Node.text = "Walk the dogs updated"
+
+      expect(todo1Node.text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[1].text).toEqual("Clean the house")
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs updated" },
+        { text: "Clean the house" },
+      ])
+
+      todo0Node.text = "Clean the house updated"
+
+      expect(todo0Node.text).toEqual("Clean the house updated")
+      expect(todo1Node.text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[1].text).toEqual("Clean the house updated")
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs updated" },
+        { text: "Clean the house updated" },
+      ])
+    })
+
+    it("automatically detaches a node when its value is replaced with another node", () => {
+      const store = new Arbor({
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      })
+
+      const todo0Node = store.root.todos[0]
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+
+      expect(
+        () => (todo0Node.text = "this update should throw an error")
+      ).toThrow(DetachedNodeError)
     })
 
     it("keeps stale node references in sync with the current state tree", () => {
