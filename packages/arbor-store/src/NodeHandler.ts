@@ -5,7 +5,7 @@ import { Subscribers } from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
 import { isNode, isProxiable } from "./guards"
 import type { Link, Node } from "./types"
-import { isGetter } from "./utilities"
+import { isGetter, recursivelyUnwrap } from "./utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
@@ -66,6 +66,10 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return this.$value[link]
   }
 
+  /**
+   * @deprecated if we end up removing immutability from Arbor's core
+   * then this "attach" concept will no longer be needed.
+   */
   $attach<C extends object>(link: Link, value: C) {
     this.$value[link] = value
   }
@@ -121,7 +125,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     // Automatically unwraps values when they are already Arbor nodes,
     // this prevents proxying proxies and thus forcing stale node references
     // to be kept in memmory unnecessarily.
-    const value = isNode(newValue) ? newValue.$value : newValue
+    const value = recursivelyUnwrap(newValue)
 
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true

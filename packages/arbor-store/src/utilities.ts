@@ -112,6 +112,21 @@ export function unwrap<T extends object>(node: ArborNode<T>): T {
 }
 
 /**
+ * Recursively unwraps a proxied value.
+
+ * @param value value to unwrap.
+ * @returns the unwrapped value.
+ */
+export function recursivelyUnwrap<T extends object>(value: unknown): T {
+  if (!isNode(value)) {
+    return value as T
+  }
+
+  const unwrapped = unwrap(value) as T
+  return recursivelyUnwrap(unwrapped)
+}
+
+/**
  * Checks if a given prop is a getter in the given target's prototype chain.
  *
  * @param target an object to check the prototype chain for a given prop.
