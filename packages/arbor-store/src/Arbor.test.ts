@@ -354,6 +354,21 @@ describe("Arbor", () => {
       ).toThrow(DetachedNodeError)
     })
 
+    it("allows for sibling paths to point to the same node", () => {
+      const store = new Arbor({
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      })
+
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+
+      expect(store.root.todos[0]).toBe(store.root.todos[1])
+      expect(store.root).toEqual({
+        todos: [{ text: "Walk the dogs" }, { text: "Walk the dogs" }],
+      })
+    })
+
     it("keeps stale node references in sync with the current state tree", () => {
       const store = new Arbor({
         counter: {
