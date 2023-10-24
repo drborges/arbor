@@ -60,8 +60,6 @@
     "test": "jest --passWithNoTests",
     "dev": "jest --watch",
     "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
-    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc",
-    "prepublish": "yarn build",
-    "publish": "np"
+    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc"
   }
 }
