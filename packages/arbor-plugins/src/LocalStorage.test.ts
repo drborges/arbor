@@ -14,7 +14,7 @@ describe("LocalStorage", () => {
 
   it("initializes a given store with data retrieved from the local storage", async () => {
     const store = new Arbor({ text: "" })
-    const plugin = new LocalStorage({ key: "the-key" })
+    const plugin = new LocalStorage<{ text: string }>({ key: "the-key" })
 
     window.localStorage.setItem(
       "the-key",
@@ -28,7 +28,7 @@ describe("LocalStorage", () => {
 
   it("updates the local storage upon changes to the store", async () => {
     const store = new Arbor({ text: "some initial state" })
-    const plugin = new LocalStorage({ key: "the-key" })
+    const plugin = new LocalStorage<{ text: string }>({ key: "the-key" })
 
     await store.use(plugin)
 

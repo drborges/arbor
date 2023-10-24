@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import { Arbor } from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks"
+import { act, renderHook } from "@testing-library/react"
 
 import { useArbor } from "./useArbor"
 import { watchItems } from "./watchItems"
@@ -49,11 +49,13 @@ describe("watchItems of a Map", () => {
       ),
     })
 
+    const users = store.state.users
+
     const { result } = renderHook(() =>
       useArbor(store.state.users, watchItems("name", "age"))
     )
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(users)
 
     act(() => {
       store.state.users.get("a")!.posts[0].content = "Updated post"
@@ -64,7 +66,8 @@ describe("watchItems of a Map", () => {
       store.setState({} as State)
     })
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(users)
+    expect(result.current).not.toBe(store.state.users)
   })
 
   it("updates when mutation targets the node being watched", () => {
@@ -80,17 +83,18 @@ describe("watchItems of a Map", () => {
       ),
     })
 
+    const users = store.state.users
+
     const { result } = renderHook(() =>
       useArbor(store.state.users, watchItems("name", "age"))
     )
-
-    expect(result.all.length).toBe(1)
 
     act(() => {
       store.state.users.push({ id: "c", name: "Carol", age: 25, posts: [] })
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
   })
 
   it("updates if mutation targets any of the listed children props", () => {
@@ -106,35 +110,45 @@ describe("watchItems of a Map", () => {
       ),
     })
 
+    let users = store.state.users
+
     const { result } = renderHook(() =>
       useArbor(store.state.users, watchItems("name", "age"))
     )
-
-    expect(result.all.length).toBe(1)
 
     act(() => {
       store.state.users.get("a")!.name = "Alice updated"
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
+
+    users = store.state.users
 
     act(() => {
       store.state.users.get("a")!.age++
     })
 
-    expect(result.all.length).toBe(3)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
+
+    users = store.state.users
 
     act(() => {
       store.state.users.get("b")!.name = "Bob updated"
     })
 
-    expect(result.all.length).toBe(4)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
+
+    users = store.state.users
 
     act(() => {
       store.state.users.get("b")!.age++
     })
 
-    expect(result.all.length).toBe(5)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
   })
 
   it("updates when child node is detached from the state tree", () => {
@@ -150,17 +164,18 @@ describe("watchItems of a Map", () => {
       ),
     })
 
+    const users = store.state.users
+
     const { result } = renderHook(() =>
       useArbor(store.state.users, watchItems())
     )
-
-    expect(result.all.length).toBe(1)
 
     act(() => {
       store.state.users.delete("a")
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
   })
 
   it("updates if a new child node is attached to the state tree", () => {
@@ -176,11 +191,11 @@ describe("watchItems of a Map", () => {
       ),
     })
 
+    const users = store.state.users
+
     const { result } = renderHook(() =>
       useArbor(store.state.users, watchItems())
     )
-
-    expect(result.all.length).toBe(1)
 
     act(() => {
       store.state.users.push({
@@ -191,7 +206,8 @@ describe("watchItems of a Map", () => {
       })
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
   })
 
   it("updates if mutation targets any props", () => {
@@ -207,46 +223,60 @@ describe("watchItems of a Map", () => {
       ),
     })
 
+    let users = store.state.users
+
     const { result } = renderHook(() =>
       useArbor(store.state.users, watchItems())
     )
-
-    expect(result.all.length).toBe(1)
 
     act(() => {
       store.state.users.get("a")!.name = "Alice updated"
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
+
+    users = store.state.users
 
     act(() => {
       store.state.users.get("a")!.age++
     })
 
-    expect(result.all.length).toBe(3)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
+
+    users = store.state.users
 
     act(() => {
       store.state.users.get("a")!.posts.push({ content: "new post" })
     })
 
-    expect(result.all.length).toBe(3)
+    expect(result.current).toBe(users)
+    expect(result.current).not.toBe(store.state.users)
 
     act(() => {
       store.state.users.get("a")!.posts[0].content = "Updated content"
     })
 
-    expect(result.all.length).toBe(3)
+    expect(result.current).toBe(users)
+    expect(result.current).not.toBe(store.state.users)
+
+    users = store.state.users
 
     act(() => {
       store.state.users.get("b")!.name = "Bob updated"
     })
 
-    expect(result.all.length).toBe(4)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
+
+    users = store.state.users
 
     act(() => {
       store.state.users.get("b")!.age++
     })
 
-    expect(result.all.length).toBe(5)
+    expect(result.current).not.toBe(users)
+    expect(result.current).toBe(store.state.users)
   })
 })

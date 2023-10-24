@@ -7,7 +7,7 @@ import {
   isProxiable,
   path,
 } from "@arborjs/store"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useSyncExternalStore } from "react"
 
 import { watchAny } from "./watchAny"
 
@@ -78,8 +78,8 @@ export function useArbor<T extends object>(
   }
   const store = useMemo(() => {
     if (target instanceof Arbor) return target
-    if (isNode<T>(target)) return target.$tree
-    return new Arbor<T>(target as T)
+    if (isNode<T>(target)) return target.$tree as Arbor<T>
+    return new Arbor(target as T)
     // NOTE: useArbor has a similar behavior as the one of useState where
     // subsequent calls to the hook with new arguments do not create side-effects.
     // The hook's argument is simply the mechanism in which the hook is initialized
@@ -88,21 +88,17 @@ export function useArbor<T extends object>(
   }, [])
 
   const node = isArborNode<T>(target) ? target : store.state
-  const targetPath = path(node)
-  const [state, setState] = useState(node)
 
-  const update = useCallback(
-    (event: MutationEvent<T>) => {
-      const nextState = store.getNodeAt<T>(targetPath)
-
-      if (nextState !== state && watcher(state, event)) {
-        setState(nextState)
-      }
+  const subscribe = useCallback(
+    (subscriber: () => void) => {
+      return store.subscribeTo(node, (event) => {
+        if (watcher(node, event)) {
+          subscriber()
+        }
+      })
     },
-    [state, store, targetPath, watcher]
+    [node, store, watcher]
   )
 
-  useEffect(() => store.subscribeTo(state, update), [state, store, update])
-
-  return state
+  return useSyncExternalStore(subscribe, () => store.getNodeAt(path(node)))
 }

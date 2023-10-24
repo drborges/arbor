@@ -12,11 +12,11 @@ export function watchItems<T extends object>(...props: PropsOf<T>[]) {
       return false
     }
 
-    if (event.mutationPath.matches(node.$path)) {
+    if (event.mutationPath.matches(node)) {
       return true
     }
 
-    if (!event.mutationPath.parent.matches(node.$path)) {
+    if (!event.mutationPath.parent.matches(node)) {
       return false
     }
 

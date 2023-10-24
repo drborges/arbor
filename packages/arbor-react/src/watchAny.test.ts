@@ -1,5 +1,5 @@
 import { Arbor } from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks"
+import { act, renderHook } from "@testing-library/react"
 
 import { useArbor } from "./useArbor"
 import { watchAny } from "./watchAny"
@@ -13,11 +13,13 @@ describe("watchAny", () => {
       ],
     })
 
+    const alice = store.state.users[0]
+
     const { result } = renderHook(() =>
       useArbor(store.state.users[0], watchAny())
     )
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(alice)
 
     act(() => {
       store.state.users.push({ name: "Carol", posts: [] })
@@ -25,7 +27,7 @@ describe("watchAny", () => {
       store.state.users[1].posts[0].content = "My first updated post"
     })
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(alice)
   })
 
   it("updates when mutation affects the given node", () => {
@@ -36,22 +38,34 @@ describe("watchAny", () => {
       ],
     })
 
+    let alice = store.state.users[0]
+
     const { result } = renderHook(() =>
       useArbor(store.state.users[0], watchAny())
     )
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(alice)
 
     act(() => {
       store.state.users[0].name = "Alice Updated"
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).not.toBe(alice)
+    expect(result.current).toEqual({
+      name: "Alice Updated",
+      posts: [{ content: "Hello World" }],
+    })
+
+    alice = store.state.users[0]
 
     act(() => {
       store.state.users[0].posts[0].content = "Updated Hello World"
     })
 
-    expect(result.all.length).toBe(3)
+    expect(result.current).not.toBe(alice)
+    expect(result.current).toEqual({
+      name: "Alice Updated",
+      posts: [{ content: "Updated Hello World" }],
+    })
   })
 })
