@@ -9,9 +9,9 @@ import {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { isGetter, recursivelyUnwrap, unwrap } from "./utilities"
+import { isGetter } from "./utilities"
 
-export type TrackedArborNode<T extends object = object> = {
+type TrackedArborNode<T extends object = object> = {
   [K in keyof T]: T[K] extends Function
     ? T[K]
     : T[K] extends object
@@ -22,7 +22,7 @@ export type TrackedArborNode<T extends object = object> = {
 class TrackedArbor<T extends object> implements Store<T> {
   private readonly originalStore: Arbor<T>
   private readonly targetNode: ArborNode<T>
-  private readonly cache = new WeakMap<Seed, TrackedArborNode>()
+  private readonly cache = new WeakMap<ArborNode, TrackedArborNode>()
   private readonly tracking = new WeakMap<Seed, Set<string>>()
 
   constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
@@ -38,11 +38,12 @@ class TrackedArbor<T extends object> implements Store<T> {
   }
 
   get state() {
-    return this.wrap(this.originalStore.state)
+    return this.getOrCache(this.originalStore.state) as ArborNode<T>
   }
 
   setState(value: T): ArborNode<T> {
-    return this.originalStore.setState(value)
+    this.originalStore.setState(value)
+    return this.state
   }
 
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
@@ -58,6 +59,14 @@ class TrackedArbor<T extends object> implements Store<T> {
         subscriber(event)
       }
     })
+  }
+
+  private getOrCache(node: ArborNode): TrackedArborNode {
+    if (!this.cache.has(node)) {
+      this.cache.set(node, this.wrap(node))
+    }
+
+    return this.cache.get(node)
   }
 
   private affected(event: MutationEvent<object>) {
@@ -82,50 +91,42 @@ class TrackedArbor<T extends object> implements Store<T> {
     }
   }
 
-  private wrap<K extends object>(node: ArborNode<K>) {
-    const cache = this.cache
-    const wrap = this.wrap.bind(this)
+  private wrap(node: ArborNode) {
     const track = this.track.bind(this)
+    const getOrCache = this.getOrCache.bind(this)
 
     return new Proxy(node, {
       get(target, prop: string, proxy) {
-        // This is important so that ArborNodes are unwrapped properly
-        if (prop === "$value") {
-          return unwrap(node)
+        // TODO: create a helper function that can be used
+        // to check if a given prop refers to any public API
+        // of Node. This way we don't risk "shadowing" actual
+        // user defined methods starting with '$'
+        if (prop.toString().startsWith("$")) {
+          return target[prop]
         }
 
-        const child = Reflect.get(target, prop, proxy) as ArborNode<T>
+        const child = Reflect.get(target, prop, proxy)
 
-        const targetseed = Seed.from(target)
-
-        if (typeof child !== "function" && isNode(target)) {
-          const unwrapped = recursivelyUnwrap(target)
-
-          if (!isGetter(unwrapped, prop as string)) {
-            track(targetseed, prop)
-          }
+        if (
+          typeof child !== "function" &&
+          isNode(target) &&
+          !isGetter(target, prop as string)
+        ) {
+          track(Seed.from(target), prop)
         }
 
         if (typeof child !== "object") {
           return child
         }
 
-        const childSeed = Seed.from(child)
-
-        if (!cache.has(childSeed)) {
-          cache.set(childSeed, wrap(child))
-        }
-
-        return cache.get(childSeed)
+        return getOrCache(child)
       },
-
-      // set(target, prop, newValue) {
-      //   return Reflect.set(target, prop, newValue, target);
-      // }
     })
   }
 }
 
-export function track<T extends object>(store: Arbor<T>): Store<T> {
-  return new TrackedArbor(store)
+export function track<T extends object>(
+  storeOrNode: Arbor<T> | ArborNode<T>
+): Store<T> {
+  return new TrackedArbor(storeOrNode)
 }

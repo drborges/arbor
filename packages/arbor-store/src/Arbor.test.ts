@@ -1602,6 +1602,33 @@ describe("Arbor", () => {
   })
 
   describe("path tracking", () => {
+    it("leverages structural sharing to preserve identities of nodes in the state tree", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore = track(store)
+      const root = trackedStore.state
+      const todos = trackedStore.state.todos
+      const todo0 = trackedStore.state.todos[0]
+      const todo1 = trackedStore.state.todos[1]
+
+      expect(root).toBe(trackedStore.state)
+      expect(todos).toBe(trackedStore.state.todos)
+      expect(todo0).toBe(trackedStore.state.todos[0])
+      expect(todo1).toBe(trackedStore.state.todos[1])
+
+      todo0.active = true
+
+      expect(root).not.toBe(trackedStore.state)
+      expect(todos).not.toBe(trackedStore.state.todos)
+      expect(todo0).not.toBe(trackedStore.state.todos[0])
+      expect(todo1).toBe(trackedStore.state.todos[1])
+    })
+
     it("reacts to mutations targeting paths being tracked", () => {
       const store = new Arbor({
         todos: [

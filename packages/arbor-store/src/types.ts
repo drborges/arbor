@@ -27,7 +27,7 @@ export interface Handler {
   accepts(value: unknown): boolean
 }
 
-export type ArborNode<T extends object> = {
+export type ArborNode<T extends object = object> = {
   [K in keyof T]: T[K] extends Function
     ? T[K]
     : T[K] extends object
