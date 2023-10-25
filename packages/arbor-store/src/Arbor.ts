@@ -241,7 +241,12 @@ export class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): ArborNode<T> {
-    const current = this.createNode(Path.root, value)
+    const current = this.createNode(
+      Path.root,
+      value,
+      null,
+      this.root?.$subscribers
+    )
 
     this.root = current
 

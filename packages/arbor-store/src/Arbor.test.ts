@@ -13,6 +13,8 @@ import {
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
+import { track } from "./Tracker"
+
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
     it("generates a new state tree by reusing nodes unaffected by the mutation (structural sharing)", () => {
@@ -445,6 +447,19 @@ describe("Arbor", () => {
       store.state[0].tracker = { count: 4 }
 
       expect(subscriber).not.toHaveBeenCalled()
+    })
+
+    it("subscribes to changes to the root of the state tree", () => {
+      const store = new Arbor({
+        count: 0,
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.setState({ count: 4 })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -1583,6 +1598,66 @@ describe("Arbor", () => {
 
         expect(unwrap(store.state.todos[0])).toBe(todo0)
       })
+    })
+  })
+
+  describe("path tracking", () => {
+    it("reacts to mutations targeting paths being tracked", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+
+      trackedStore.subscribe(subscriber)
+
+      // Tracks the following store paths
+      //  1. trackedStore.state.todos
+      //  2. trackedStore.state.todos[0]
+      //  2. trackedStore.state.todos[0].active
+      trackedStore.state.todos[0].active
+
+      // Does not notifies trackedStore subscribers
+      store.state.todos[0].id = 3
+      store.state.todos[0].text = "Do the dishes again"
+      // Does not notifies trackedStore subscribers
+      store.state.todos[1].id = 4
+      store.state.todos[1].text = "Walk the dogs again"
+      store.state.todos[1].active = false
+      store.state.todos[1] = { id: 3, text: "Clean the house", active: false }
+
+      expect(subscriber).not.toHaveBeenCalled()
+
+      store.state.todos[0].active = true
+      store.state.todos[0] = { id: 3, text: "Clean the house", active: false }
+      store.state.todos = []
+
+      expect(subscriber).toHaveBeenCalledTimes(3)
+    })
+
+    it("reacts to mutations targeting the root of the state tree", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+
+      // tracks the root of the store
+      trackedStore.state
+
+      trackedStore.subscribe(subscriber)
+
+      store.setState({ todos: [] })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
     })
   })
 })

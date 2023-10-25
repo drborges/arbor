@@ -78,7 +78,6 @@ export type Plugin<T extends object> = {
 export type Store<T extends object> = {
   readonly state: ArborNode<T>
   setState(value: T): ArborNode<T>
-  use(plugin: Plugin<T>): Promise<Unsubscribe>
   subscribe(subscriber: Subscriber<T>): Unsubscribe
   subscribeTo<V extends object>(
     node: ArborNode<V>,
