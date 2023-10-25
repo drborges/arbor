@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/plugins",
-  "version": "0.0.1-alpha.66",
+  "version": "0.0.1-alpha.67",
   "sideEffects": false,
   "description": "Community driven plugins for @arborjs/store.",
   "keywords": [
@@ -46,7 +46,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@arborjs/store": "0.0.1-alpha.66",
+    "@arborjs/store": "0.0.1-alpha.67",
     "@types/jest": "^29.5.1",
     "esbuild": "^0.17.19",
     "eslint": "^8.40.0",
@@ -57,7 +57,7 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "@arborjs/store": "0.0.1-alpha.66"
+    "@arborjs/store": "0.0.1-alpha.67"
   },
   "scripts": {
     "prettier": "prettier -w . ",
