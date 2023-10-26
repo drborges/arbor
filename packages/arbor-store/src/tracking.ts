@@ -69,6 +69,8 @@ class TrackedArbor<T extends object> implements Store<T> {
     return this.cache.get(node)
   }
 
+  // TODO: need to find a way to prevent mutations in parent components
+  // causing descendents to update...
   private affected(event: MutationEvent<object>) {
     if (event.mutationPath.isRoot()) {
       return true
@@ -114,6 +116,8 @@ class TrackedArbor<T extends object> implements Store<T> {
         ) {
           track(Seed.from(target), prop)
         }
+
+        // TODO: handle child functions, we must set the receiver to be the proxy so map, filter, etc... can work properly
 
         if (typeof child !== "object") {
           return child
