@@ -22,6 +22,10 @@ type TrackedArborNode<T extends object = object> = { $tracked?: boolean } & {
     : T[K]
 }
 
+export type MutationEventPredicate<T extends object> = (
+  _e: MutationEvent<T>
+) => boolean
+
 export function isTracked(value: any): value is TrackedArborNode {
   return (value as TrackedArborNode)?.$tracked === true
 }
@@ -39,7 +43,10 @@ class TrackedArbor<T extends object> implements Store<T> {
   private readonly cache = new WeakMap<ArborNode, TrackedArborNode>()
   private readonly tracking = new WeakMap<Seed, Set<string>>()
 
-  constructor(storeOrNode: Arbor<T> | ArborNode<T> | TrackedArborNode<T>) {
+  constructor(
+    storeOrNode: Arbor<T> | ArborNode<T> | TrackedArborNode<T>,
+    readonly shouldNotifySubscribers: MutationEventPredicate<T>
+  ) {
     if (isTracked(storeOrNode)) {
       const node = unwrapTrackedNode(storeOrNode)
       this.originalStore = (node as Node).$tree as Arbor<T>
@@ -93,7 +100,7 @@ class TrackedArbor<T extends object> implements Store<T> {
 
   // TODO: need to find a way to prevent mutations in parent components
   // causing descendents to update...
-  private affected(event: MutationEvent<object>) {
+  private affected(event: MutationEvent<T>) {
     if (event.mutationPath.isRoot()) {
       return true
     }
@@ -101,7 +108,11 @@ class TrackedArbor<T extends object> implements Store<T> {
     const targetSeed = event.mutationPath.seeds.at(-1)
     const tracked = this.tracking.get(targetSeed)
 
-    return event.metadata.props.some((prop) => tracked?.has(prop as string))
+    const isTracked = event.metadata.props.some((prop) =>
+      tracked?.has(prop as string)
+    )
+
+    return isTracked || this.shouldNotifySubscribers(event)
   }
 
   private track(seed: Seed, prop: string) {
@@ -169,8 +180,13 @@ class TrackedArbor<T extends object> implements Store<T> {
   }
 }
 
+const defaultMutationEventPredicate = <T extends object>(
+  _e: MutationEvent<T>
+) => false
+
 export function track<T extends object>(
-  storeOrNode: Arbor<T> | ArborNode<T>
+  storeOrNode: Arbor<T> | ArborNode<T>,
+  shouldNotifySubscribers = defaultMutationEventPredicate
 ): Store<T> {
-  return new TrackedArbor(storeOrNode)
+  return new TrackedArbor(storeOrNode, shouldNotifySubscribers)
 }

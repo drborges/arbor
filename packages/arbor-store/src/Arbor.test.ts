@@ -1753,6 +1753,39 @@ describe("Arbor", () => {
 
       expect(subscriber1).not.toHaveBeenCalled()
       expect(subscriber2).toHaveBeenCalledTimes(1)
+
+      trackedStore1.state.todos[2] = {
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      }
+
+      expect(subscriber1).toHaveBeenCalledTimes(1)
+      expect(subscriber2).toHaveBeenCalledTimes(1)
+    })
+
+    it("allows overriding logic that determines when subscribers should be notified", () => {
+      const originalStore = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(
+        originalStore,
+        (event) => event.metadata.operation === "push"
+      )
+      trackedStore.subscribe(subscriber)
+
+      originalStore.state.todos.push({
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
     })
   })
 })
