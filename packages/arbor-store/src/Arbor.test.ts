@@ -13,7 +13,7 @@ import {
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
-import { track } from "./tracking"
+import { isTracked, track, unwrapTrackedNode } from "./tracking"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -1616,11 +1616,6 @@ describe("Arbor", () => {
       const todo0 = trackedStore.state.todos[0]
       const todo1 = trackedStore.state.todos[1]
 
-      expect(root).toBe(trackedStore.state)
-      expect(todos).toBe(trackedStore.state.todos)
-      expect(todo0).toBe(trackedStore.state.todos[0])
-      expect(todo1).toBe(trackedStore.state.todos[1])
-
       todo0.active = true
 
       expect(root).not.toBe(trackedStore.state)
@@ -1685,6 +1680,44 @@ describe("Arbor", () => {
       store.setState({ todos: [] })
 
       expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("marks nodes as tracked", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore1 = track(store)
+
+      expect(isTracked(trackedStore1.state)).toEqual(true)
+      expect(isTracked(trackedStore1.state.todos)).toEqual(true)
+      expect(isTracked(trackedStore1.state.todos[0])).toEqual(true)
+      expect(isTracked(trackedStore1.state.todos[1])).toEqual(true)
+    })
+
+    it("automatically unwraps tracked node when creating a derived tracking scope", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore1 = track(store)
+
+      expect(trackedStore1.state).toEqual(store.state)
+      expect(trackedStore1.state).not.toBe(store.state)
+      expect(unwrapTrackedNode(trackedStore1.state)).toBe(store.state)
+
+      const trackedStore2 = track(trackedStore1.state.todos[0])
+
+      expect(trackedStore2.state).toEqual(store.state.todos[0])
+      expect(trackedStore2.state).not.toBe(store.state.todos[0])
+      expect(trackedStore2.state).not.toBe(trackedStore1.state.todos[0])
+      expect(unwrapTrackedNode(trackedStore2.state)).toBe(store.state.todos[0])
     })
   })
 })

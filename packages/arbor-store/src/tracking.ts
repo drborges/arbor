@@ -1,17 +1,20 @@
 import { Arbor } from "./Arbor"
+import { Path } from "./Path"
 import { Seed } from "./Seed"
 import { ArborError } from "./errors"
 import { isNode } from "./guards"
 import {
   ArborNode,
   MutationEvent,
+  Node,
   Store,
   Subscriber,
   Unsubscribe,
+  Unwrappable,
 } from "./types"
-import { isGetter } from "./utilities"
+import { isGetter, path } from "./utilities"
 
-type TrackedArborNode<T extends object = object> = {
+type TrackedArborNode<T extends object = object> = { $tracked?: boolean } & {
   [K in keyof T]: T[K] extends Function
     ? T[K]
     : T[K] extends object
@@ -19,14 +22,29 @@ type TrackedArborNode<T extends object = object> = {
     : T[K]
 }
 
+export function isTracked(value: any): value is TrackedArborNode {
+  return (value as TrackedArborNode)?.$tracked
+}
+
+export function unwrapTrackedNode<T extends object>(
+  value: TrackedArborNode<T>
+): ArborNode<T> {
+  return (value as Unwrappable<T>).$value
+}
+
 class TrackedArbor<T extends object> implements Store<T> {
   private readonly originalStore: Arbor<T>
   private readonly targetNode: ArborNode<T>
+  private readonly targetPath: Path
   private readonly cache = new WeakMap<ArborNode, TrackedArborNode>()
   private readonly tracking = new WeakMap<Seed, Set<string>>()
 
-  constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
-    if (isNode(storeOrNode)) {
+  constructor(storeOrNode: Arbor<T> | ArborNode<T> | TrackedArborNode<T>) {
+    if (isTracked(storeOrNode)) {
+      const node = unwrapTrackedNode(storeOrNode)
+      this.originalStore = (node as Node).$tree as Arbor<T>
+      this.targetNode = node
+    } else if (isNode(storeOrNode)) {
       this.originalStore = storeOrNode.$tree as Arbor<T>
       this.targetNode = storeOrNode as ArborNode<T>
     } else if (storeOrNode instanceof Arbor) {
@@ -35,10 +53,14 @@ class TrackedArbor<T extends object> implements Store<T> {
     } else {
       throw new ArborError("track takes either an Arbor store or an ArborNode")
     }
+
+    this.targetPath = path(this.targetNode)
   }
 
   get state() {
-    return this.getOrCache(this.originalStore.state) as ArborNode<T>
+    return this.getOrCache(
+      this.originalStore.getNodeAt(this.targetPath)
+    ) as ArborNode<T>
   }
 
   setState(value: T): ArborNode<T> {
@@ -99,6 +121,14 @@ class TrackedArbor<T extends object> implements Store<T> {
 
     return new Proxy(node, {
       get(target, prop: string, proxy) {
+        if (prop === "$tracked") {
+          return true
+        }
+
+        if (prop === "$value") {
+          return target
+        }
+
         // TODO: create a helper function that can be used
         // to check if a given prop refers to any public API
         // of Node. This way we don't risk "shadowing" actual
@@ -108,6 +138,11 @@ class TrackedArbor<T extends object> implements Store<T> {
         }
 
         const child = Reflect.get(target, prop, proxy)
+        const descriptor = Object.getOwnPropertyDescriptor(target, prop)
+
+        if (!descriptor?.configurable || !descriptor.writable) {
+          return child
+        }
 
         if (
           typeof child !== "function" &&

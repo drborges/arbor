@@ -4,6 +4,10 @@ import { Path } from "./Path"
 import { Seed } from "./Seed"
 import { Subscribers } from "./Subscribers"
 
+export type Unwrappable<T extends object> = {
+  $value: T
+}
+
 /**
  * Describes a Node Hnalder constructor capable of determining which
  * kinds of nodes it is able to handle.
