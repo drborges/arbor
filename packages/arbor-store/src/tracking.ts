@@ -14,7 +14,10 @@ import {
 } from "./types"
 import { isGetter, path } from "./utilities"
 
-type TrackedArborNode<T extends object = object> = { $tracked?: boolean } & {
+// TODO: Possibly remove this type in favor of just ArborNode
+export type TrackedArborNode<T extends object = object> = {
+  $tracked?: boolean
+} & {
   [K in keyof T]: T[K] extends Function
     ? T[K]
     : T[K] extends object
@@ -22,7 +25,7 @@ type TrackedArborNode<T extends object = object> = { $tracked?: boolean } & {
     : T[K]
 }
 
-export type MutationEventPredicate<T extends object> = (
+export type NotificationPredicate<T extends object> = (
   _e: MutationEvent<T>
 ) => boolean
 
@@ -45,7 +48,7 @@ class TrackedArbor<T extends object> implements Store<T> {
 
   constructor(
     storeOrNode: Arbor<T> | ArborNode<T> | TrackedArborNode<T>,
-    readonly shouldNotifySubscribers: MutationEventPredicate<T>
+    readonly shouldNotifySubscribers: NotificationPredicate<T>
   ) {
     if (isTracked(storeOrNode)) {
       const node = unwrapTrackedNode(storeOrNode)
@@ -180,13 +183,10 @@ class TrackedArbor<T extends object> implements Store<T> {
   }
 }
 
-const defaultMutationEventPredicate = <T extends object>(
-  _e: MutationEvent<T>
-) => false
-
 export function track<T extends object>(
   storeOrNode: Arbor<T> | ArborNode<T>,
-  shouldNotifySubscribers = defaultMutationEventPredicate
+  shouldNotifySubscribers: NotificationPredicate<T> = (_e: MutationEvent<T>) =>
+    false
 ): Store<T> {
   return new TrackedArbor(storeOrNode, shouldNotifySubscribers)
 }
