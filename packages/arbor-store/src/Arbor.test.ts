@@ -1622,6 +1622,10 @@ describe("Arbor", () => {
       expect(todos).not.toBe(trackedStore.state.todos)
       expect(todo0).not.toBe(trackedStore.state.todos[0])
       expect(todo1).toBe(trackedStore.state.todos[1])
+
+      expect(root).toEqual(trackedStore.state)
+      expect(todos).toEqual(trackedStore.state.todos)
+      expect(todo0).toEqual(trackedStore.state.todos[0])
     })
 
     it("reacts to mutations targeting paths being tracked", () => {
@@ -1718,6 +1722,37 @@ describe("Arbor", () => {
       expect(trackedStore2.state).not.toBe(store.state.todos[0])
       expect(trackedStore2.state).not.toBe(trackedStore1.state.todos[0])
       expect(unwrapTrackedNode(trackedStore2.state)).toBe(store.state.todos[0])
+    })
+
+    it("isolates subscriptions to their own tracking scope", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+
+      const trackedStore1 = track(store)
+      trackedStore1.subscribe(subscriber1)
+
+      // Causes trackedStore1 to watch mutations to the following paths:
+      // 1. root
+      // 2. root.todos
+      // 3. root.todos[0]
+      const firstTodo = trackedStore1.state.todos[0]
+
+      const trackedStore2 = track(firstTodo)
+      trackedStore2.subscribe(subscriber2)
+
+      // Causes trackedStore2 to watch mutations to the following paths but does not affect trackedStore1:
+      // 1. root.todos[0].active
+      trackedStore2.state.active = true
+
+      expect(subscriber1).not.toHaveBeenCalled()
+      expect(subscriber2).toHaveBeenCalledTimes(1)
     })
   })
 })

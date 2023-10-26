@@ -23,7 +23,7 @@ type TrackedArborNode<T extends object = object> = { $tracked?: boolean } & {
 }
 
 export function isTracked(value: any): value is TrackedArborNode {
-  return (value as TrackedArborNode)?.$tracked
+  return (value as TrackedArborNode)?.$tracked === true
 }
 
 export function unwrapTrackedNode<T extends object>(
@@ -98,7 +98,8 @@ class TrackedArbor<T extends object> implements Store<T> {
       return true
     }
 
-    const tracked = this.tracking.get(event.mutationPath.seeds.at(-1))
+    const targetSeed = event.mutationPath.seeds.at(-1)
+    const tracked = this.tracking.get(targetSeed)
 
     return event.metadata.props.some((prop) => tracked?.has(prop as string))
   }
@@ -109,10 +110,7 @@ class TrackedArbor<T extends object> implements Store<T> {
     }
 
     const props = this.tracking.get(seed)
-
-    if (!props.has(prop)) {
-      props.add(prop)
-    }
+    props.add(prop)
   }
 
   private wrap(node: ArborNode) {
@@ -129,15 +127,16 @@ class TrackedArbor<T extends object> implements Store<T> {
           return target
         }
 
+        const child = Reflect.get(target, prop, proxy)
+
         // TODO: create a helper function that can be used
         // to check if a given prop refers to any public API
         // of Node. This way we don't risk "shadowing" actual
         // user defined methods starting with '$'
         if (prop.toString().startsWith("$")) {
-          return target[prop]
+          return child
         }
 
-        const child = Reflect.get(target, prop, proxy)
         const descriptor = Object.getOwnPropertyDescriptor(target, prop)
 
         if (!descriptor?.configurable || !descriptor.writable) {
@@ -159,6 +158,12 @@ class TrackedArbor<T extends object> implements Store<T> {
         }
 
         return getOrCache(child)
+      },
+
+      set(target, prop, newValue, proxy) {
+        track(Seed.from(target), prop)
+
+        return Reflect.set(target, prop, newValue, proxy)
       },
     })
   }
