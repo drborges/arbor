@@ -43,7 +43,7 @@ class BaseStore<T extends object> implements Store<T> {
   }
 
   get state() {
-    return this.originalStore.state
+    return this.originalStore.getNodeAt(path(this.targetNode)) as ArborNode<T>
   }
 
   setState(value: T): ArborNode<T> {
