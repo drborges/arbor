@@ -10,19 +10,11 @@ import {
   Store,
   Subscriber,
   Unsubscribe,
-  Unwrappable,
 } from "./types"
-import { isGetter, path } from "./utilities"
+import { isGetter, path, unwrap } from "./utilities"
 
-// TODO: Possibly remove this type in favor of just ArborNode
-export type TrackedArborNode<T extends object = object> = {
+export type Tracked<T extends object = object> = T & {
   $tracked?: boolean
-} & {
-  [K in keyof T]: T[K] extends Function
-    ? T[K]
-    : T[K] extends object
-    ? TrackedArborNode<T[K]>
-    : T[K]
 }
 
 // TODO: Replace this type with the Watcher type from arbor-react
@@ -30,29 +22,25 @@ export type NotificationPredicate<T extends object> = (
   _e: MutationEvent<T>
 ) => boolean
 
-export function isTracked(value: unknown): value is TrackedArborNode {
-  return (value as TrackedArborNode)?.$tracked === true
-}
-
-export function unwrapTrackedNode<T extends object>(
-  value: TrackedArborNode<T>
-): ArborNode<T> {
-  return (value as Unwrappable<T>).$value
+export function isArborNodeTracked<T extends object>(
+  value: unknown
+): value is ArborNode<T> {
+  return (value as Tracked)?.$tracked === true
 }
 
 class TrackedArbor<T extends object> implements Store<T> {
   private readonly originalStore: Arbor<T>
   private readonly targetNode: ArborNode<T>
   private readonly targetPath: Path
-  private readonly cache = new WeakMap<ArborNode, TrackedArborNode>()
+  private readonly cache = new WeakMap<ArborNode, Tracked>()
   private readonly tracking = new WeakMap<Seed, Set<string>>()
 
   constructor(
-    storeOrNode: Arbor<T> | ArborNode<T> | TrackedArborNode<T>,
+    storeOrNode: Arbor<T> | ArborNode<T>,
     readonly shouldNotifySubscribers?: NotificationPredicate<T>
   ) {
-    if (isTracked(storeOrNode)) {
-      const node = unwrapTrackedNode(storeOrNode)
+    if (isArborNodeTracked<T>(storeOrNode)) {
+      const node = unwrap(storeOrNode)
       this.originalStore = (node as Node).$tree as Arbor<T>
       this.targetNode = node
     } else if (isNode(storeOrNode)) {
@@ -88,13 +76,13 @@ class TrackedArbor<T extends object> implements Store<T> {
     subscriber: Subscriber<T>
   ): Unsubscribe {
     return this.originalStore.subscribeTo(node, (event) => {
-      if (this.affected?.(event)) {
+      if (this.affected(event)) {
         subscriber(event)
       }
     })
   }
 
-  private getOrCache(node: ArborNode): TrackedArborNode {
+  private getOrCache(node: ArborNode): Tracked {
     if (!this.cache.has(node)) {
       this.cache.set(node, this.wrap(node))
     }

@@ -13,7 +13,7 @@ import {
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
-import { isTracked, track, unwrapTrackedNode } from "./tracking"
+import { isArborNodeTracked, track } from "./tracking"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -1696,10 +1696,10 @@ describe("Arbor", () => {
 
       const trackedStore1 = track(store)
 
-      expect(isTracked(trackedStore1.state)).toEqual(true)
-      expect(isTracked(trackedStore1.state.todos)).toEqual(true)
-      expect(isTracked(trackedStore1.state.todos[0])).toEqual(true)
-      expect(isTracked(trackedStore1.state.todos[1])).toEqual(true)
+      expect(isArborNodeTracked(trackedStore1.state)).toEqual(true)
+      expect(isArborNodeTracked(trackedStore1.state.todos)).toEqual(true)
+      expect(isArborNodeTracked(trackedStore1.state.todos[0])).toEqual(true)
+      expect(isArborNodeTracked(trackedStore1.state.todos[1])).toEqual(true)
     })
 
     it("automatically unwraps tracked node when creating a derived tracking scope", () => {
@@ -1714,14 +1714,14 @@ describe("Arbor", () => {
 
       expect(trackedStore1.state).toEqual(store.state)
       expect(trackedStore1.state).not.toBe(store.state)
-      expect(unwrapTrackedNode(trackedStore1.state)).toBe(store.state)
+      expect(unwrap(trackedStore1.state)).toBe(store.state)
 
       const trackedStore2 = track(trackedStore1.state.todos[0])
 
       expect(trackedStore2.state).toEqual(store.state.todos[0])
       expect(trackedStore2.state).not.toBe(store.state.todos[0])
       expect(trackedStore2.state).not.toBe(trackedStore1.state.todos[0])
-      expect(unwrapTrackedNode(trackedStore2.state)).toBe(store.state.todos[0])
+      expect(unwrap(trackedStore2.state)).toBe(store.state.todos[0])
     })
 
     it("isolates subscriptions to their own tracking scope", () => {
@@ -1827,7 +1827,7 @@ describe("Arbor", () => {
 
       const activeTodo = trackedStore.state.todos.find((t) => t.active)
 
-      expect(isTracked(activeTodo)).toBe(true)
+      expect(isArborNodeTracked(activeTodo)).toBe(true)
       expect(activeTodo).toBe(trackedStore.state.todos[1])
     })
 
