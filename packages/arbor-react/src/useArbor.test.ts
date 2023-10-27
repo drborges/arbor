@@ -1,7 +1,7 @@
-import { Arbor, ArborNode, proxiable } from "@arborjs/store"
+import { Arbor, proxiable, Watcher } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react"
 
-import { useArbor, Watcher } from "./useArbor"
+import { useArbor } from "./useArbor"
 
 interface User {
   name: string
@@ -157,7 +157,7 @@ describe("useArbor", () => {
     // Only updates when changes are made to the state tree path: /users/1
     const watchSecondUser =
       (): Watcher<State> =>
-      (_node: ArborNode<State>, { mutationPath }) =>
+      ({ mutationPath }) =>
         mutationPath.matches(store.state.users[1])
 
     const { result } = renderHook(() => useArbor(store, watchSecondUser()))

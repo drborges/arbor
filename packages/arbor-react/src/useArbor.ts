@@ -1,7 +1,7 @@
 import {
   Arbor,
   ArborNode,
-  MutationEvent,
+  Watcher,
   isArborNode,
   isNode,
   isProxiable,
@@ -10,11 +10,6 @@ import {
 import { useCallback, useMemo, useSyncExternalStore } from "react"
 
 import { watchAny } from "./watchAny"
-
-export type Watcher<T extends object> = (
-  target: ArborNode<T>,
-  event: MutationEvent<T>
-) => boolean
 
 export function useArbor<T extends object>(
   store: Arbor<T>,
@@ -92,7 +87,7 @@ export function useArbor<T extends object>(
   const subscribe = useCallback(
     (subscriber: () => void) => {
       return store.subscribeTo(node, (event) => {
-        if (watcher(node, event)) {
+        if (watcher(event, node)) {
           subscriber()
         }
       })

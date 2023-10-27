@@ -5,7 +5,7 @@ export type PropsOf<T> = {
 }[keyof T]
 
 export function watchNode<T extends object>(...props: PropsOf<T>[]) {
-  return (node: ArborNode<T>, event: MutationEvent<T>) => {
+  return (event: MutationEvent<T>, node: ArborNode<T>) => {
     if (!event.mutationPath.matches(node)) return false
     if (props.length === 0) return true
 
