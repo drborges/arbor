@@ -1787,5 +1787,63 @@ describe("Arbor", () => {
 
       expect(subscriber).toHaveBeenCalledTimes(1)
     })
+
+    it("ensures custom logic that determines when subscribers should be notified completely override path tracking mechanism", () => {
+      const originalStore = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber1 = jest.fn()
+      const trackedStore1 = track(originalStore)
+      trackedStore1.subscribe(subscriber1)
+
+      // Track path state.todos[0].active
+      trackedStore1.state.todos[0].active = true
+
+      expect(subscriber1).toHaveBeenCalled()
+
+      const subscriber2 = jest.fn()
+      const trackedStore2 = track(originalStore, () => false)
+      trackedStore2.subscribe(subscriber2)
+
+      // Track path state.todos[0].active
+      trackedStore2.state.todos[0].active = true
+
+      expect(subscriber2).not.toHaveBeenCalled()
+    })
+
+    it("is able to track nodes resulted from method calls", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore = track(store)
+
+      const activeTodo = trackedStore.state.todos.find((t) => t.active)
+
+      expect(isTracked(activeTodo)).toBe(true)
+      expect(activeTodo).toBe(trackedStore.state.todos[1])
+    })
+
+    it("handles mutations to the root of the store", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+      trackedStore.subscribe(subscriber)
+
+      trackedStore.state.push({ id: 3, text: "Walk the dogs", active: true })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
   })
 })

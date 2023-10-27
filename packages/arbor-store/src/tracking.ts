@@ -48,7 +48,7 @@ class TrackedArbor<T extends object> implements Store<T> {
 
   constructor(
     storeOrNode: Arbor<T> | ArborNode<T> | TrackedArborNode<T>,
-    readonly shouldNotifySubscribers: NotificationPredicate<T>
+    readonly shouldNotifySubscribers?: NotificationPredicate<T>
   ) {
     if (isTracked(storeOrNode)) {
       const node = unwrapTrackedNode(storeOrNode)
@@ -101,9 +101,11 @@ class TrackedArbor<T extends object> implements Store<T> {
     return this.cache.get(node)
   }
 
-  // TODO: need to find a way to prevent mutations in parent components
-  // causing descendents to update...
   private affected(event: MutationEvent<T>) {
+    if (this.shouldNotifySubscribers) {
+      return this.shouldNotifySubscribers(event)
+    }
+
     if (event.mutationPath.isRoot()) {
       return true
     }
@@ -115,7 +117,7 @@ class TrackedArbor<T extends object> implements Store<T> {
       tracked?.has(prop as string)
     )
 
-    return isTracked || this.shouldNotifySubscribers(event)
+    return isTracked
   }
 
   private track(seed: Seed, prop: string) {
@@ -185,8 +187,7 @@ class TrackedArbor<T extends object> implements Store<T> {
 
 export function track<T extends object>(
   storeOrNode: Arbor<T> | ArborNode<T>,
-  shouldNotifySubscribers: NotificationPredicate<T> = (_e: MutationEvent<T>) =>
-    false
+  shouldNotifySubscribers?: NotificationPredicate<T>
 ): Store<T> {
   return new TrackedArbor(storeOrNode, shouldNotifySubscribers)
 }
