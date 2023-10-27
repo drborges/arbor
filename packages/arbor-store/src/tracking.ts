@@ -25,11 +25,12 @@ export type TrackedArborNode<T extends object = object> = {
     : T[K]
 }
 
+// TODO: Replace this type with the Watcher type from arbor-react
 export type NotificationPredicate<T extends object> = (
   _e: MutationEvent<T>
 ) => boolean
 
-export function isTracked(value: any): value is TrackedArborNode {
+export function isTracked(value: unknown): value is TrackedArborNode {
   return (value as TrackedArborNode)?.$tracked === true
 }
 
@@ -106,6 +107,10 @@ class TrackedArbor<T extends object> implements Store<T> {
       return this.shouldNotifySubscribers(event)
     }
 
+    // TODO: add test coverage to this condition, I have a feeling we
+    // don't want this behavior in the context of nested tracking scopes,
+    // e.g. inner scope being affected by root mutations regardless of what
+    // that scope is watching.
     if (event.mutationPath.isRoot()) {
       return true
     }
@@ -120,7 +125,9 @@ class TrackedArbor<T extends object> implements Store<T> {
     return isTracked
   }
 
-  private track(seed: Seed, prop: string) {
+  private track(value: object, prop: string) {
+    const seed = Seed.from(value)
+
     if (!this.tracking.has(seed)) {
       this.tracking.set(seed, new Set())
     }
@@ -155,19 +162,15 @@ class TrackedArbor<T extends object> implements Store<T> {
 
         const descriptor = Object.getOwnPropertyDescriptor(target, prop)
 
+        // Unconfigurable and non-writable properties will return the underlying
+        // proxied value in order to conform to Proxy invariants.
         if (!descriptor?.configurable || !descriptor.writable) {
           return child
         }
 
-        if (
-          typeof child !== "function" &&
-          isNode(target) &&
-          !isGetter(target, prop as string)
-        ) {
-          track(Seed.from(target), prop)
+        if (isNode(target) && !isGetter(target, prop as string)) {
+          track(target, prop)
         }
-
-        // TODO: handle child functions, we must set the receiver to be the proxy so map, filter, etc... can work properly
 
         if (typeof child !== "object") {
           return child
@@ -177,7 +180,7 @@ class TrackedArbor<T extends object> implements Store<T> {
       },
 
       set(target, prop, newValue, proxy) {
-        track(Seed.from(target), prop)
+        track(target, prop)
 
         return Reflect.set(target, prop, newValue, proxy)
       },

@@ -65,6 +65,8 @@ export class MutationEngine<T extends object> {
       const targetNode = path.walk<V>(root, (child, parent) => {
         const childCopy = this.clone(child)
 
+        // TODO: remove mode, it seems we don't necessarily need to employ
+        // immutability within Arbor to get it to work with React's concurrent mode
         if (this.mode === "snapshot") {
           parent.$attach(childCopy.$link, childCopy.$value)
         }

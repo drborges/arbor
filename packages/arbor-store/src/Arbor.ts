@@ -190,12 +190,6 @@ export class Arbor<T extends object = object> {
 
     const result = this.engine.mutate(node.$path, mutation)
 
-    // TODO: Try to get rid of this condition, if the node is detached we should
-    // catch this on line 186...
-    if (!result) {
-      throw new DetachedNodeError()
-    }
-
     this.root = result?.root
 
     Subscribers.notify({
