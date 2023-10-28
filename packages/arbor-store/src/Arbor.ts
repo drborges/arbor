@@ -165,8 +165,7 @@ export class Arbor<T extends object = object> {
     return path.walk(this.root)
   }
 
-  // TODO: Rename to detachNodeFor so we keep consistent with the Tree terminology
-  deleteNodeFor<V extends object>(value: V) {
+  detachNodeFor<V extends object>(value: V) {
     const node = this.getNodeFor(value)
     if (!node) return
 
@@ -277,7 +276,7 @@ export class Arbor<T extends object = object> {
   ): ArborNode<K> | ArborNode<T> {
     const link = this.getLinkFor(node)
     const targetPath = path(node)
-    this.deleteNodeFor(node)
+    this.detachNodeFor(node)
 
     if (targetPath.isRoot()) {
       return this.setState(value as T)

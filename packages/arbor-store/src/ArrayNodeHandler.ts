@@ -9,7 +9,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
 
   // TODO: apply "path healing" on children so their links reflect the new array state
   deleteProperty(target: T[], prop: string): boolean {
-    this.$tree.deleteNodeFor(target[prop])
+    this.$tree.detachNodeFor(target[prop])
 
     this.$tree.mutate(this, (node: T[]) => {
       node.splice(parseInt(prop, 10), 1)

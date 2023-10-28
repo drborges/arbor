@@ -125,7 +125,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
 
     if (isNode(newValue)) {
       // Detaches the previous node from the state tree since it's being overwritten by a new one
-      this.$tree.deleteNodeFor(target[prop])
+      this.$tree.detachNodeFor(target[prop])
 
       // In case the new value happens to be an existing node, we preemptively add it back to the
       // state tree so that stale references to this node can continue to trigger mutations.
@@ -163,7 +163,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
         }
       })
 
-      this.$tree.deleteNodeFor(childValue as object)
+      this.$tree.detachNodeFor(childValue as object)
     }
 
     return true

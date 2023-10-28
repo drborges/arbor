@@ -30,7 +30,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
   deleteProperty(target: Map<string, T>, prop: string): boolean {
     const child = target.get(prop)
 
-    this.$tree.deleteNodeFor(child)
+    this.$tree.detachNodeFor(child)
     this.$tree.mutate(this, (map) => {
       map.delete(prop)
 
