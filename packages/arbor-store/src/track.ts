@@ -26,43 +26,6 @@ export function isArborNodeTracked<T extends object>(
   return (value as Tracked)?.$tracked === true
 }
 
-class BaseStore<T extends object> implements Store<T> {
-  protected originalStore: Arbor<T>
-  protected targetNode: ArborNode<T>
-
-  constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
-    if (isNode(storeOrNode)) {
-      this.originalStore = storeOrNode.$tree as Arbor<T>
-      this.targetNode = storeOrNode as ArborNode<T>
-    } else if (storeOrNode instanceof Arbor) {
-      this.originalStore = storeOrNode
-      this.targetNode = storeOrNode.state as ArborNode<T>
-    } else {
-      throw new ArborError("track takes either an Arbor store or an ArborNode")
-    }
-  }
-
-  get state() {
-    return this.originalStore.getNodeAt(path(this.targetNode)) as ArborNode<T>
-  }
-
-  setState(value: T): ArborNode<T> {
-    this.originalStore.setState(value)
-    return this.state
-  }
-
-  subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    return this.subscribeTo(this.targetNode, subscriber)
-  }
-
-  subscribeTo<V extends object>(
-    node: ArborNode<V>,
-    subscriber: Subscriber<T>
-  ): Unsubscribe {
-    return this.originalStore.subscribeTo(node, subscriber)
-  }
-}
-
 class Tracker<T extends object> {
   private readonly cache = new WeakMap<ArborNode, Tracked>()
   private readonly tracking = new WeakMap<Seed, Set<string>>()
@@ -147,13 +110,51 @@ class Tracker<T extends object> {
   }
 }
 
+// TODO: rename this to something that reflects its intention, which is the creation
+// of a store for a subtree in the given store.
+class BaseStore<T extends object> implements Store<T> {
+  protected originalStore: Arbor<T>
+  protected targetNode: ArborNode<T>
+
+  constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
+    if (isNode(storeOrNode)) {
+      this.originalStore = storeOrNode.$tree as Arbor<T>
+      this.targetNode = storeOrNode as ArborNode<T>
+    } else if (storeOrNode instanceof Arbor) {
+      this.originalStore = storeOrNode
+      this.targetNode = storeOrNode.state as ArborNode<T>
+    } else {
+      throw new ArborError("track takes either an Arbor store or an ArborNode")
+    }
+  }
+
+  get state() {
+    return this.originalStore.getNodeAt(path(this.targetNode)) as ArborNode<T>
+  }
+
+  setState(value: T): ArborNode<T> {
+    this.targetNode = this.originalStore.setNode(this.targetNode, value)
+
+    return this.state
+  }
+
+  subscribe(subscriber: Subscriber<T>): Unsubscribe {
+    return this.subscribeTo(this.targetNode, subscriber)
+  }
+
+  subscribeTo<V extends object>(
+    node: ArborNode<V>,
+    subscriber: Subscriber<T>
+  ): Unsubscribe {
+    return this.originalStore.subscribeTo(node, subscriber)
+  }
+}
+
 class TrackedArbor<T extends object> extends BaseStore<T> {
   private tracker = new Tracker()
 
   get state() {
-    return this.tracker.getOrCache(
-      this.originalStore.getNodeAt(path(this.targetNode))
-    ) as ArborNode<T>
+    return this.tracker.getOrCache(super.state) as ArborNode<T>
   }
 
   subscribeTo<V extends object>(
@@ -171,7 +172,7 @@ class TrackedArbor<T extends object> extends BaseStore<T> {
 class WatchedArbor<T extends object> extends BaseStore<T> {
   constructor(
     storeOrNode: Arbor<T> | ArborNode<T>,
-    readonly watcher: Watcher<T>
+    private readonly watcher: Watcher<T>
   ) {
     super(storeOrNode)
   }

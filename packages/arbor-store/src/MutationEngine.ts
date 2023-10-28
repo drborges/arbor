@@ -75,7 +75,7 @@ export class MutationEngine<T extends object> {
         return childCopy
       })
 
-      const metadata = mutation(targetNode.$value)
+      const metadata = mutation(targetNode.$value, targetNode)
 
       return {
         root,

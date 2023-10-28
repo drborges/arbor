@@ -18,7 +18,17 @@ import type {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { isDetached } from "./utilities"
+import { isDetached, path } from "./utilities"
+
+const attachValue =
+  <T extends object>(link: Link, value: T) =>
+  (_: T, node: Node<T>) => {
+    node.$attach(link, value)
+    return {
+      operation: "set",
+      props: [link],
+    }
+  }
 
 /**
  * Refreshes the nodes affected by the mutation path via structural sharing
@@ -143,6 +153,10 @@ export class Arbor<T extends object = object> {
     this.setState(initialState)
   }
 
+  getLinkFor(value: object): Link | undefined {
+    return this.links.get(Seed.from(value))
+  }
+
   getNodeFor<V extends object>(value: V): Node<V> | undefined {
     return this.nodes.get(Seed.from(value)) as Node<V>
   }
@@ -151,6 +165,7 @@ export class Arbor<T extends object = object> {
     return path.walk(this.root)
   }
 
+  // TODO: Rename to detachNodeFor so we keep consistent with the Tree terminology
   deleteNodeFor<V extends object>(value: V) {
     const node = this.getNodeFor(value)
     if (!node) return
@@ -254,6 +269,23 @@ export class Arbor<T extends object = object> {
     })
 
     return current
+  }
+
+  setNode<K extends object>(
+    node: ArborNode<K>,
+    value: K | T
+  ): ArborNode<K> | ArborNode<T> {
+    const link = this.getLinkFor(node)
+    const targetPath = path(node)
+    this.deleteNodeFor(node)
+
+    if (targetPath.isRoot()) {
+      return this.setState(value as T)
+    } else {
+      const parentNode = this.getNodeAt(targetPath.parent)
+      this.mutate(parentNode, attachValue(link, value))
+      return parentNode.$traverse(link)
+    }
   }
 
   /**

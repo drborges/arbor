@@ -63,7 +63,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   }
 
   $traverse<C extends object>(link: Link): Node<C> {
-    return this.$value[link]
+    return this[link]
   }
 
   /**

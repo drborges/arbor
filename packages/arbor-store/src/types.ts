@@ -96,7 +96,10 @@ export type MutationMetadata = {
   readonly props: (string | number | Symbol)[]
 }
 
-export type Mutation<T extends object> = (target: T) => MutationMetadata
+export type Mutation<T extends object> = (
+  target: T,
+  node: Node<T>
+) => MutationMetadata
 
 export type MutationResult<T extends object> = {
   root: Node<T>

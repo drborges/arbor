@@ -13,7 +13,7 @@ import {
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
-import { isArborNodeTracked, track } from "./tracking"
+import { isArborNodeTracked, track } from "./track"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -460,6 +460,34 @@ describe("Arbor", () => {
       store.setState({ count: 4 })
 
       expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("sets the value of a given node regardless of where it is in the state tree", () => {
+      const store = new Arbor({
+        todos: [{ id: 1 }, { id: 2 }],
+      })
+
+      const firstTodo = store.state.todos[0]
+      const newNode = store.setNode(firstTodo, {
+        id: 3,
+      })
+
+      expect(isDetached(firstTodo)).toBe(true)
+      expect(newNode).toBe(store.state.todos[0])
+      expect(store.state).toEqual({
+        todos: [{ id: 3 }, { id: 2 }],
+      })
+
+      const root = store.state
+      const newRootNode = store.setNode(root, {
+        todos: [],
+      })
+
+      expect(isDetached(root)).toBe(true)
+      expect(newRootNode).toBe(store.state)
+      expect(store.state).toEqual({
+        todos: [],
+      })
     })
   })
 
@@ -1676,9 +1704,6 @@ describe("Arbor", () => {
       const subscriber = jest.fn()
       const trackedStore = track(store)
 
-      // tracks the root of the store
-      trackedStore.state
-
       trackedStore.subscribe(subscriber)
 
       store.setState({ todos: [] })
@@ -1844,6 +1869,52 @@ describe("Arbor", () => {
       trackedStore.state.push({ id: 3, text: "Walk the dogs", active: true })
 
       expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("allows tracking a specific node within the state tree", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const trackedStore = track(store.state[0])
+
+      expect(unwrap(trackedStore.state)).toBe(store.state[0])
+    })
+
+    it("allows watching a specific node within the state tree", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const watchedStore = track(store.state[0], () => true)
+
+      expect(watchedStore.state).toBe(store.state[0])
+    })
+
+    it("creates a virtual state tree from a given subtree", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const trackedStore = track(store.state[0])
+
+      expect(unwrap(trackedStore.state)).toBe(store.state[0])
+
+      const newState = trackedStore.setState({
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      })
+
+      expect(unwrap(newState)).toBe(store.state[0])
+      expect(newState).toEqual({
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      })
     })
   })
 })

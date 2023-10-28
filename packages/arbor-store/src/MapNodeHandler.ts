@@ -20,7 +20,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
   }
 
   $traverse<C extends object>(link: Link): C {
-    return this.$value.get(link) as unknown as C
+    return (this as unknown as Map<unknown, T>).get(link) as unknown as C
   }
 
   $attach<C extends object>(link: Link, value: C) {
