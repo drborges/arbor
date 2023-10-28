@@ -54,14 +54,6 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return this.$tree.getNodeAt(this.$path)
   }
 
-  $is(node: Node) {
-    if (!node) {
-      return false
-    }
-
-    return this.$seed === node.$seed
-  }
-
   $traverse<C extends object>(link: Link): Node<C> {
     return this[link]
   }

@@ -61,16 +61,6 @@ export type Node<T extends object = object> = T & {
   readonly $lastRevision: Node<T>
   readonly $subscribers: Subscribers<T>
 
-  /**
-   * Checks if this node and the given node are the same even if different
-   * "revisions" of the same node.
-   *
-   * Nodes are considered the same if they hold the same `seed` value assigned
-   * to them during their creation.
-   *
-   * @param node node to compare to
-   */
-  $is(node: Node): boolean
   $traverse<C extends object>(link: Link): C
   $attach<C extends object>(link: Link, value: C): void
 }
