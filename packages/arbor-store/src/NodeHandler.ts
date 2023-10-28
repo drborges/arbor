@@ -106,11 +106,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return childValue
     }
 
-    if (!this.$tree.getNodeFor(childValue)) {
-      this.$createChildNode(prop, childValue)
-    }
-
-    return this.$tree.getNodeFor(childValue)
+    return this.$getOrCreateChild(prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
