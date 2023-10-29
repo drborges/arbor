@@ -46,10 +46,6 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return Seed.from(this.$value)
   }
 
-  get $link() {
-    return this.$tree.links.get(this.$seed)
-  }
-
   get $lastRevision() {
     return this.$tree.getNodeAt(this.$path)
   }

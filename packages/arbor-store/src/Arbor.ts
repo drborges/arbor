@@ -140,8 +140,8 @@ export class Arbor<T extends object = object> {
    */
   root: Node<T>
 
-  readonly links = new WeakMap<Seed, Link>()
-  readonly nodes = new WeakMap<Seed, Node>()
+  protected readonly links = new WeakMap<Seed, Link>()
+  protected readonly nodes = new WeakMap<Seed, Node>()
 
   /**
    * Create a new Arbor instance.
@@ -167,11 +167,19 @@ export class Arbor<T extends object = object> {
 
   detachNodeFor<V extends object>(value: V) {
     const node = this.getNodeFor(value)
-    if (!node) return
 
-    node.$subscribers.reset()
-    this.nodes.delete(node.$seed)
-    this.links.delete(node.$seed)
+    node?.$subscribers.reset()
+    this.nodes.delete(node?.$seed)
+    this.links.delete(node?.$seed)
+  }
+
+  attachNode(node: Node, link?: Link) {
+    const seed = Seed.from(node)
+    this.nodes.set(seed, node)
+
+    if (link != null) {
+      this.links.set(seed, link)
+    }
   }
 
   /**

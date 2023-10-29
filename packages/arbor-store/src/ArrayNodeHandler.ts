@@ -1,4 +1,5 @@
 import { NodeHandler } from "./NodeHandler"
+import { Node } from "./types"
 
 export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
   T[]
@@ -7,7 +8,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
     return Array.isArray(value)
   }
 
-  // TODO: apply "path healing" on children so their links reflect the new array state
   deleteProperty(target: T[], prop: string): boolean {
     this.$tree.detachNodeFor(target[prop])
 
@@ -19,6 +19,8 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
         props: [prop],
       }
     })
+
+    this.refreshChildrenLinks({ from: parseInt(prop) })
 
     return true
   }
@@ -39,7 +41,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
     return size
   }
 
-  // TODO: apply "path healing" on children so their links reflect the new array state
   reverse() {
     this.$tree.mutate(this, (node: T[]) => {
       node.reverse()
@@ -50,7 +51,9 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    return this.$tree.getNodeAt(this.$path)
+    this.refreshChildrenLinks()
+
+    return this.$tree.getNodeAt<Node<T>[]>(this.$path)
   }
 
   pop(): T {
@@ -66,10 +69,11 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
+    this.$tree.detachNodeFor(popped)
+
     return popped
   }
 
-  // TODO: apply "path healing" on children so their links reflect the new array state
   shift(): T {
     let shifted: T
 
@@ -82,10 +86,12 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
+    this.$tree.detachNodeFor(shifted)
+    this.refreshChildrenLinks()
+
     return shifted
   }
 
-  // TODO: apply "path healing" on children so their links reflect the new array state
   sort(compareFn: (a: T, b: T) => number) {
     this.$tree.mutate(this, (node: T[]) => {
       node.sort(compareFn)
@@ -96,10 +102,11 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
+    this.refreshChildrenLinks()
+
     return this.$tree.getNodeAt(this.$path)
   }
 
-  // TODO: apply "path healing" on children so their links reflect the new array state
   splice(start: number, deleteCount: number, ...items: T[]): T[] {
     let deleted: T[] = []
 
@@ -114,10 +121,11 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
+    deleted.forEach(this.$tree.detachNodeFor.bind(this.$tree))
+    this.refreshChildrenLinks({ from: start })
     return deleted
   }
 
-  // TODO: apply "path healing" on children so their links reflect the new array state
   unshift(...items: T[]): number {
     let size: number
 
@@ -130,6 +138,15 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
+    this.refreshChildrenLinks()
+
     return size
+  }
+
+  private refreshChildrenLinks({ from = 0 } = {}) {
+    const node = this.$tree.getNodeAt<Node<T>[]>(this.$path)
+    for (let i = from; i < node.length; i++) {
+      this.$tree.attachNode(node[i], i.toString())
+    }
   }
 }

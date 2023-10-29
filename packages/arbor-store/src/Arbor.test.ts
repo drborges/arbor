@@ -491,6 +491,201 @@ describe("Arbor", () => {
     })
   })
 
+  describe("path healing", () => {
+    it("refreshes all node links when reversing an array", () => {
+      const store = new Arbor([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "Bob" },
+      ])
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      store.state.reverse()
+
+      expect(store.getLinkFor(alice)).toBe("2")
+      expect(store.getLinkFor(carol)).toBe("1")
+      expect(store.getLinkFor(bob)).toBe("0")
+
+      expect(store.state[0]).toBe(bob)
+      expect(store.state[1]).toBe(carol)
+      expect(store.state[2]).toBe(alice)
+    })
+
+    it("refreshes all node links when deleting a node from an array", () => {
+      const store = new Arbor([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "Bob" },
+      ])
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      delete store.state[0]
+
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(bob)
+      expect(isDetached(alice)).toBe(true)
+
+      carol.name = "Carol updated"
+
+      expect(store.state).toEqual([{ name: "Carol updated" }, { name: "Bob" }])
+    })
+
+    it("detach node from an array", () => {
+      const state = [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }]
+      const aliceValue = state[0]
+      const carolValue = state[1]
+      const store = new Arbor(state)
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      const detachedAlice = detach(alice)
+      expect(detachedAlice).toBe(aliceValue)
+      expect(isDetached(alice)).toBe(true)
+
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(bob)
+      expect(store.state[2]).toBeUndefined()
+      expect(store.state).toEqual([{ name: "Carol" }, { name: "Bob" }])
+      expect(store.getLinkFor(carol)).toBe("0")
+      expect(store.getLinkFor(bob)).toBe("1")
+
+      bob.name = "Bob updated"
+
+      expect(store.state).toEqual([{ name: "Carol" }, { name: "Bob updated" }])
+    })
+
+    it("remove node link when popping it from an array", () => {
+      const store = new Arbor([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "Bob" },
+      ])
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      store.state.pop()
+
+      expect(isDetached(bob)).toBe(true)
+      expect(store.getLinkFor(alice)).toBe("0")
+      expect(store.getLinkFor(carol)).toBe("1")
+      expect(store.getLinkFor(bob)).toBeUndefined()
+      expect(store.getNodeFor(bob)).toBeUndefined()
+    })
+
+    it("refreshes node links when shifting array items", () => {
+      const state = [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }]
+      const aliceValue = state[0]
+      const store = new Arbor(state)
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      const shifted = store.state.shift()
+
+      expect(shifted).toBe(aliceValue)
+      expect(isDetached(alice)).toBe(true)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(bob)
+      expect(store.state[2]).toBeUndefined()
+      expect(store.getLinkFor(alice)).toBeUndefined()
+      expect(store.getLinkFor(carol)).toBe("0")
+      expect(store.getLinkFor(bob)).toBe("1")
+    })
+
+    it("refreshes node links when sorting an array", () => {
+      const store = new Arbor([
+        { name: "Carol" },
+        { name: "Bob" },
+        { name: "Alice" },
+      ])
+
+      const carol = store.state[0]
+      const bob = store.state[1]
+      const alice = store.state[2]
+
+      const sorted = store.state.sort((a, b) => a.name.localeCompare(b.name))
+
+      expect(sorted[0]).toBe(alice)
+      expect(sorted[1]).toBe(bob)
+      expect(sorted[2]).toBe(carol)
+
+      expect(store.state[0]).toBe(alice)
+      expect(store.state[1]).toBe(bob)
+      expect(store.state[2]).toBe(carol)
+
+      expect(store.getLinkFor(alice)).toBe("0")
+      expect(store.getLinkFor(bob)).toBe("1")
+      expect(store.getLinkFor(carol)).toBe("2")
+    })
+
+    it("refreshes node links when splicing an array", () => {
+      const store = new Arbor([
+        { name: "Carol" },
+        { name: "Bob" },
+        { name: "Alice" },
+      ])
+
+      const carol = store.state[0]
+      const bob = store.state[1]
+      const alice = store.state[2]
+      const johnValue = { name: "John" }
+      const biancaValue = { name: "Bianca" }
+
+      store.state.splice(1, 2, johnValue, biancaValue)
+
+      expect(isDetached(bob)).toBe(true)
+      expect(isDetached(alice)).toBe(true)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toEqual(johnValue)
+      expect(store.state[2]).toEqual(biancaValue)
+
+      expect(store.getLinkFor(carol)).toBe("0")
+      expect(store.getLinkFor(johnValue)).toBe("1")
+      expect(store.getLinkFor(biancaValue)).toBe("2")
+    })
+
+    it("refreshes node links when unshifting an array", () => {
+      const store = new Arbor([
+        { name: "Carol" },
+        { name: "Bob" },
+        { name: "Alice" },
+      ])
+
+      const carol = store.state[0]
+      const bob = store.state[1]
+      const alice = store.state[2]
+      const john = { name: "John" }
+      const bianca = { name: "Bianca" }
+
+      const length = store.state.unshift(john, bianca)
+
+      expect(length).toBe(5)
+
+      expect(store.state[0]).toEqual(john)
+      expect(store.state[1]).toEqual(bianca)
+      expect(store.state[2]).toBe(carol)
+      expect(store.state[3]).toEqual(bob)
+      expect(store.state[4]).toEqual(alice)
+
+      expect(store.getLinkFor(john)).toBe("0")
+      expect(store.getLinkFor(bianca)).toBe("1")
+      expect(store.getLinkFor(carol)).toBe("2")
+      expect(store.getLinkFor(bob)).toBe("3")
+      expect(store.getLinkFor(alice)).toBe("4")
+    })
+  })
+
   describe("Example: Subscriptions", () => {
     it("subscribes to any store mutations (any mutations to any node in the state tree)", () => {
       const store = new Arbor([
@@ -1811,6 +2006,26 @@ describe("Arbor", () => {
       })
 
       expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("allows pushing the same item multiple times to the array", () => {
+      const store = new Arbor([{ name: "Alice" }, { name: "Carol" }])
+      const bianca = { name: "bianca" }
+      const length = store.state.push(bianca, bianca)
+
+      expect(length).toBe(4)
+      expect(store.getLinkFor(store.state[0])).toBe("0")
+      expect(store.getLinkFor(store.state[1])).toBe("1")
+      // since the array index 2 and 3 are the same object references, they will end up
+      // having the same link within the sate tree.
+      expect(store.getLinkFor(store.state[2])).toBe("2")
+      expect(store.getLinkFor(store.state[3])).toBe("2")
+      expect(store.state).toEqual([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "bianca" },
+        { name: "bianca" },
+      ])
     })
 
     it("ensures custom logic that determines when subscribers should be notified completely override path tracking mechanism", () => {

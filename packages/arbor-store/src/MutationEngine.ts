@@ -50,7 +50,7 @@ export class MutationEngine<T extends object> {
     return this.tree.createNode<V>(
       node.$path,
       this.mode === "snapshot" ? clone(node.$value) : node.$value,
-      node.$link,
+      this.tree.getLinkFor(node),
       node.$subscribers
     )
   }
@@ -68,10 +68,10 @@ export class MutationEngine<T extends object> {
         // TODO: remove mode, it seems we don't necessarily need to employ
         // immutability within Arbor to get it to work with React's concurrent mode
         if (this.mode === "snapshot") {
-          parent.$attach(childCopy.$link, childCopy.$value)
+          parent.$attach(this.tree.getLinkFor(childCopy), childCopy.$value)
         }
 
-        this.tree.nodes.set(childCopy.$seed, childCopy)
+        this.tree.attachNode(childCopy)
         return childCopy
       })
 

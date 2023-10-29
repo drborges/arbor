@@ -1,5 +1,4 @@
 import { NodeHandler } from "./NodeHandler"
-import { Seed } from "./Seed"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 import type { Link, Node } from "./types"
@@ -60,12 +59,13 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
       }
     }
 
+    // TODO: detach previous value before overriding it
     if (prop === "set") {
       return (key: string, newValue: T) => {
         const value = isNode<T>(newValue) ? newValue.$value : newValue
 
         if (target.get(key) !== value) {
-          const link = this.$tree.links.get(Seed.from(value))
+          const link = this.$tree.getLinkFor(value)
           if (link && link !== key) {
             throw new ValueAlreadyBoundError()
           }
@@ -94,6 +94,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
       }
     }
 
+    // TODO: detach all items from the state tree
     if (prop === "clear") {
       return () => {
         this.$tree.mutate(this, (map) => {
