@@ -171,8 +171,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
 
   protected $getOrCreateChild<V extends object>(link: Link, value: V): Node<V> {
     if (!this.$tree.getNodeFor(value)) {
-      const path = this.$path.child(Seed.plant(value))
-      return this.$tree.createNode(path, value, link)
+      this.$createChildNode(link, value)
     }
 
     return this.$tree.getNodeFor(value)
