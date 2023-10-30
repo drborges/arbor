@@ -57,7 +57,6 @@ export type Node<T extends object = object> = T & {
   readonly $seed: Seed
   readonly $path: Path
   readonly $tree: Arbor
-  readonly $lastRevision: Node<T>
   readonly $subscribers: Subscribers<T>
 
   $traverse<C extends object>(link: Link): C

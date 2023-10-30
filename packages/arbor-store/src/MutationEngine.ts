@@ -67,7 +67,9 @@ export class MutationEngine<T extends object> {
         const link = this.tree.getLinkFor(childCopy)
 
         // TODO: remove mode, it seems we don't necessarily need to employ
-        // immutability within Arbor to get it to work with React's concurrent mode
+        // immutability at the data level to get Arbor to work with React's
+        // concurrent mode, as long as we apply structural sharing on the
+        // proxy tree and use `useSyncExternalStore` we should be good.
         if (this.mode === "snapshot") {
           parent.$attachValue(childCopy.$value, link)
         }
