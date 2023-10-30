@@ -173,13 +173,10 @@ export class Arbor<T extends object = object> {
     this.links.delete(node?.$seed)
   }
 
-  attachNode(node: Node, link?: Link) {
+  attachNode(node: Node, link: Link) {
     const seed = Seed.from(node)
     this.nodes.set(seed, node)
-
-    if (link != null) {
-      this.links.set(seed, link)
-    }
+    this.links.set(seed, link)
   }
 
   /**
