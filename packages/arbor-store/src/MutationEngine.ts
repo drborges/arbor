@@ -69,7 +69,7 @@ export class MutationEngine<T extends object> {
         // TODO: remove mode, it seems we don't necessarily need to employ
         // immutability within Arbor to get it to work with React's concurrent mode
         if (this.mode === "snapshot") {
-          parent.$attach(link, childCopy.$value)
+          parent.$attachValue(childCopy.$value, link)
         }
 
         this.tree.attachNode(childCopy, link)

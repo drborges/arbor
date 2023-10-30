@@ -54,11 +54,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return this[link]
   }
 
-  /**
-   * @deprecated if we end up removing immutability from Arbor's core
-   * then this "attach" concept will no longer be needed.
-   */
-  $attach<C extends object>(link: Link, value: C) {
+  $attachValue<C extends object>(value: C, link: Link) {
     this.$value[link] = value
   }
 
@@ -128,7 +124,6 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       this.$createChildNode(prop, newValue.$value)
     }
 
-    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
 
@@ -173,9 +168,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return this.$tree.getNodeFor(value)
   }
 
-  protected $createChildNode<V extends object>(link: Link, value: V): Node<V> {
-    const seed = Seed.plant(value)
-    const childPath = this.$path.child(seed)
+  private $createChildNode<V extends object>(link: Link, value: V): Node<V> {
+    const childPath = this.$path.child(Seed.plant(value))
     return this.$tree.createNode<V>(childPath, value, link)
   }
 }

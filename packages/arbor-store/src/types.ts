@@ -61,7 +61,7 @@ export type Node<T extends object = object> = T & {
   readonly $subscribers: Subscribers<T>
 
   $traverse<C extends object>(link: Link): C
-  $attach<C extends object>(link: Link, value: C): void
+  $attachValue<C extends object>(value: C, link: Link): void
 }
 
 export type Plugin<T extends object> = {

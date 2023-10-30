@@ -21,9 +21,9 @@ import type {
 import { isDetached, path } from "./utilities"
 
 const attachValue =
-  <T extends object>(link: Link, value: T) =>
+  <T extends object>(value: T, link: Link) =>
   (_: T, node: Node<T>) => {
-    node.$attach(link, value)
+    node.$attachValue(value, link)
     return {
       operation: "set",
       props: [link],
@@ -287,7 +287,7 @@ export class Arbor<T extends object = object> {
       return this.setState(value as T)
     } else {
       const parentNode = this.getNodeAt(targetPath.parent)
-      this.mutate(parentNode, attachValue(link, value))
+      this.mutate(parentNode, attachValue(value, link))
       return parentNode.$traverse(link)
     }
   }
