@@ -81,6 +81,7 @@ export type Visitor = (child: Node, parent: Node) => Node
 
 export type MutationMetadata = {
   readonly operation: string
+  readonly previouslyUndefined?: boolean
   readonly props: (string | number | Symbol)[]
 }
 

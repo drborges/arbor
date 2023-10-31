@@ -34,7 +34,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
 
       return {
         operation: "push",
-        props: [String(size - 1)],
+        props: [],
       }
     })
 

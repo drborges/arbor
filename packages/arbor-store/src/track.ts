@@ -39,32 +39,51 @@ class Tracker<T extends object> {
   }
 
   affected(event: MutationEvent<T>) {
-    // TODO: add test coverage to this condition, I have a feeling we
-    // don't want this behavior in the context of nested tracking scopes,
-    // e.g. inner scope being affected by root mutations regardless of what
-    // that scope is watching.
-    if (event.mutationPath.isRoot()) {
+    // Notify all listeners if the root of the store is replaced
+    // TODO: at the moment I'm assuming this is a desirable behavior, though
+    // user feedback will likely influence this behavior moving forward.
+    if (event.mutationPath.isRoot() && event.metadata.operation === "set") {
       return true
     }
 
+    const rootSeed = Seed.from(event.state)
     const targetSeed = event.mutationPath.seeds.at(-1)
-    const tracked = this.tracking.get(targetSeed)
+    const tracked = this.tracking.get(targetSeed || rootSeed)
 
-    const isTracked = event.metadata.props.some((prop) =>
-      tracked?.has(prop as string)
-    )
+    // If the affected node is not being tracked, then no need to notify
+    // any subscribers.
+    if (!tracked) {
+      return false
+    }
 
-    return isTracked
+    // If there are no props affected by the mutation, then the operation
+    // is on the node itself (e.g. array#push, array#reverse, etc...)
+    if (event.metadata.props.length === 0) {
+      return true
+    }
+
+    // If the affected prop was previously undefined, we know a new prop
+    // is being added to the node, in which case we notify subscribers
+    // since they may need to react to the new prop so it can be "discovered"
+    if (event.metadata.previouslyUndefined) {
+      return true
+    }
+
+    // Lastly, subscribers will be notified if any of the mutated props are
+    // being tracked.
+    return event.metadata.props.some((prop) => tracked.has(prop as string))
   }
 
-  track(value: object, prop: string) {
+  track(value: object, prop?: string) {
     const seed = Seed.from(value)
 
     if (!this.tracking.has(seed)) {
       this.tracking.set(seed, new Set())
     }
 
-    this.tracking.get(seed).add(prop)
+    if (prop != null) {
+      this.tracking.get(seed).add(prop)
+    }
   }
 
   private wrap(node: ArborNode) {
@@ -152,6 +171,12 @@ class BaseStore<T extends object> implements Store<T> {
 
 class TrackedArbor<T extends object> extends BaseStore<T> {
   private tracker = new Tracker()
+
+  constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
+    super(storeOrNode)
+
+    this.tracker.track(this.targetNode)
+  }
 
   get state() {
     return this.tracker.getOrCache(super.state) as ArborNode<T>

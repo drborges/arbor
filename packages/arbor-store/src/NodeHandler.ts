@@ -120,12 +120,15 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       this.$createChildNode(prop, newValue.$value)
     }
 
+    const previouslyUndefined = target[prop] === undefined
+
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
 
       return {
         operation: "set",
         props: [prop],
+        previouslyUndefined,
       }
     })
 

@@ -1212,7 +1212,7 @@ describe("Arbor", () => {
 
       expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
-      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["1"])
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("push")
       expect(subscriber.mock.calls[0][0].state).toBe(store.state)
 
@@ -2130,6 +2130,33 @@ describe("Arbor", () => {
         text: "Learn Arbor",
         active: true,
       })
+    })
+
+    it("tracks new array items being added", () => {
+      const store = new Arbor([{ name: "Alice" }, { name: "Bob" }])
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+      trackedStore.subscribe(subscriber)
+
+      store.state.push({ name: "Carol" })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("tracks new props being added to nodes", () => {
+      const store = new Arbor({ users: [{ name: "Alice" }, { name: "Bob" }] })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+      trackedStore.subscribe(subscriber)
+
+      // track state.users
+      trackedStore.state.users[1]
+
+      store.state.users[2] = { name: "Carol" }
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
     })
   })
 })
