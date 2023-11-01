@@ -1,17 +1,13 @@
+import { Json, SerializedBy, serializable } from "@arborjs/json"
 import { LocalStorage, Logger } from "@arborjs/plugins"
-import {
-  Arbor,
-  ArborNode,
-  ArborProxiable,
-  detach,
-  useArbor,
-} from "@arborjs/react"
+import { Arbor, ArborNode, detach, proxiable } from "@arborjs/react"
 import { v4 as uuid } from "uuid"
 
 export type Status = "completed" | "active"
 
+@proxiable
+@serializable
 export class Todo {
-  [ArborProxiable] = true
   uuid = uuid()
   likes = 0
   text!: string
@@ -19,17 +15,6 @@ export class Todo {
 
   constructor(data: Partial<Todo>) {
     Object.assign(this, data)
-  }
-
-  static add(text: string): ArborNode<Todo> {
-    const todo = new Todo({
-      text,
-      status: "active",
-    })
-
-    store.state.set(todo.uuid, todo)
-
-    return store.state.get(todo.uuid)
   }
 
   delete() {
@@ -53,51 +38,41 @@ export class Todo {
   }
 }
 
-export type Record = {
-  uuid: string
-}
-
-export class Repository<T extends Record> extends Map<string, T> {
-  constructor(...records: T[]) {
-    super()
-
-    records.forEach((record) => {
-      this.set(record.uuid, record)
-    })
+@proxiable
+@serializable
+export class TodoList extends Array<Todo> {
+  constructor(...todos: Todo[]) {
+    super(...todos)
   }
 
-  add(record: T) {
-    this.set(record.uuid, record)
-  }
-
-  map<K>(transform: (record: T) => K) {
-    return Array.from(this.values()).map(transform)
+  static fromJSON(value: SerializedBy<TodoList>) {
+    return new TodoList(...value)
   }
 
   toJSON() {
-    return Array.from(this.entries()).reduce((obj, entry) => {
-      obj[entry[0]] = entry[1]
-      return obj
-    }, {})
+    return Array.from(this.values())
+  }
+
+  add(text: string): ArborNode<Todo> {
+    const todo = new Todo({
+      text,
+      status: "active",
+    })
+
+    this.push(todo)
+
+    return this[-1]
   }
 }
 
-export const store = new Arbor(new Repository<Todo>())
-
-const persistence = new LocalStorage<Repository<Todo>>({
-  key: "TodoApp.todos",
-  debounceBy: 300,
-  deserialize: (data: string) => {
-    const parsed: Repository<Todo> = JSON.parse(data)
-    const items = Object.values(parsed || {}) as Partial<Todo>[]
-    const todoItems = items.map((item) => new Todo(item))
-    return new Repository<Todo>(...todoItems)
-  },
-})
+const json = new Json()
+export const store = new Arbor(new TodoList())
 
 store.use(new Logger("Todos"))
-store.use(persistence)
-
-export default function useTodos() {
-  return useArbor(store)
-}
+store.use(
+  new LocalStorage<TodoList>({
+    key: "TodoApp.todos",
+    debounceBy: 300,
+    deserialize: (data: string) => json.parse(data),
+  })
+)

@@ -1,11 +1,11 @@
 import React from "react"
 
 import TodoListApp, { store } from "../../react-todo/App"
-import { Repository } from "../../react-todo/store/useTodos"
+import { TodoList } from "../../react-todo/store/useTodos"
 
 describe("TodoList", () => {
   beforeEach(() => {
-    store.setState(new Repository())
+    store.setState(new TodoList())
   })
 
   it("successfully manages the state of a Todo List app via Arbor", () => {

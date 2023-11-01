@@ -4,10 +4,9 @@ import React, { memo } from "react"
 import { store } from "../store/useTodos"
 
 export default memo(function Summary() {
-  const repo = useArbor(store)
-  const todos = Array.from(repo.values())
+  const todos = useArbor(store)
   const total = todos.length
-  const completed = todos.filter((todo) => todo.completed).length
+  const completed = todos.filter(todo => todo.completed).length
 
   return (
     <div className="summary">
