@@ -18,7 +18,7 @@ import type {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { isDetached, path } from "./utilities"
+import { isDetached, path, recursivelyUnwrap } from "./utilities"
 
 const attachValue =
   <T extends object>(value: T, link: Link) =>
@@ -256,7 +256,7 @@ export class Arbor<T extends object = object> {
   setState(value: T): ArborNode<T> {
     const current = this.createNode(
       Path.root,
-      value,
+      recursivelyUnwrap<T>(value),
       null,
       this.root?.$subscribers
     )

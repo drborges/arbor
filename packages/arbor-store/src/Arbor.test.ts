@@ -13,6 +13,7 @@ import {
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
+import { isNode } from "./guards"
 import { isArborNodeTracked, track } from "./track"
 
 describe("ImmutableArbor", () => {
@@ -219,7 +220,306 @@ describe("ImmutableArbor", () => {
 })
 
 describe("Arbor", () => {
-  describe("Example: State Tree and Structural Sharing", () => {
+  describe("state tree", () => {
+    it("updates a node within the state tree", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      store.state[1].active = false
+
+      expect(store.state[1]).toEqual({ name: "Alice", active: false })
+      expect(store.state).toEqual([
+        { name: "Carol", active: true },
+        { name: "Alice", active: false },
+        { name: "Bob", active: true },
+      ])
+    })
+
+    it("applies structural sharing to compute the next state tree after a mutation", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const users = store.state
+      const carol = store.state[0]
+      const alice = store.state[1]
+      const bob = store.state[2]
+
+      expect(store.state).toBe(users)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(alice)
+      expect(store.state[2]).toBe(bob)
+
+      alice.active = false
+
+      expect(store.state).not.toBe(users)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).not.toBe(alice)
+      expect(store.state[2]).toBe(bob)
+    })
+
+    it("wraps values within proxy objects representing nodes in the state tree", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      expect(isNode(store.state)).toBe(true)
+      expect(isNode(store.state[0])).toBe(true)
+      expect(isNode(store.state[1])).toBe(true)
+      expect(isNode(store.state[2])).toBe(true)
+
+      store.state[1].active = false
+
+      expect(isNode(store.state)).toBe(true)
+      expect(isNode(store.state[0])).toBe(true)
+      expect(isNode(store.state[1])).toBe(true)
+      expect(isNode(store.state[2])).toBe(true)
+    })
+
+    it("directly mutates values wrapped by Arbor nodes", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      const users = unwrap(store.state)
+      const carol = unwrap(store.state[0])
+      const alice = unwrap(store.state[1])
+      const bob = unwrap(store.state[2])
+
+      expect(state).toBe(users)
+      expect(state[0]).toBe(carol)
+      expect(state[1]).toBe(alice)
+      expect(state[2]).toBe(bob)
+
+      store.state[1].active = false
+
+      expect(unwrap(store.state)).toBe(users)
+      expect(unwrap(store.state[0])).toBe(carol)
+      expect(unwrap(store.state[1])).toBe(alice)
+      expect(unwrap(store.state[2])).toBe(bob)
+    })
+
+    it("adds root node to the state tree as soon as the store is created", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      expect(store.getNodeFor(state)).toBe(store.state)
+      // Root nodes do not have a parent node, thus, no link from parent to child
+      expect(store.getLinkFor(state)).toBeUndefined()
+    })
+
+    it("lazily add nodes to the state tree as they are accessed", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      expect(store.getNodeFor(state[0])).toBeUndefined()
+      expect(store.getNodeFor(state[1])).toBeUndefined()
+      expect(store.getNodeFor(state[2])).toBeUndefined()
+
+      expect(store.getLinkFor(state[0])).toBeUndefined()
+      expect(store.getLinkFor(state[1])).toBeUndefined()
+      expect(store.getLinkFor(state[2])).toBeUndefined()
+
+      store.state[0]
+      store.state[1]
+      store.state[2]
+
+      expect(store.getNodeFor(state[0])).toBe(store.state[0])
+      expect(store.getNodeFor(state[1])).toBe(store.state[1])
+      expect(store.getNodeFor(state[2])).toBe(store.state[2])
+
+      expect(store.getLinkFor(state[0])).toBe("0")
+      expect(store.getLinkFor(state[1])).toBe("1")
+      expect(store.getLinkFor(state[2])).toBe("2")
+    })
+
+    it("identifies nodes across mutations by their seed assigned to them when added to the state tree", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      expect(Seed.from(state)).toBeDefined()
+      expect(Seed.from(state[0])).toBeUndefined()
+      expect(Seed.from(state[1])).toBeUndefined()
+      expect(Seed.from(state[2])).toBeUndefined()
+
+      store.state[0]
+      store.state[1]
+      store.state[2]
+
+      const rootSeed = Seed.from(state)
+      const carolSeed = Seed.from(state[0])
+      const aliceSeed = Seed.from(state[1])
+      const bobSeed = Seed.from(state[2])
+
+      expect(rootSeed).toBeDefined()
+      expect(carolSeed).toBeDefined()
+      expect(aliceSeed).toBeDefined()
+      expect(bobSeed).toBeDefined()
+
+      store.state[0].active = false
+
+      expect(Seed.from(store.state)).toBe(rootSeed)
+      expect(Seed.from(store.state[0])).toBe(carolSeed)
+      expect(Seed.from(store.state[1])).toBe(aliceSeed)
+      expect(Seed.from(store.state[2])).toBe(bobSeed)
+    })
+
+    it("automatically unwrap nodes when using them as values to initialize a store", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const state = store.state
+
+      store.setState(state)
+
+      expect(isNode(unwrap(store.state))).not.toBe(true)
+    })
+
+    it("automatically unwraps nodes when creating a store off of an existing state tree", () => {
+      const store1 = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const store2 = new Arbor(store1.state)
+
+      expect(isNode(unwrap(store2.state))).not.toBe(true)
+    })
+
+    it("automatically unwraps nodes when using them as values to initialize a specific node in the state tree", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      store.state[3] = store.state[0]
+
+      expect(isNode(unwrap(store.state[3]))).toBe(false)
+    })
+
+    it("automatically unwraps nodes when setting its value as another state tree node", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const newValue = store.state[1]
+      store.setNode(store.state[0], newValue)
+
+      expect(store.state[0]).toBe(store.state[1])
+      expect(isNode(unwrap(store.state[0]))).toBe(false)
+      expect(unwrap(store.state[0])).not.toBe(store.state[1])
+    })
+
+    it("detaches node when overriding it with another node", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      store.state[3] = store.state[0]
+
+      const carol = store.state[0]
+      const alice = store.state[1]
+
+      store.state[0] = alice
+
+      expect(isDetached(carol)).toBe(true)
+      expect(store.getLinkFor(alice)).toBe("0")
+      expect(store.getNodeFor(alice)).toBe(store.state[0])
+      expect(store.getNodeFor(alice)).toBe(store.state[1])
+    })
+
+    it("memoizes references to methods within a node", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Carol", active: true },
+          { name: "Alice", active: false },
+        ],
+
+        active() {
+          return this.users.filter((u) => u.active)
+        },
+      })
+
+      expect(store.state.active).toBe(store.state.active)
+    })
+
+    it("binds node methods to the node itself", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Carol", active: true },
+          { name: "Alice", active: false },
+          { name: "Bob", active: true },
+        ],
+
+        active() {
+          return this.users.filter((u) => u.active)
+        },
+      })
+
+      const active = store.state.active
+
+      const activeUsers = active()
+
+      expect(activeUsers.length).toBe(2)
+      expect(activeUsers[0]).toBe(store.state.users[0])
+      expect(activeUsers[1]).toBe(store.state.users[2])
+    })
+
+    it("can trigger subsequent mutations to the same node reference", () => {
+      const store = new Arbor({ count: 0 })
+      const counter = store.state
+
+      counter.count++
+      expect(counter.count).toBe(1)
+      expect(store.state.count).toBe(1)
+      expect(counter).not.toBe(store.state)
+
+      counter.count++
+      expect(counter.count).toBe(2)
+      expect(store.state.count).toBe(2)
+      expect(counter).not.toBe(store.state)
+
+      counter.count++
+      expect(counter.count).toBe(3)
+      expect(store.state.count).toBe(3)
+      expect(counter).not.toBe(store.state)
+    })
+
     it("generates a new state tree by reusing nodes unaffected by the mutation (structural sharing)", () => {
       const store = new Arbor({
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],

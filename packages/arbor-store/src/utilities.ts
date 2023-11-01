@@ -90,12 +90,7 @@ export function path<T extends object>(node: ArborNode<T>): Path {
 export function isDetached<T extends object>(node: T): boolean {
   if (!isNode(node)) return true
 
-  const link = node.$tree.getLinkFor(node)
-  const reloadedNode = node.$tree.getNodeFor<Node>(node)
-
-  if (!reloadedNode && link == null) return true
-
-  return false
+  return !node.$tree.getLinkFor(node) && !node.$tree.getNodeFor<Node>(node)
 }
 
 /**
