@@ -839,7 +839,6 @@ describe("Arbor", () => {
     it("detach node from an array", () => {
       const state = [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }]
       const aliceValue = state[0]
-      const carolValue = state[1]
       const store = new Arbor(state)
 
       const alice = store.state[0]
