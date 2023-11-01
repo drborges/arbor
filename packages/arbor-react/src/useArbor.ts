@@ -1,19 +1,12 @@
 import {
   Arbor,
   ArborNode,
-  MutationEvent,
   Watcher,
   isNode,
   isProxiable,
-  path,
   track,
 } from "@arborjs/store"
 import { useMemo, useSyncExternalStore } from "react"
-
-export const watchNode =
-  () =>
-  <T extends object>(target: ArborNode<T>, event: MutationEvent<T>) =>
-    path(target) === event.mutationPath
 
 export function useArbor<T extends object>(
   target: ArborNode<T> | Arbor<T> | T,
