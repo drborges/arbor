@@ -9,7 +9,7 @@ import {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { isGetter, path } from "./utilities"
+import { isGetter, path, recursivelyUnwrap } from "./utilities"
 
 export type Tracked<T extends object = object> = T & {
   $tracked?: boolean
@@ -27,6 +27,7 @@ export function isArborNodeTracked<T extends object>(
 }
 
 class Tracker<T extends object> {
+  private readonly bindings = new WeakMap()
   private readonly cache = new WeakMap<ArborNode, Tracked>()
   private readonly tracking = new WeakMap<Seed, Set<string>>()
 
@@ -87,6 +88,7 @@ class Tracker<T extends object> {
   }
 
   private wrap(node: ArborNode) {
+    const bindings = this.bindings
     const track = this.track.bind(this)
     const getOrCache = this.getOrCache.bind(this)
 
@@ -106,6 +108,21 @@ class Tracker<T extends object> {
         // Unconfigurable and non-writable properties will return the underlying
         // proxied value in order to conform to Proxy invariants.
         if (!descriptor?.configurable || !descriptor.writable) {
+          if (typeof child === "function") {
+            if (!bindings.has(child)) {
+              // Methods must be bound to the proxy so that 'this' within the method context
+              // points back to the proxy itself, allowing it to wrap children nodes as needed.
+              // Note that JS does not allow to re-bind a function, that is why we must first
+              // unwrap the proxied target so we can bind the original method (e.g. 'child) to
+              // the proxy.
+              const unwrapped = recursivelyUnwrap(target)
+              const unwrappedChild = Reflect.get(unwrapped, prop, proxy)
+              bindings.set(child, unwrappedChild.bind(proxy))
+            }
+
+            return bindings.get(child)
+          }
+
           return child
         }
 

@@ -2457,5 +2457,34 @@ describe("Arbor", () => {
 
       expect(subscriber).toHaveBeenCalledTimes(1)
     })
+
+    it("handles method bindings correctly when the same method is accessed via original store and the tracked store", () => {
+      const store = new Arbor([{ name: "Carol", active: true }])
+      const tracked = track(store.state)
+      const subscriber = jest.fn()
+
+      tracked.subscribe(subscriber)
+
+      store.state.filter((u) => u.active)
+      const filteredTodos = tracked.state.filter((u) => u.active)
+
+      filteredTodos[0].active = false
+
+      expect(isArborNodeTracked(filteredTodos[0])).toBe(true)
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("caches bound node methods until the node changes", () => {
+      const store = new Arbor([{ name: "Carol", active: true }])
+      const tracked = track(store.state)
+
+      const boundFilter = tracked.state.filter
+
+      expect(boundFilter).toBe(tracked.state.filter)
+
+      store.state[0].active = false
+
+      expect(boundFilter).not.toBe(tracked.state.filter)
+    })
   })
 })
