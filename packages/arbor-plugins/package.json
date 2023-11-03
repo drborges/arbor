@@ -1,6 +1,6 @@
 {
   "name": "@arborjs/plugins",
-  "version": "0.0.1-alpha.61",
+  "version": "0.0.1-alpha.80",
   "sideEffects": false,
   "description": "Community driven plugins for @arborjs/store.",
   "keywords": [
@@ -46,7 +46,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@arborjs/store": "0.0.1-alpha.61",
+    "@arborjs/store": "0.0.1-alpha.80",
     "@types/jest": "^29.5.1",
     "esbuild": "^0.17.19",
     "eslint": "^8.40.0",
@@ -57,7 +57,7 @@
     "typescript": "^5.0.4"
   },
   "peerDependencies": {
-    "@arborjs/store": "0.0.1-alpha.61"
+    "@arborjs/store": "0.0.1-alpha.80"
   },
   "scripts": {
     "prettier": "prettier -w . ",
@@ -66,8 +66,6 @@
     "test": "jest --passWithNoTests",
     "dev": "jest --watch",
     "build": "yarn clean && NODE_ENV=production ENTRYPOINTS=index.ts node ../../tools/build.js && yarn tsc",
-    "build:dev": "yarn clean && NODE_ENV=development ENTRYPOINTS=index.ts node ../../tools/build.js && yarn tsc",
-    "prepublish": "yarn build",
-    "publish": "np"
+    "build:dev": "yarn clean && NODE_ENV=development ENTRYPOINTS=index.ts node ../../tools/build.js && yarn tsc"
   }
 }

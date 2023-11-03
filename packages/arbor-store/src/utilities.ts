@@ -24,9 +24,9 @@ export function detach<T extends object>(node: ArborNode<T>): T {
     throw new ArborError("Cannot detach store's root node")
   }
 
+  const link = node.$tree.getLinkFor(node)
   const parentNode = node.$tree.getNodeAt<Node>(node.$path.parent)
-
-  parentNode.$detachChild(node.$value)
+  delete parentNode[link]
 
   return node.$value
 }
@@ -52,7 +52,7 @@ export function merge<T extends object>(
     throw new DetachedNodeError()
   }
 
-  node.$tree.mutate(node as ArborNode<T>, (value) => {
+  node.$tree.mutate(node, (value) => {
     Object.assign(value, data)
     return {
       operation: "merge",
@@ -90,10 +90,7 @@ export function path<T extends object>(node: ArborNode<T>): Path {
 export function isDetached<T extends object>(node: T): boolean {
   if (!isNode(node)) return true
 
-  const reloadedNode = node.$tree.getNodeAt<Node>(node.$path)
-  if (!reloadedNode) return true
-
-  return false
+  return !node.$tree.getLinkFor(node) && !node.$tree.getNodeFor<Node>(node)
 }
 
 /**
@@ -109,6 +106,21 @@ export function unwrap<T extends object>(node: ArborNode<T>): T {
   if (!isNode<T>(node)) throw new NotAnArborNodeError()
 
   return node.$value
+}
+
+/**
+ * Recursively unwraps a proxied value.
+
+ * @param value value to unwrap.
+ * @returns the unwrapped value.
+ */
+export function recursivelyUnwrap<T extends object>(value: unknown): T {
+  if (!isNode(value)) {
+    return value as T
+  }
+
+  const unwrapped = unwrap(value) as T
+  return recursivelyUnwrap(unwrapped)
 }
 
 /**

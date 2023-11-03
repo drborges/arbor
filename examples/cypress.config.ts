@@ -1,5 +1,5 @@
-import { defineConfig } from "cypress"
 import react from "@vitejs/plugin-react-swc"
+import { defineConfig } from "cypress"
 import { defineConfig as defineViteConfig } from "vite"
 
 export default defineConfig({
@@ -11,7 +11,7 @@ export default defineConfig({
       framework: "react",
       bundler: "vite",
       viteConfig: defineViteConfig({
-        plugins: [react()],
+        plugins: [react({ tsDecorators: true })],
       }),
     },
   },

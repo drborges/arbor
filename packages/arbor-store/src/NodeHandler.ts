@@ -1,11 +1,11 @@
 import { Arbor } from "./Arbor"
-import { Children } from "./Children"
 import { Path } from "./Path"
+import { Seed } from "./Seed"
 import { Subscribers } from "./Subscribers"
 import { isDetachedProperty } from "./decorators"
 import { isNode, isProxiable } from "./guards"
-import type { Node } from "./types"
-import { isGetter } from "./utilities"
+import type { Link, Node } from "./types"
+import { isGetter, recursivelyUnwrap } from "./utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
@@ -25,8 +25,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     readonly $tree: Arbor,
     readonly $path: Path,
     readonly $value: T,
-    readonly $children = new Children(),
-    readonly $subscribers = new Subscribers()
+    readonly $subscribers = new Subscribers<T>()
   ) {}
 
   /**
@@ -43,25 +42,16 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return true
   }
 
-  $clone(): Node<T> {
-    return this.$tree.createNode(
-      this.$path,
-      this.$value,
-      this.$subscribers,
-      this.$children
-    )
+  get $seed() {
+    return Seed.from(this.$value)
   }
 
-  $detachChild(childValue: unknown) {
-    const [childProp] = Object.entries(this.$value).find(
-      ([_, value]) => value === childValue
-    )
-
-    delete this[childProp]
+  $traverse<C extends object>(link: Link): Node<C> {
+    return this[link]
   }
 
-  $getChild<V extends object>(value: V): Node<V> {
-    return this.$children.get(value) || this.$createChildNode(value)
+  $attachValue<C extends object>(value: C, link: Link) {
+    this.$value[link] = value
   }
 
   get(target: T, prop: string, proxy: Node<T>) {
@@ -104,14 +94,14 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return childValue
     }
 
-    return this.$getChild(childValue)
+    return this.$getOrCreateChild(prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
     // Automatically unwraps values when they are already Arbor nodes,
     // this prevents proxying proxies and thus forcing stale node references
     // to be kept in memmory unnecessarily.
-    const value = isNode(newValue) ? newValue.$value : newValue
+    const value = recursivelyUnwrap(newValue)
 
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true
@@ -121,13 +111,26 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return true
     }
 
-    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
+    if (isNode(newValue)) {
+      // Detaches the previous node from the state tree since it's being overwritten by a new one
+      if (target[prop]) {
+        this.$tree.detachNodeFor(target[prop])
+      }
+
+      // In case the new value happens to be an existing node, we preemptively add it back to the
+      // state tree so that stale references to this node can continue to trigger mutations.
+      this.$createChildNode(prop, newValue.$value)
+    }
+
+    const previouslyUndefined = target[prop] === undefined
+
     this.$tree.mutate(proxy, (t: T) => {
       t[prop] = value
 
       return {
         operation: "set",
         props: [prop],
+        previouslyUndefined,
       }
     })
 
@@ -152,15 +155,22 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
         }
       })
 
-      this.$children.delete(childValue as object)
+      this.$tree.detachNodeFor(childValue as object)
     }
 
     return true
   }
 
-  private $createChildNode<V extends object>(value: V): Node<V> {
-    const childPath = this.$path.child(value)
-    const childNode = this.$tree.createNode(childPath, value)
-    return this.$children.set(value, childNode)
+  protected $getOrCreateChild<V extends object>(link: Link, value: V): Node<V> {
+    if (!this.$tree.getNodeFor(value)) {
+      this.$createChildNode(link, value)
+    }
+
+    return this.$tree.getNodeFor(value)
+  }
+
+  private $createChildNode<V extends object>(link: Link, value: V): Node<V> {
+    const childPath = this.$path.child(Seed.plant(value))
+    return this.$tree.createNode<V>(childPath, value, link)
   }
 }

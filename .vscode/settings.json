@@ -13,5 +13,11 @@
   "vs-code-prettier-eslint.prettierLast": true, // set as "true" to run 'prettier' last not first
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

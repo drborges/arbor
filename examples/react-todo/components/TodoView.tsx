@@ -1,4 +1,4 @@
-import { useArbor, watchNode } from "@arborjs/react"
+import { useArbor } from "@arborjs/react"
 import classnames from "classnames"
 import React, { memo, useState } from "react"
 
@@ -10,7 +10,7 @@ export interface TodoProps {
 
 export default memo(function TodoView({ id }: TodoProps) {
   const [editing, setEditing] = useState(false)
-  const todo = useArbor(store.state.get(id)!, watchNode())
+  const todo = useArbor(store.state.find(t => t.uuid === id)!)
 
   return (
     <div

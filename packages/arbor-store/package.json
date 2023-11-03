@@ -1,7 +1,7 @@
 {
   "name": "@arborjs/store",
   "sideEffects": false,
-  "version": "0.0.1-alpha.61",
+  "version": "0.0.1-alpha.80",
   "description": "A fully typed, minimalistic proxy-based state tree library with very little boilerplate.",
   "keywords": [
     "arbor",
@@ -60,8 +60,6 @@
     "test": "jest --passWithNoTests",
     "dev": "jest --watch",
     "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
-    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc",
-    "prepublish": "yarn build",
-    "publish": "np"
+    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc"
   }
 }

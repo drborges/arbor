@@ -1,7 +1,7 @@
 import { NodeHandler } from "./NodeHandler"
 import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
 import { isNode, isProxiable } from "./guards"
-import type { Node } from "./types"
+import type { Link, Node } from "./types"
 
 export class MapNodeHandler<T extends object = object> extends NodeHandler<
   Map<unknown, T>
@@ -18,18 +18,18 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
     }
   }
 
-  $detachChild(childValue: unknown) {
-    for (const [key, value] of this.$value.entries()) {
-      if (value === childValue) {
-        delete this[key as string]
-      }
-    }
+  $traverse<C extends object>(link: Link): C {
+    return (this as unknown as Map<unknown, T>).get(link) as unknown as C
+  }
+
+  $attachValue<C extends object>(value: C, link: Link) {
+    this.$value.set(link, value as unknown as T)
   }
 
   deleteProperty(target: Map<string, T>, prop: string): boolean {
     const child = target.get(prop)
 
-    this.$children.delete(child)
+    this.$tree.detachNodeFor(child)
     this.$tree.mutate(this, (map) => {
       map.delete(prop)
 
@@ -55,16 +55,18 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
           return value
         }
 
-        return this.$getChild(value)
+        return this.$getOrCreateChild(key, value)
       }
     }
 
+    // TODO: detach previous value before overriding it
     if (prop === "set") {
       return (key: string, newValue: T) => {
         const value = isNode<T>(newValue) ? newValue.$value : newValue
 
         if (target.get(key) !== value) {
-          if (this.$children.has(value)) {
+          const link = this.$tree.getLinkFor(value)
+          if (link && link !== key) {
             throw new ValueAlreadyBoundError()
           }
 
@@ -92,6 +94,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
       }
     }
 
+    // TODO: detach all items from the state tree
     if (prop === "clear") {
       return () => {
         this.$tree.mutate(this, (map) => {

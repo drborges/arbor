@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import { Arbor } from "./Arbor"
+import { Arbor, ImmutableArbor } from "./Arbor"
 import { Path } from "./Path"
+import { Seed } from "./Seed"
 import { ArborProxiable, detached, proxiable } from "./decorators"
 import {
   ArborError,
@@ -12,8 +13,513 @@ import {
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
-describe("Arbor", () => {
+import { isNode } from "./guards"
+import { isArborNodeTracked, track } from "./track"
+
+describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
+    it("generates a new state tree by reusing nodes unaffected by the mutation (structural sharing)", () => {
+      const store = new ImmutableArbor({
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+        users: [{ name: "Alice" }, { name: "Bob" }],
+      })
+
+      const root = store.state
+      const todos = store.state.todos
+      const todo0 = store.state.todos[0]
+      const todo1 = store.state.todos[1]
+      const users = store.state.users
+      const user0 = store.state.users[0]
+      const user1 = store.state.users[1]
+
+      todo0.text = "Clean the living room"
+
+      expect(store.state).not.toBe(root)
+      expect(store.state.todos).not.toBe(todos)
+      expect(store.state.todos[0]).not.toBe(todo0)
+      expect(store.state.todos[1]).toBe(todo1)
+      expect(store.state.users).toBe(users)
+      expect(store.state.users[0]).toBe(user0)
+
+      expect(store.state.users[1]).toBe(user1)
+    })
+
+    it("generates a applies structure sharing to the data stored in the state tree creating snapshots of the data on each mutation", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+        users: [{ name: "Alice" }, { name: "Bob" }],
+      }
+
+      const store = new ImmutableArbor(state)
+
+      const todos = state.todos
+      const todo0 = state.todos[0]
+      const todo1 = state.todos[1]
+      const users = state.users
+      const user0 = state.users[0]
+      const user1 = state.users[1]
+
+      store.state.todos[0].text = "Clean the living room"
+
+      expect(unwrap(store.state)).not.toBe(state)
+      expect(unwrap(store.state.todos)).not.toBe(todos)
+      expect(unwrap(store.state.todos[0])).not.toBe(todo0)
+      expect(unwrap(store.state.todos[1])).toBe(todo1)
+      expect(unwrap(store.state.users)).toBe(users)
+      expect(unwrap(store.state.users[0])).toBe(user0)
+      expect(unwrap(store.state.users[1])).toBe(user1)
+    })
+
+    it("traversing detached nodes does not 'bring' them back into the state tree", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      }
+
+      const store = new ImmutableArbor(state)
+
+      const todos = store.state.todos
+
+      delete store.state.todos[0]
+
+      // todos[0] should still exist in the previous snapshot
+      expect(todos.length).toEqual(2)
+      expect(unwrap(todos[0])).toBe(state.todos[0])
+
+      expect(store.state).toEqual({ todos: [{ text: "Walk the dogs" }] })
+      expect(store.state.todos).toEqual([{ text: "Walk the dogs" }])
+      expect(store.state.todos[0]).toEqual({ text: "Walk the dogs" })
+
+      expect(unwrap(store.state)).toEqual({
+        todos: [{ text: "Walk the dogs" }],
+      })
+      expect(unwrap(store.state.todos)).toEqual([{ text: "Walk the dogs" }])
+      expect(unwrap(store.state.todos[0])).toEqual({ text: "Walk the dogs" })
+    })
+
+    it("operates on the same snapshot when triggering subsequent mutations on the same node reference", () => {
+      const store = new ImmutableArbor({
+        count: 0,
+      })
+
+      const counter = store.state
+      counter.count++
+      counter.count++
+
+      expect(store.state.count).toBe(1)
+    })
+
+    it("does not bring detached nodes back when they are mutated", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      }
+
+      const store = new ImmutableArbor(state)
+
+      const todo0 = store.root.todos[0]
+
+      delete store.root.todos[0]
+
+      expect(() => {
+        todo0.text = "No longer in the state tree"
+      }).toThrow(DetachedNodeError)
+      expect(store.root).toEqual({
+        todos: [{ text: "Walk the dogs" }],
+      })
+    })
+
+    it("allows having sibling nodes with the same value", () => {
+      const store = new ImmutableArbor({
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      })
+
+      const todo0Node = store.root.todos[0]
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+
+      expect(store.root.todos[0]).not.toBe(todo1Node)
+      expect(store.root.todos[1]).not.toBe(todo1Node)
+      expect(unwrap(store.root.todos[0])).toBe(unwrap(todo1Node))
+      expect(unwrap(store.root.todos[1])).toBe(unwrap(todo1Node))
+      expect(store.getNodeFor(todo0Node)).toBe(undefined)
+      expect(store.root).toEqual({
+        todos: [{ text: "Walk the dogs" }, { text: "Walk the dogs" }],
+      })
+    })
+
+    it("accounts for nodes changing location in the state tree", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      }
+
+      const store = new ImmutableArbor(state)
+
+      const todo0 = state.todos[0]
+      const todo1 = state.todos[1]
+      const todo0Node = store.root.todos[0]
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+      store.root.todos[1] = todo0Node
+
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs" },
+        { text: "Clean the house" },
+      ])
+
+      expect(unwrap(store.root.todos[0])).toBe(todo1)
+      expect(unwrap(store.root.todos[1])).toBe(todo0)
+      expect(todo1Node.text).toEqual("Walk the dogs")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs")
+      expect(store.root.todos[1].text).toEqual("Clean the house")
+
+      todo1Node.text = "Walk the dogs updated"
+
+      expect(todo1Node.text).toEqual("Walk the dogs")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[1].text).toEqual("Clean the house")
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs updated" },
+        { text: "Clean the house" },
+      ])
+
+      todo0Node.text = "Clean the house updated"
+
+      expect(todo0Node.text).toEqual("Clean the house")
+      expect(todo1Node.text).toEqual("Walk the dogs")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[1].text).toEqual("Clean the house updated")
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs updated" },
+        { text: "Clean the house updated" },
+      ])
+    })
+
+    it("can update stale item references that were moved into new positions within the array", () => {
+      const store = new ImmutableArbor([
+        { text: "Clean the house", done: false },
+        { text: "Do the dishes", done: false },
+      ])
+
+      const todo0 = store.state[0]
+      const todo1 = store.state[1]
+
+      store.state[0] = todo1
+      store.state[1] = todo0
+
+      expect(store.getNodeFor(todo0)).toBeDefined()
+
+      todo0.done = true
+
+      expect(store.state[0].done).toBe(false)
+      expect(store.state[1].done).toBe(true)
+      expect(unwrap(store.state[0])).toBe(unwrap(todo1))
+      expect(unwrap(store.state[1])).not.toBe(unwrap(todo0))
+    })
+  })
+})
+
+describe("Arbor", () => {
+  describe("state tree", () => {
+    it("updates a node within the state tree", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      store.state[1].active = false
+
+      expect(store.state[1]).toEqual({ name: "Alice", active: false })
+      expect(store.state).toEqual([
+        { name: "Carol", active: true },
+        { name: "Alice", active: false },
+        { name: "Bob", active: true },
+      ])
+    })
+
+    it("applies structural sharing to compute the next state tree after a mutation", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const users = store.state
+      const carol = store.state[0]
+      const alice = store.state[1]
+      const bob = store.state[2]
+
+      expect(store.state).toBe(users)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(alice)
+      expect(store.state[2]).toBe(bob)
+
+      alice.active = false
+
+      expect(store.state).not.toBe(users)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).not.toBe(alice)
+      expect(store.state[2]).toBe(bob)
+    })
+
+    it("wraps values within proxy objects representing nodes in the state tree", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      expect(isNode(store.state)).toBe(true)
+      expect(isNode(store.state[0])).toBe(true)
+      expect(isNode(store.state[1])).toBe(true)
+      expect(isNode(store.state[2])).toBe(true)
+
+      store.state[1].active = false
+
+      expect(isNode(store.state)).toBe(true)
+      expect(isNode(store.state[0])).toBe(true)
+      expect(isNode(store.state[1])).toBe(true)
+      expect(isNode(store.state[2])).toBe(true)
+    })
+
+    it("directly mutates values wrapped by Arbor nodes", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      const users = unwrap(store.state)
+      const carol = unwrap(store.state[0])
+      const alice = unwrap(store.state[1])
+      const bob = unwrap(store.state[2])
+
+      expect(state).toBe(users)
+      expect(state[0]).toBe(carol)
+      expect(state[1]).toBe(alice)
+      expect(state[2]).toBe(bob)
+
+      store.state[1].active = false
+
+      expect(unwrap(store.state)).toBe(users)
+      expect(unwrap(store.state[0])).toBe(carol)
+      expect(unwrap(store.state[1])).toBe(alice)
+      expect(unwrap(store.state[2])).toBe(bob)
+    })
+
+    it("adds root node to the state tree as soon as the store is created", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      expect(store.getNodeFor(state)).toBe(store.state)
+      // Root nodes do not have a parent node, thus, no link from parent to child
+      expect(store.getLinkFor(state)).toBeUndefined()
+    })
+
+    it("lazily add nodes to the state tree as they are accessed", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      expect(store.getNodeFor(state[0])).toBeUndefined()
+      expect(store.getNodeFor(state[1])).toBeUndefined()
+      expect(store.getNodeFor(state[2])).toBeUndefined()
+
+      expect(store.getLinkFor(state[0])).toBeUndefined()
+      expect(store.getLinkFor(state[1])).toBeUndefined()
+      expect(store.getLinkFor(state[2])).toBeUndefined()
+
+      store.state[0]
+      store.state[1]
+      store.state[2]
+
+      expect(store.getNodeFor(state[0])).toBe(store.state[0])
+      expect(store.getNodeFor(state[1])).toBe(store.state[1])
+      expect(store.getNodeFor(state[2])).toBe(store.state[2])
+
+      expect(store.getLinkFor(state[0])).toBe("0")
+      expect(store.getLinkFor(state[1])).toBe("1")
+      expect(store.getLinkFor(state[2])).toBe("2")
+    })
+
+    it("identifies nodes across mutations by their seed assigned to them when added to the state tree", () => {
+      const state = [
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ]
+
+      const store = new Arbor(state)
+
+      expect(Seed.from(state)).toBeDefined()
+      expect(Seed.from(state[0])).toBeUndefined()
+      expect(Seed.from(state[1])).toBeUndefined()
+      expect(Seed.from(state[2])).toBeUndefined()
+
+      store.state[0]
+      store.state[1]
+      store.state[2]
+
+      const rootSeed = Seed.from(state)
+      const carolSeed = Seed.from(state[0])
+      const aliceSeed = Seed.from(state[1])
+      const bobSeed = Seed.from(state[2])
+
+      expect(rootSeed).toBeDefined()
+      expect(carolSeed).toBeDefined()
+      expect(aliceSeed).toBeDefined()
+      expect(bobSeed).toBeDefined()
+
+      store.state[0].active = false
+
+      expect(Seed.from(store.state)).toBe(rootSeed)
+      expect(Seed.from(store.state[0])).toBe(carolSeed)
+      expect(Seed.from(store.state[1])).toBe(aliceSeed)
+      expect(Seed.from(store.state[2])).toBe(bobSeed)
+    })
+
+    it("automatically unwrap nodes when using them as values to initialize a store", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const state = store.state
+
+      store.setState(state)
+
+      expect(isNode(unwrap(store.state))).not.toBe(true)
+    })
+
+    it("automatically unwraps nodes when creating a store off of an existing state tree", () => {
+      const store1 = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const store2 = new Arbor(store1.state)
+
+      expect(isNode(unwrap(store2.state))).not.toBe(true)
+    })
+
+    it("automatically unwraps nodes when using them as values to initialize a specific node in the state tree", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      store.state[3] = store.state[0]
+
+      expect(isNode(unwrap(store.state[3]))).toBe(false)
+    })
+
+    it("automatically unwraps nodes when setting its value as another state tree node", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      const newValue = store.state[1]
+      store.setNode(store.state[0], newValue)
+
+      expect(store.state[0]).toBe(store.state[1])
+      expect(isNode(unwrap(store.state[0]))).toBe(false)
+      expect(unwrap(store.state[0])).not.toBe(store.state[1])
+    })
+
+    it("detaches node when overriding it with another node", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+        { name: "Bob", active: true },
+      ])
+
+      store.state[3] = store.state[0]
+
+      const carol = store.state[0]
+      const alice = store.state[1]
+
+      store.state[0] = alice
+
+      expect(isDetached(carol)).toBe(true)
+      expect(store.getLinkFor(alice)).toBe("0")
+      expect(store.getNodeFor(alice)).toBe(store.state[0])
+      expect(store.getNodeFor(alice)).toBe(store.state[1])
+    })
+
+    it("memoizes references to methods within a node", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Carol", active: true },
+          { name: "Alice", active: false },
+        ],
+
+        active() {
+          return this.users.filter((u) => u.active)
+        },
+      })
+
+      expect(store.state.active).toBe(store.state.active)
+    })
+
+    it("binds node methods to the node itself", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Carol", active: true },
+          { name: "Alice", active: false },
+          { name: "Bob", active: true },
+        ],
+
+        active() {
+          return this.users.filter((u) => u.active)
+        },
+      })
+
+      const active = store.state.active
+
+      const activeUsers = active()
+
+      expect(activeUsers.length).toBe(2)
+      expect(activeUsers[0]).toBe(store.state.users[0])
+      expect(activeUsers[1]).toBe(store.state.users[2])
+    })
+
+    it("can trigger subsequent mutations to the same node reference", () => {
+      const store = new Arbor({ count: 0 })
+      const counter = store.state
+
+      counter.count++
+      expect(counter.count).toBe(1)
+      expect(store.state.count).toBe(1)
+      expect(counter).not.toBe(store.state)
+
+      counter.count++
+      expect(counter.count).toBe(2)
+      expect(store.state.count).toBe(2)
+      expect(counter).not.toBe(store.state)
+
+      counter.count++
+      expect(counter.count).toBe(3)
+      expect(store.state.count).toBe(3)
+      expect(counter).not.toBe(store.state)
+    })
+
     it("generates a new state tree by reusing nodes unaffected by the mutation (structural sharing)", () => {
       const store = new Arbor({
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
@@ -59,6 +565,110 @@ describe("Arbor", () => {
       expect(counter.count).toBe(2)
       expect(store.state.count).toBe(2)
       expect(subscriber.mock.calls[1][0].state.count).toBe(2)
+    })
+
+    it("traversing detached nodes does not 'bring' them back into the state tree", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      }
+
+      const store = new Arbor(state)
+
+      const todos = store.state.todos
+
+      delete store.state.todos[0]
+
+      // todos[0] should still exist in the previous snapshot
+      expect(todos[0]).toBeDefined()
+      expect(unwrap(todos[0])).toBe(state.todos[0])
+
+      expect(store.state).toEqual({ todos: [{ text: "Walk the dogs" }] })
+      expect(store.state.todos).toEqual([{ text: "Walk the dogs" }])
+      expect(store.state.todos[0]).toEqual({ text: "Walk the dogs" })
+
+      expect(unwrap(store.state)).toEqual({
+        todos: [{ text: "Walk the dogs" }],
+      })
+      expect(unwrap(store.state.todos)).toEqual([{ text: "Walk the dogs" }])
+      expect(unwrap(store.state.todos[0])).toEqual({ text: "Walk the dogs" })
+    })
+
+    it("accounts for nodes changing location in the state tree", () => {
+      const state = {
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      }
+
+      const store = new Arbor(state)
+
+      const todo0 = state.todos[0]
+      const todo1 = state.todos[1]
+      const todo0Node = store.root.todos[0]
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+      store.root.todos[1] = todo0Node
+
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs" },
+        { text: "Clean the house" },
+      ])
+
+      expect(unwrap(store.root.todos[0])).toBe(todo1)
+      expect(unwrap(store.root.todos[1])).toBe(todo0)
+      expect(todo1Node.text).toEqual("Walk the dogs")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs")
+      expect(store.root.todos[1].text).toEqual("Clean the house")
+
+      todo1Node.text = "Walk the dogs updated"
+
+      expect(todo1Node.text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[1].text).toEqual("Clean the house")
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs updated" },
+        { text: "Clean the house" },
+      ])
+
+      todo0Node.text = "Clean the house updated"
+
+      expect(todo0Node.text).toEqual("Clean the house updated")
+      expect(todo1Node.text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.root.todos[1].text).toEqual("Clean the house updated")
+      expect(unwrap(store.root.todos)).toEqual([
+        { text: "Walk the dogs updated" },
+        { text: "Clean the house updated" },
+      ])
+    })
+
+    it("automatically detaches a node when its value is replaced with another node", () => {
+      const store = new Arbor({
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      })
+
+      const todo0Node = store.root.todos[0]
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+
+      expect(
+        () => (todo0Node.text = "this update should throw an error")
+      ).toThrow(DetachedNodeError)
+    })
+
+    it("allows for sibling paths to point to the same node", () => {
+      const store = new Arbor({
+        todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
+      })
+
+      const todo1Node = store.root.todos[1]
+
+      store.root.todos[0] = todo1Node
+
+      expect(store.root.todos[0]).toBe(store.root.todos[1])
+      expect(store.root).toEqual({
+        todos: [{ text: "Walk the dogs" }, { text: "Walk the dogs" }],
+      })
     })
 
     it("keeps stale node references in sync with the current state tree", () => {
@@ -138,6 +748,241 @@ describe("Arbor", () => {
 
       expect(subscriber).not.toHaveBeenCalled()
     })
+
+    it("subscribes to changes to the root of the state tree", () => {
+      const store = new Arbor({
+        count: 0,
+      })
+
+      const subscriber = jest.fn()
+      store.subscribe(subscriber)
+
+      store.setState({ count: 4 })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("sets the value of a given node regardless of where it is in the state tree", () => {
+      const store = new Arbor({
+        todos: [{ id: 1 }, { id: 2 }],
+      })
+
+      const firstTodo = store.state.todos[0]
+      const newNode = store.setNode(firstTodo, {
+        id: 3,
+      })
+
+      expect(isDetached(firstTodo)).toBe(true)
+      expect(newNode).toBe(store.state.todos[0])
+      expect(store.state).toEqual({
+        todos: [{ id: 3 }, { id: 2 }],
+      })
+
+      const root = store.state
+      const newRootNode = store.setNode(root, {
+        todos: [],
+      })
+
+      expect(isDetached(root)).toBe(true)
+      expect(newRootNode).toBe(store.state)
+      expect(store.state).toEqual({
+        todos: [],
+      })
+    })
+  })
+
+  describe("path healing", () => {
+    it("refreshes all node links when reversing an array", () => {
+      const store = new Arbor([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "Bob" },
+      ])
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      store.state.reverse()
+
+      expect(store.getLinkFor(alice)).toBe("2")
+      expect(store.getLinkFor(carol)).toBe("1")
+      expect(store.getLinkFor(bob)).toBe("0")
+
+      expect(store.state[0]).toBe(bob)
+      expect(store.state[1]).toBe(carol)
+      expect(store.state[2]).toBe(alice)
+    })
+
+    it("refreshes all node links when deleting a node from an array", () => {
+      const store = new Arbor([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "Bob" },
+      ])
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      delete store.state[0]
+
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(bob)
+      expect(isDetached(alice)).toBe(true)
+
+      carol.name = "Carol updated"
+
+      expect(store.state).toEqual([{ name: "Carol updated" }, { name: "Bob" }])
+    })
+
+    it("detach node from an array", () => {
+      const state = [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }]
+      const aliceValue = state[0]
+      const store = new Arbor(state)
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      const detachedAlice = detach(alice)
+      expect(detachedAlice).toBe(aliceValue)
+      expect(isDetached(alice)).toBe(true)
+
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(bob)
+      expect(store.state[2]).toBeUndefined()
+      expect(store.state).toEqual([{ name: "Carol" }, { name: "Bob" }])
+      expect(store.getLinkFor(carol)).toBe("0")
+      expect(store.getLinkFor(bob)).toBe("1")
+
+      bob.name = "Bob updated"
+
+      expect(store.state).toEqual([{ name: "Carol" }, { name: "Bob updated" }])
+    })
+
+    it("remove node link when popping it from an array", () => {
+      const store = new Arbor([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "Bob" },
+      ])
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      store.state.pop()
+
+      expect(isDetached(bob)).toBe(true)
+      expect(store.getLinkFor(alice)).toBe("0")
+      expect(store.getLinkFor(carol)).toBe("1")
+      expect(store.getLinkFor(bob)).toBeUndefined()
+      expect(store.getNodeFor(bob)).toBeUndefined()
+    })
+
+    it("refreshes node links when shifting array items", () => {
+      const state = [{ name: "Alice" }, { name: "Carol" }, { name: "Bob" }]
+      const aliceValue = state[0]
+      const store = new Arbor(state)
+
+      const alice = store.state[0]
+      const carol = store.state[1]
+      const bob = store.state[2]
+
+      const shifted = store.state.shift()
+
+      expect(shifted).toBe(aliceValue)
+      expect(isDetached(alice)).toBe(true)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toBe(bob)
+      expect(store.state[2]).toBeUndefined()
+      expect(store.getLinkFor(alice)).toBeUndefined()
+      expect(store.getLinkFor(carol)).toBe("0")
+      expect(store.getLinkFor(bob)).toBe("1")
+    })
+
+    it("refreshes node links when sorting an array", () => {
+      const store = new Arbor([
+        { name: "Carol" },
+        { name: "Bob" },
+        { name: "Alice" },
+      ])
+
+      const carol = store.state[0]
+      const bob = store.state[1]
+      const alice = store.state[2]
+
+      const sorted = store.state.sort((a, b) => a.name.localeCompare(b.name))
+
+      expect(sorted[0]).toBe(alice)
+      expect(sorted[1]).toBe(bob)
+      expect(sorted[2]).toBe(carol)
+
+      expect(store.state[0]).toBe(alice)
+      expect(store.state[1]).toBe(bob)
+      expect(store.state[2]).toBe(carol)
+
+      expect(store.getLinkFor(alice)).toBe("0")
+      expect(store.getLinkFor(bob)).toBe("1")
+      expect(store.getLinkFor(carol)).toBe("2")
+    })
+
+    it("refreshes node links when splicing an array", () => {
+      const store = new Arbor([
+        { name: "Carol" },
+        { name: "Bob" },
+        { name: "Alice" },
+      ])
+
+      const carol = store.state[0]
+      const bob = store.state[1]
+      const alice = store.state[2]
+      const johnValue = { name: "John" }
+      const biancaValue = { name: "Bianca" }
+
+      store.state.splice(1, 2, johnValue, biancaValue)
+
+      expect(isDetached(bob)).toBe(true)
+      expect(isDetached(alice)).toBe(true)
+      expect(store.state[0]).toBe(carol)
+      expect(store.state[1]).toEqual(johnValue)
+      expect(store.state[2]).toEqual(biancaValue)
+
+      expect(store.getLinkFor(carol)).toBe("0")
+      expect(store.getLinkFor(johnValue)).toBe("1")
+      expect(store.getLinkFor(biancaValue)).toBe("2")
+    })
+
+    it("refreshes node links when unshifting an array", () => {
+      const store = new Arbor([
+        { name: "Carol" },
+        { name: "Bob" },
+        { name: "Alice" },
+      ])
+
+      const carol = store.state[0]
+      const bob = store.state[1]
+      const alice = store.state[2]
+      const john = { name: "John" }
+      const bianca = { name: "Bianca" }
+
+      const length = store.state.unshift(john, bianca)
+
+      expect(length).toBe(5)
+
+      expect(store.state[0]).toEqual(john)
+      expect(store.state[1]).toEqual(bianca)
+      expect(store.state[2]).toBe(carol)
+      expect(store.state[3]).toEqual(bob)
+      expect(store.state[4]).toEqual(alice)
+
+      expect(store.getLinkFor(john)).toBe("0")
+      expect(store.getLinkFor(bianca)).toBe("1")
+      expect(store.getLinkFor(carol)).toBe("2")
+      expect(store.getLinkFor(bob)).toBe("3")
+      expect(store.getLinkFor(alice)).toBe("4")
+    })
   })
 
   describe("Example: Subscriptions", () => {
@@ -192,6 +1037,7 @@ describe("Arbor", () => {
       const user0 = store.state[0]
       const subscriber1 = jest.fn()
       const subscriber2 = jest.fn()
+
       delete store.state[0]
 
       store.subscribe(subscriber1)
@@ -366,8 +1212,8 @@ describe("Arbor", () => {
 
       return new Promise((resolve) => {
         store.subscribe((event) => {
-          expect(event.mutationPath.segments.length).toBe(1)
-          expect(event.mutationPath.segments[0]).toBe(unwrap(store.state[0]))
+          expect(event.mutationPath.seeds.length).toBe(1)
+          expect(event.mutationPath.seeds[0]).toBe(Seed.from(store.state[0]))
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
           expect(event.state).toEqual([
@@ -401,8 +1247,8 @@ describe("Arbor", () => {
       const mutationPath2 = subscriber.mock.calls[1][0].mutationPath as Path
 
       expect(subscriber.mock.calls.length).toBe(2)
-      expect(mutationPath1.matches(path(store.state[0]))).toBe(true)
-      expect(mutationPath2.matches(path(store.state[1]))).toBe(true)
+      expect(mutationPath1.matches(store.state[0])).toBe(true)
+      expect(mutationPath2.matches(store.state[1])).toBe(true)
     })
 
     it("subscribes to mutations on a specific state tree node", () => {
@@ -427,8 +1273,8 @@ describe("Arbor", () => {
 
       expect(subscriber1.mock.calls.length).toBe(1)
       expect(subscriber2.mock.calls.length).toBe(1)
-      expect(mutationPath1.matches(path(store.state[0]))).toBe(true)
-      expect(mutationPath2.matches(path(store.state[1]))).toBe(true)
+      expect(mutationPath1.matches(store.state[0])).toBe(true)
+      expect(mutationPath2.matches(store.state[1])).toBe(true)
     })
 
     it("mutations cause a new state tree to be generated via structural sharing", () => {
@@ -551,9 +1397,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.todos[1])
-      expect(path(activeTodos[0]).matches(path(store.state.todos[1]))).toBe(
-        true
-      )
+      expect(path(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
     })
 
     it("allows using object literal getters to select nodes within the state tree", () => {
@@ -587,9 +1431,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.todos[1])
-      expect(path(activeTodos[0]).matches(path(store.state.todos[1]))).toBe(
-        true
-      )
+      expect(path(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
     })
 
     it("accounts for getters in the prototype chain", () => {
@@ -633,7 +1475,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.all[1])
-      expect(path(activeTodos[0]).matches(path(store.state.all[1]))).toBe(true)
+      expect(path(activeTodos[0]).matches(store.state.all[1])).toBe(true)
     })
   })
 
@@ -669,7 +1511,7 @@ describe("Arbor", () => {
 
       expect(mutationPath.isRoot()).toBe(true)
       expect(subscriber.mock.calls.length).toEqual(1)
-      expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["1"])
+      expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("push")
       expect(subscriber.mock.calls[0][0].state).toBe(store.state)
 
@@ -874,7 +1716,7 @@ describe("Arbor", () => {
 
       const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
 
-      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
+      expect(mutationPath.matches(store.state.todos)).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
@@ -900,26 +1742,6 @@ describe("Arbor", () => {
       store.state.todos.set("123", store.state.todos.get("123")!)
 
       expect(subscriber).not.toHaveBeenCalled()
-    })
-
-    it("automatically unwraps state tree nodes when used as values", () => {
-      const todosMap = new Map<string, { text: string }>()
-      const doneMap = new Map<string, { text: string }>()
-      todosMap.set("123", { text: "Walk the dogs" })
-      doneMap.set("abc", { text: "Clean the house" })
-
-      const store = new Arbor({
-        done: doneMap,
-        todos: todosMap,
-      })
-
-      const abc = store.state.done.get("abc")!
-
-      store.state.todos.set("123", abc)
-
-      expect(store.state.todos.get("123")).not.toBe(todosMap.get("123"))
-      expect(store.state.todos.get("123")).not.toBe(doneMap.get("abc"))
-      expect(unwrap(store.state.todos.get("123")!)).toBe(doneMap.get("abc"))
     })
 
     it("TODO: nodes proxying the same value are conflicting (will have to think more about this)", () => {
@@ -957,7 +1779,7 @@ describe("Arbor", () => {
 
       const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
 
-      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
+      expect(mutationPath.matches(store.state.todos)).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual(["abc"])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("delete")
@@ -987,7 +1809,7 @@ describe("Arbor", () => {
 
       const mutationPath = subscriber.mock.calls[0][0].mutationPath as Path
 
-      expect(mutationPath.matches(path(store.state.todos))).toBe(true)
+      expect(mutationPath.matches(store.state.todos)).toBe(true)
       expect(subscriber).toHaveBeenCalled()
       expect(subscriber.mock.calls[0][0].metadata.props).toEqual([])
       expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("clear")
@@ -1240,14 +2062,14 @@ describe("Arbor", () => {
         })
 
         const rootPath = Path.root
-        const todosPath = rootPath.child(unwrap(store.state.todos))
-        const todo0Path = todosPath.child(unwrap(store.state.todos[0]))
-        const todo1Path = todosPath.child(unwrap(store.state.todos[1]))
+        const todosPath = rootPath.child(Seed.from(store.state.todos))
+        const todo0Path = todosPath.child(Seed.from(store.state.todos[0]))
+        const todo1Path = todosPath.child(Seed.from(store.state.todos[1]))
 
-        expect(path(store.state).matches(rootPath)).toBe(true)
-        expect(path(store.state.todos).matches(todosPath)).toBe(true)
-        expect(path(store.state.todos[0]).matches(todo0Path)).toBe(true)
-        expect(path(store.state.todos[1]).matches(todo1Path)).toBe(true)
+        expect(rootPath.matches(store.state)).toBe(true)
+        expect(todosPath.matches(store.state.todos)).toBe(true)
+        expect(todo0Path.matches(store.state.todos[0])).toBe(true)
+        expect(todo1Path.matches(store.state.todos[1])).toBe(true)
       })
     })
 
@@ -1298,6 +2120,371 @@ describe("Arbor", () => {
 
         expect(unwrap(store.state.todos[0])).toBe(todo0)
       })
+    })
+  })
+
+  describe("path tracking", () => {
+    it("leverages structural sharing to preserve identities of nodes in the state tree", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore = track(store)
+      const root = trackedStore.state
+      const todos = trackedStore.state.todos
+      const todo0 = trackedStore.state.todos[0]
+      const todo1 = trackedStore.state.todos[1]
+
+      todo0.active = true
+
+      expect(root).not.toBe(trackedStore.state)
+      expect(todos).not.toBe(trackedStore.state.todos)
+      expect(todo0).not.toBe(trackedStore.state.todos[0])
+      expect(todo1).toBe(trackedStore.state.todos[1])
+
+      expect(root).toEqual(trackedStore.state)
+      expect(todos).toEqual(trackedStore.state.todos)
+      expect(todo0).toEqual(trackedStore.state.todos[0])
+    })
+
+    it("reacts to mutations targeting paths being tracked", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+
+      trackedStore.subscribe(subscriber)
+
+      // Tracks the following store paths
+      //  1. trackedStore.state.todos
+      //  2. trackedStore.state.todos[0]
+      //  2. trackedStore.state.todos[0].active
+      trackedStore.state.todos[0].active
+
+      // Does not notifies trackedStore subscribers
+      store.state.todos[0].id = 3
+      store.state.todos[0].text = "Do the dishes again"
+      // Does not notifies trackedStore subscribers
+      store.state.todos[1].id = 4
+      store.state.todos[1].text = "Walk the dogs again"
+      store.state.todos[1].active = false
+      store.state.todos[1] = { id: 3, text: "Clean the house", active: false }
+
+      expect(subscriber).not.toHaveBeenCalled()
+
+      store.state.todos[0].active = true
+      store.state.todos[0] = { id: 3, text: "Clean the house", active: false }
+      store.state.todos = []
+
+      expect(subscriber).toHaveBeenCalledTimes(3)
+    })
+
+    it("reacts to mutations targeting the root of the state tree", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+
+      trackedStore.subscribe(subscriber)
+
+      store.setState({ todos: [] })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("marks nodes as tracked", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore1 = track(store)
+
+      expect(isArborNodeTracked(trackedStore1.state)).toEqual(true)
+      expect(isArborNodeTracked(trackedStore1.state.todos)).toEqual(true)
+      expect(isArborNodeTracked(trackedStore1.state.todos[0])).toEqual(true)
+      expect(isArborNodeTracked(trackedStore1.state.todos[1])).toEqual(true)
+    })
+
+    it("automatically unwraps tracked node when creating a derived tracking scope", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore1 = track(store)
+
+      expect(trackedStore1.state).toEqual(store.state)
+      expect(trackedStore1.state).not.toBe(store.state)
+      expect(unwrap(trackedStore1.state)).toBe(store.state)
+
+      const trackedStore2 = track(trackedStore1.state.todos[0])
+
+      expect(trackedStore2.state).toEqual(store.state.todos[0])
+      expect(trackedStore2.state).not.toBe(store.state.todos[0])
+      expect(trackedStore2.state).not.toBe(trackedStore1.state.todos[0])
+      expect(unwrap(trackedStore2.state)).toBe(store.state.todos[0])
+    })
+
+    it("isolates subscriptions to their own tracking scope", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber1 = jest.fn()
+      const subscriber2 = jest.fn()
+
+      const trackedStore1 = track(store)
+      trackedStore1.subscribe(subscriber1)
+
+      // Causes trackedStore1 to watch mutations to the following paths:
+      // 1. root
+      // 2. root.todos
+      // 3. root.todos[0]
+      const firstTodo = trackedStore1.state.todos[0]
+
+      const trackedStore2 = track(firstTodo)
+      trackedStore2.subscribe(subscriber2)
+
+      // Causes trackedStore2 to watch mutations to the following paths but does not affect trackedStore1:
+      // 1. root.todos[0].active
+      trackedStore2.state.active = true
+
+      expect(subscriber1).not.toHaveBeenCalled()
+      expect(subscriber2).toHaveBeenCalledTimes(1)
+
+      trackedStore1.state.todos[2] = {
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      }
+
+      expect(subscriber1).toHaveBeenCalledTimes(1)
+      expect(subscriber2).toHaveBeenCalledTimes(1)
+    })
+
+    it("allows overriding logic that determines when subscribers should be notified", () => {
+      const originalStore = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(
+        originalStore,
+        (event) => event.metadata.operation === "push"
+      )
+      trackedStore.subscribe(subscriber)
+
+      originalStore.state.todos.push({
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("allows pushing the same item multiple times to the array", () => {
+      const store = new Arbor([{ name: "Alice" }, { name: "Carol" }])
+      const bianca = { name: "bianca" }
+      const length = store.state.push(bianca, bianca)
+
+      expect(length).toBe(4)
+      expect(store.getLinkFor(store.state[0])).toBe("0")
+      expect(store.getLinkFor(store.state[1])).toBe("1")
+      // since the array index 2 and 3 are the same object references, they will end up
+      // having the same link within the sate tree.
+      expect(store.getLinkFor(store.state[2])).toBe("2")
+      expect(store.getLinkFor(store.state[3])).toBe("2")
+      expect(store.state).toEqual([
+        { name: "Alice" },
+        { name: "Carol" },
+        { name: "bianca" },
+        { name: "bianca" },
+      ])
+    })
+
+    it("ensures custom logic that determines when subscribers should be notified completely override path tracking mechanism", () => {
+      const originalStore = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const subscriber1 = jest.fn()
+      const trackedStore1 = track(originalStore)
+      trackedStore1.subscribe(subscriber1)
+
+      // Track path state.todos[0].active
+      trackedStore1.state.todos[0].active = true
+
+      expect(subscriber1).toHaveBeenCalled()
+
+      const subscriber2 = jest.fn()
+      const trackedStore2 = track(originalStore, () => false)
+      trackedStore2.subscribe(subscriber2)
+
+      // Track path state.todos[0].active
+      trackedStore2.state.todos[0].active = true
+
+      expect(subscriber2).not.toHaveBeenCalled()
+    })
+
+    it("is able to track nodes resulted from method calls", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, text: "Do the dishes", active: false },
+          { id: 2, text: "Walk the dogs", active: true },
+        ],
+      })
+
+      const trackedStore = track(store)
+
+      const activeTodo = trackedStore.state.todos.find((t) => t.active)
+
+      expect(isArborNodeTracked(activeTodo)).toBe(true)
+      expect(activeTodo).toBe(trackedStore.state.todos[1])
+    })
+
+    it("handles mutations to the root of the store", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+      trackedStore.subscribe(subscriber)
+
+      trackedStore.state.push({ id: 3, text: "Walk the dogs", active: true })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("allows tracking a specific node within the state tree", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const trackedStore = track(store.state[0])
+
+      expect(unwrap(trackedStore.state)).toBe(store.state[0])
+    })
+
+    it("allows watching a specific node within the state tree", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const watchedStore = track(store.state[0], () => true)
+
+      expect(watchedStore.state).toBe(store.state[0])
+    })
+
+    it("creates a virtual state tree from a given subtree", () => {
+      const store = new Arbor([
+        { id: 1, text: "Do the dishes", active: false },
+        { id: 2, text: "Walk the dogs", active: true },
+      ])
+
+      const trackedStore = track(store.state[0])
+
+      expect(unwrap(trackedStore.state)).toBe(store.state[0])
+
+      const newState = trackedStore.setState({
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      })
+
+      expect(unwrap(newState)).toBe(store.state[0])
+      expect(newState).toEqual({
+        id: 3,
+        text: "Learn Arbor",
+        active: true,
+      })
+    })
+
+    it("tracks new array items being added", () => {
+      const store = new Arbor([{ name: "Alice" }, { name: "Bob" }])
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+      trackedStore.subscribe(subscriber)
+
+      store.state.push({ name: "Carol" })
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("tracks new props being added to nodes", () => {
+      const store = new Arbor({ users: [{ name: "Alice" }, { name: "Bob" }] })
+
+      const subscriber = jest.fn()
+      const trackedStore = track(store)
+      trackedStore.subscribe(subscriber)
+
+      // track state.users
+      trackedStore.state.users[1]
+
+      store.state.users[2] = { name: "Carol" }
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("handles method bindings correctly when the same method is accessed via original store and the tracked store", () => {
+      const store = new Arbor([{ name: "Carol", active: true }])
+      const tracked = track(store.state)
+      const subscriber = jest.fn()
+
+      tracked.subscribe(subscriber)
+
+      store.state.filter((u) => u.active)
+      const filteredTodos = tracked.state.filter((u) => u.active)
+
+      filteredTodos[0].active = false
+
+      expect(isArborNodeTracked(filteredTodos[0])).toBe(true)
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("caches bound node methods until the node changes", () => {
+      const store = new Arbor([{ name: "Carol", active: true }])
+      const tracked = track(store.state)
+
+      const boundFilter = tracked.state.filter
+
+      expect(boundFilter).toBe(tracked.state.filter)
+
+      store.state[0].active = false
+
+      expect(boundFilter).not.toBe(tracked.state.filter)
     })
   })
 })

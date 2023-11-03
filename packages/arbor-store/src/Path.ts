@@ -1,44 +1,37 @@
+import { Seed } from "./Seed"
 import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
-import type { ArborNode, Node } from "./types"
+import type { ArborNode, Node, Visitor } from "./types"
 
-/**
- * Represent a path within the state tree.
- *
- * Paths point to potential nodes within the state tree.
- */
 export class Path {
-  readonly segments: object[]
+  readonly seeds: Seed[]
 
   /**
    * Creates a new instance of Path.
    *
-   * @param values list of node values representing a path within a state tree
+   * @param seeds list of node seeds representing a path within a state tree
    * @returns a new instance of Path.
    */
-  private constructor(...segments: object[]) {
-    this.segments = segments
+  private constructor(...seeds: Seed[]) {
+    this.seeds = seeds
   }
 
-  child(value: object): Path {
-    return new Path(...this.segments.concat([value]))
+  child(seed: Seed): Path {
+    return new Path(...this.seeds.concat([seed]))
   }
 
   walk<T extends object = object>(
     node: ArborNode<object>,
-    cb?: (child: Node, parent: Node) => void
+    visit: Visitor = (child) => child
   ): Node<T> {
     try {
       if (!isNode(node)) {
         throw new NotAnArborNodeError()
       }
 
-      return this.segments.reduce<Node>((parent, part) => {
-        const child = parent.$children.get(part)
-
-        if (cb) cb(child, parent)
-
-        return child
+      return this.seeds.reduce<Node>((parent, seed) => {
+        const child = parent.$tree.getNodeFor(seed)
+        return visit(child, parent)
       }, node) as Node<T>
     } catch (e) {
       return undefined
@@ -49,44 +42,34 @@ export class Path {
     return new Path()
   }
 
+  get target() {
+    return this.seeds.at(-1)
+  }
+
   get parent(): Path {
     if (this.isRoot()) {
       return null
     }
 
-    return new Path(...this.segments.slice(0, this.segments.length - 1))
+    return new Path(...this.seeds.slice(0, this.seeds.length - 1))
   }
 
-  affects(pathOrNode: Path | ArborNode<object>): boolean {
-    if (!isNode(pathOrNode) && !(pathOrNode instanceof Path)) {
-      throw new InvalidArgumentError(
-        "Argument must be either an instance of Path or an ArborNode"
-      )
+  affects(node: ArborNode<object>): boolean {
+    if (!isNode(node)) {
+      throw new InvalidArgumentError("Argument must be an ArborNode")
     }
 
-    const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
-
-    return path.segments.every(
-      (segment, index) => segment === this.segments[index]
-    )
+    return node.$path.seeds.every((seed, index) => seed === this.seeds[index])
   }
 
-  matches(pathOrNode: Path | ArborNode<object>) {
-    if (!isNode(pathOrNode) && !(pathOrNode instanceof Path)) {
-      throw new InvalidArgumentError(
-        "Argument must be either an instance of Path or an ArborNode"
-      )
+  matches(node: Path | ArborNode<object>) {
+    if (!isNode(node)) {
+      throw new InvalidArgumentError("Argument must be an ArborNode")
     }
 
-    const path = isNode(pathOrNode) ? pathOrNode.$path : pathOrNode
+    const sameLength = node.$path.seeds.length === this.seeds.length
 
-    if (path.segments.length !== this.segments.length) {
-      return false
-    }
-
-    return path.segments.every(
-      (segment, index) => this.segments[index] === segment
-    )
+    return this.affects(node) && sameLength
   }
 
   /**
@@ -95,6 +78,6 @@ export class Path {
    * @returns true if the path points to the root of a state tree, false otherwise.
    */
   isRoot() {
-    return this.segments.length === 0
+    return this.seeds.length === 0
   }
 }

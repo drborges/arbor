@@ -1,4 +1,5 @@
 import { NodeHandler } from "./NodeHandler"
+import { Node } from "./types"
 
 export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
   T[]
@@ -7,12 +8,9 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
     return Array.isArray(value)
   }
 
-  $detachChild(childValue: unknown) {
-    const index = this.$value.findIndex((item) => item === childValue)
-    delete this[index]
-  }
+  deleteProperty(target: T[], prop: string): boolean {
+    this.$tree.detachNodeFor(target[prop])
 
-  deleteProperty(_target: T[], prop: string): boolean {
     this.$tree.mutate(this, (node: T[]) => {
       node.splice(parseInt(prop, 10), 1)
 
@@ -22,7 +20,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
+    this.refreshChildrenLinks({ from: parseInt(prop) })
 
     return true
   }
@@ -36,7 +34,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
 
       return {
         operation: "push",
-        props: [String(size - 1)],
+        props: [],
       }
     })
 
@@ -53,9 +51,9 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
+    this.refreshChildrenLinks()
 
-    return this.$tree.getNodeAt(this.$path)
+    return this.$tree.getNodeAt<Node<T>[]>(this.$path)
   }
 
   pop(): T {
@@ -71,7 +69,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.delete(popped)
+    this.$tree.detachNodeFor(popped)
 
     return popped
   }
@@ -88,7 +86,8 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
+    this.$tree.detachNodeFor(shifted)
+    this.refreshChildrenLinks()
 
     return shifted
   }
@@ -103,7 +102,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
+    this.refreshChildrenLinks()
 
     return this.$tree.getNodeAt(this.$path)
   }
@@ -122,8 +121,8 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
-
+    deleted.forEach(this.$tree.detachNodeFor.bind(this.$tree))
+    this.refreshChildrenLinks({ from: start })
     return deleted
   }
 
@@ -139,8 +138,15 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.$children.reset()
+    this.refreshChildrenLinks()
 
     return size
+  }
+
+  private refreshChildrenLinks({ from = 0 } = {}) {
+    const node = this.$tree.getNodeAt<Node<T>[]>(this.$path)
+    for (let i = from; i < node.length; i++) {
+      this.$tree.attachNode(node[i], i.toString())
+    }
   }
 }

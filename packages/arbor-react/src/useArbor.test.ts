@@ -1,21 +1,42 @@
-import { Arbor, ArborNode, path, proxiable } from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks"
+import {
+  Arbor,
+  isArborNodeTracked,
+  proxiable,
+  unwrap,
+  Watcher,
+} from "@arborjs/store"
+import { act, renderHook } from "@testing-library/react"
 
-import { useArbor, Watcher } from "./useArbor"
+import { useArbor } from "./useArbor"
 
 interface User {
   name: string
 }
 
 describe("useArbor", () => {
-  it("subscribed data is simply a reference to the store's root object", () => {
+  it("tracks accesses to node props", () => {
+    const store = new Arbor([
+      { name: "Carol" },
+      { name: "Alice" },
+      { name: "Bob" },
+    ])
+
+    const { result } = renderHook(() => useArbor(store))
+
+    expect(isArborNodeTracked(result.current)).toBe(true)
+    expect(isArborNodeTracked(result.current[0])).toBe(true)
+    expect(isArborNodeTracked(result.current[1])).toBe(true)
+    expect(isArborNodeTracked(result.current[2])).toBe(true)
+  })
+
+  it("returns the current state of the store", () => {
     const store = new Arbor({
       count: 0,
     })
 
     const { result } = renderHook(() => useArbor(store))
 
-    expect(result.current).toBe(store.state)
+    expect(unwrap(result.current)).toBe(store.state)
   })
 
   it("updates the state whenever a store mutation is triggered", () => {
@@ -23,21 +44,27 @@ describe("useArbor", () => {
       count: 0,
     })
 
+    let counter = store.state
+
     const { result } = renderHook(() => useArbor(store))
 
-    expect(result.current.count).toBe(0)
+    expect(unwrap(result.current)).toBe(counter)
 
     act(() => {
-      result.current.count++
+      store.state.count++
     })
 
-    expect(result.current.count).toBe(1)
+    expect(result.current).not.toBe(counter)
+    expect(result.current.count).toEqual(1)
+
+    counter = store.state
 
     act(() => {
-      result.current.count = 5
+      store.state.count = 5
     })
 
-    expect(result.current.count).toBe(5)
+    expect(result.current).not.toBe(counter)
+    expect(result.current.count).toEqual(5)
   })
 
   it("unsubscribes from store when component is unmounted", () => {
@@ -124,20 +151,15 @@ describe("useArbor", () => {
 
     const { result } = renderHook(() => useArbor(store.state.users[0]))
 
-    expect(result.all.length).toBe(1)
-    expect(result.current).toBe(store.state.users[0])
+    expect(unwrap(result.current)).toBe(store.state.users[0])
 
     act(() => {
       result.current.name = "Alice Updated"
     })
 
-    expect(result.all.length).toBe(2)
-
     act(() => {
       store.state.users.push({ name: "Carol" })
     })
-
-    expect(result.all.length).toBe(2)
 
     expect(store.state.users[0]).toEqual({ name: "Alice Updated" })
   })
@@ -151,29 +173,33 @@ describe("useArbor", () => {
       users: [{ name: "Alice" }, { name: "Bob" }],
     })
 
+    const state = store.state
+
     // Only updates when changes are made to the state tree path: /users/1
     const watchSecondUser =
       (): Watcher<State> =>
-      (_node: ArborNode<State>, { mutationPath }) =>
-        mutationPath.matches(path(store.state.users[1]))
+      ({ mutationPath }) =>
+        mutationPath.matches(store.state.users[1])
 
     const { result } = renderHook(() => useArbor(store, watchSecondUser()))
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(state)
 
     act(() => {
       store.state.users[0].name = "Carol"
     })
 
+    expect(result.current).toBe(state)
+    expect(result.current).not.toBe(store.state)
     expect(store.state.users[0].name).toBe("Carol")
-    expect(result.all.length).toBe(1)
 
     act(() => {
       store.state.users[1].name = "John"
     })
 
+    expect(result.current).not.toBe(state)
+    expect(result.current).toBe(store.state)
     expect(store.state.users[1].name).toBe("John")
-    expect(result.all.length).toBe(2)
   })
 
   it("throws an error when attemoting to initialize the hook with invalid values", () => {

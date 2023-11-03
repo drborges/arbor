@@ -1,5 +1,5 @@
 import { Arbor, proxiable } from "@arborjs/store"
-import { act, renderHook } from "@testing-library/react-hooks"
+import { act, renderHook } from "@testing-library/react"
 
 import { useArbor } from "./useArbor"
 import { watchNode } from "./watchNode"
@@ -27,22 +27,37 @@ describe("watchNode", () => {
       ],
     })
 
+    const alice = store.state.users[0]
+
     const { result } = renderHook(() =>
       useArbor(store.state.users[0], watchNode("name"))
     )
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(alice)
 
     act(() => {
       store.state.users.push({ name: "Carol", age: 25, posts: [] })
-      store.state.users[0].posts.push({ content: "New post" })
-      store.state.users[0].posts[0].content = "Updated content"
+    })
+
+    expect(result.current).toBe(alice)
+
+    act(() => {
       store.state.users[1].name = "Bob Updated"
+    })
+
+    expect(result.current).toBe(alice)
+
+    act(() => {
       store.state.users[1].posts[0].content = "My first updated post"
+    })
+
+    expect(result.current).toBe(alice)
+
+    act(() => {
       store.state.users = []
     })
 
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(alice)
   })
 
   it("does not update if mutation does not change any of the node props being watched", () => {
@@ -54,107 +69,102 @@ describe("watchNode", () => {
     })
 
     const { result } = renderHook(() =>
-      useArbor(store.state.users[0], watchNode("name", "age"))
+      useArbor(store.state.users[0], watchNode("name"))
     )
 
-    expect(result.all.length).toBe(1)
+    const alice = store.state.users[0]
 
     act(() => {
-      store.state.users[0].posts = []
+      store.state.users[0].posts.push({ content: "New post" })
     })
 
-    expect(result.all.length).toBe(1)
-  })
-
-  it("updates when mutation targets the given node and any of the watched props change", () => {
-    const store = new Arbor<State>({
-      users: [
-        { name: "Alice", age: 20, posts: [{ content: "Hello World" }] },
-        { name: "Bob", age: 30, posts: [{ content: "My first post" }] },
-      ],
-    })
-
-    const { result } = renderHook(() =>
-      useArbor(store.state.users[0], watchNode("name", "age"))
-    )
-
-    expect(result.all.length).toBe(1)
+    expect(result.current).toBe(alice)
 
     act(() => {
-      store.state.users[0].name = "Alice Updated"
+      store.state.users[0].posts[0].content = "Updated content"
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).toBe(alice)
 
     act(() => {
       store.state.users[0].age++
     })
 
-    expect(result.all.length).toBe(3)
+    expect(result.current).toBe(alice)
+
+    act(() => {
+      store.state.users[0].name = "Alice Doe"
+    })
+
+    expect(result.current).not.toBe(alice)
+    expect(result.current).toEqual({
+      name: "Alice Doe",
+      age: 21,
+      posts: [{ content: "Updated content" }, { content: "New post" }],
+    })
   })
 
-  it("watches a BseNode value", () => {
+  it("watches a prop of a proxiable node", () => {
     @proxiable
     class User {
-      name: string
-      age: number
+      name = "Alice"
+      age = 20
     }
 
     const store = new Arbor(new User())
+    const user = store.state
 
     const { result } = renderHook(() => useArbor(store, watchNode("name")))
 
-    expect(result.all.length).toBe(1)
-
-    act(() => {
-      store.state.name = "Alice"
-    })
-
-    expect(result.all.length).toBe(2)
+    expect(result.current).toBe(user)
 
     act(() => {
       store.state.age++
     })
 
-    expect(result.all.length).toBe(2)
+    expect(result.current).toBe(user)
+
+    act(() => {
+      store.state.name = "Alice Doe"
+    })
+
+    expect(result.current).not.toBe(user)
+    expect(result.current.name).toEqual("Alice Doe")
+    expect(result.current.age).toEqual(21)
   })
 
   it("watches for any node mutation", () => {
-    const store = new Arbor<State>({
-      users: [
-        { name: "Alice", age: 20, posts: [{ content: "some post" }] },
-        { name: "Bob", age: 30, posts: [] },
-      ],
-    })
+    @proxiable
+    class User {
+      name = "Alice"
+      age = 20
+    }
 
-    const { result } = renderHook(() =>
-      useArbor(store.state.users[0], watchNode())
-    )
+    const store = new Arbor(new User())
+    let user = store.state
 
-    expect(result.all.length).toBe(1)
+    const { result } = renderHook(() => useArbor(store, watchNode()))
 
-    act(() => {
-      store.state.users[0].name = "Alice Updated"
-    })
-
-    expect(result.all.length).toBe(2)
+    expect(result.current).toBe(user)
 
     act(() => {
-      store.state.users[0].age++
+      store.state.age++
     })
 
-    expect(result.all.length).toBe(3)
+    expect(result.current).toBe(store.state)
+    expect(result.current).not.toBe(user)
+    expect(result.current.name).toEqual("Alice")
+    expect(result.current.age).toEqual(21)
+
+    user = store.state
 
     act(() => {
-      store.state.users[0].posts[0].content = "Updated post"
+      store.state.name = "Alice Doe"
     })
 
-    expect(result.all.length).toBe(3)
-
-    act(() => {
-      store.state.users[0].posts = []
-    })
-
-    expect(result.all.length).toBe(4)
+    expect(result.current).toBe(store.state)
+    expect(result.current).not.toBe(user)
+    expect(result.current.name).toEqual("Alice Doe")
+    expect(result.current.age).toEqual(21)
   })
 })
