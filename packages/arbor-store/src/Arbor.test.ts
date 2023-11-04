@@ -4,12 +4,7 @@ import { Arbor, ImmutableArbor } from "./Arbor"
 import { Path } from "./Path"
 import { Seed } from "./Seed"
 import { ArborProxiable, detached, proxiable } from "./decorators"
-import {
-  ArborError,
-  DetachedNodeError,
-  NotAnArborNodeError,
-  ValueAlreadyBoundError,
-} from "./errors"
+import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
@@ -1744,7 +1739,7 @@ describe("Arbor", () => {
       expect(subscriber).not.toHaveBeenCalled()
     })
 
-    it("TODO: nodes proxying the same value are conflicting (will have to think more about this)", () => {
+    it("supports the same value to be added to the map under different keys", () => {
       const todosMap = new Map<string, { text: string }>()
       todosMap.set("123", { text: "Walk the dogs" })
       todosMap.set("abc", { text: "Clean the house" })
@@ -1753,9 +1748,14 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      expect(() =>
-        store.state.todos.set("123", store.state.todos.get("abc")!)
-      ).toThrow(ValueAlreadyBoundError)
+      const todo1 = store.state.todos.get("123")
+      const todo2 = store.state.todos.get("abc")
+
+      store.state.todos.set("123", todo2)
+
+      expect(isDetached(todo1)).toBe(true)
+      expect(store.state.todos.get("123")).toBe(todo2)
+      expect(store.state.todos.get("123")).toBe(store.state.todos.get("abc"))
     })
 
     it("allows deleting nodes stored within Map instances", () => {

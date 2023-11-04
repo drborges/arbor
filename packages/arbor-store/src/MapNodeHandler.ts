@@ -1,5 +1,5 @@
 import { NodeHandler } from "./NodeHandler"
-import { NotAnArborNodeError, ValueAlreadyBoundError } from "./errors"
+import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 import type { Link, Node } from "./types"
 
@@ -59,15 +59,14 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
       }
     }
 
-    // TODO: detach previous value before overriding it
     if (prop === "set") {
       return (key: string, newValue: T) => {
+        const currentValue = target.get(key)
         const value = isNode<T>(newValue) ? newValue.$value : newValue
 
-        if (target.get(key) !== value) {
-          const link = this.$tree.getLinkFor(value)
-          if (link && link !== key) {
-            throw new ValueAlreadyBoundError()
+        if (currentValue !== value) {
+          if (currentValue != null) {
+            this.$tree.detachNodeFor(target.get(key))
           }
 
           this.$tree.mutate(this, (map) => {
