@@ -1818,6 +1818,28 @@ describe("Arbor", () => {
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
 
+    it("detaches all children nodes when clearing a map", () => {
+      type Todo = {
+        content: string
+      }
+
+      const todosMap = new Map<string, Todo>()
+      todosMap.set("123", { content: "Walk the dogs" })
+      todosMap.set("abc", { content: "Do the dishes" })
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const todo1 = store.state.todos.get("123")
+      const todo2 = store.state.todos.get("abc")
+
+      store.state.todos.clear()
+
+      expect(isDetached(todo1)).toBe(true)
+      expect(isDetached(todo2)).toBe(true)
+    })
+
     it("allows iterating over Map values", () => {
       @proxiable
       class Todo {

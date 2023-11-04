@@ -93,9 +93,12 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
       }
     }
 
-    // TODO: detach all items from the state tree
     if (prop === "clear") {
       return () => {
+        for (const item of proxy.values()) {
+          this.$tree.detachNodeFor(item)
+        }
+
         this.$tree.mutate(this, (map) => {
           map.clear()
 
