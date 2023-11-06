@@ -1748,14 +1748,42 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      const todo1 = store.state.todos.get("123")
-      const todo2 = store.state.todos.get("abc")
+      const todo1 = store.state.todos.get("123")!
+      const todo2 = store.state.todos.get("abc")!
 
       store.state.todos.set("123", todo2)
 
       expect(isDetached(todo1)).toBe(true)
       expect(store.state.todos.get("123")).toBe(todo2)
       expect(store.state.todos.get("123")).toBe(store.state.todos.get("abc"))
+    })
+
+    it("can delete a node stored under multiple keys", () => {
+      const todosMap = new Map<string, { text: string }>()
+      todosMap.set("123", { text: "Walk the dogs" })
+      todosMap.set("abc", { text: "Clean the house" })
+
+      const store = new Arbor({
+        todos: todosMap,
+      })
+
+      const todo1 = store.state.todos.get("123")!
+      const todo2 = store.state.todos.get("abc")!
+
+      store.state.todos.set("123", todo2)
+
+      store.state.todos.delete("123")
+
+      expect(isDetached(todo1)).toBe(true)
+      expect(isDetached(todo2)).toBe(true)
+      expect(store.state.todos.get("abc")).toEqual(todo2)
+      expect(store.state.todos.get("123")).toBeUndefined()
+
+      store.state.todos.delete("abc")
+
+      expect(isDetached(todo2)).toBe(true)
+      expect(store.state.todos.get("123")).toBeUndefined()
+      expect(store.state.todos.get("abc")).toBeUndefined()
     })
 
     it("allows deleting nodes stored within Map instances", () => {
@@ -1831,8 +1859,8 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      const todo1 = store.state.todos.get("123")
-      const todo2 = store.state.todos.get("abc")
+      const todo1 = store.state.todos.get("123")!
+      const todo2 = store.state.todos.get("abc")!
 
       store.state.todos.clear()
 
