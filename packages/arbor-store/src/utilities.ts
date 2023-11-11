@@ -81,6 +81,8 @@ export function path<T extends object>(node: ArborNode<T>): Path {
   return node.$path
 }
 
+// TODO: implement a readablePath(node: Path | ArborNode<T>): string that returns a dot notation version of the given path or node
+
 /**
  * Checks if node is no longer in the state tree.
  *

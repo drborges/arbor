@@ -1,6 +1,5 @@
 export { Arbor, ImmutableArbor } from "./Arbor"
 export { ArrayNodeHandler } from "./ArrayNodeHandler"
-export { Children } from "./Children"
 export { MapNodeHandler } from "./MapNodeHandler"
 export * from "./MutationEngine"
 export { NodeHandler } from "./NodeHandler"

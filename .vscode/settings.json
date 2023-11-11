@@ -19,5 +19,6 @@
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "focus.highlightRange": "indent"
 }

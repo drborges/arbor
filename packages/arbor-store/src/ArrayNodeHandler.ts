@@ -28,7 +28,6 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
   push(...item: T[]): number {
     let size: number
 
-    // TODO: Throw ValueAlreadyBoundError if value is already bound to a child path
     this.$tree.mutate(this, (node: T[]) => {
       size = node.push(...item)
 
