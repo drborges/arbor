@@ -42,10 +42,6 @@ export class Path {
     return new Path()
   }
 
-  get target() {
-    return this.seeds.at(-1)
-  }
-
   get parent(): Path {
     if (this.isRoot()) {
       return null
