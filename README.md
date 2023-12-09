@@ -83,16 +83,3 @@ Help us improve our docs, PRs are very welcome!
 ## License
 
 Arbor is [MIT licensed](./LICENSE.md).
-
-## TODO
-
-- [ ] Add test coverage to stores in tracking.ts
-- [ ] Implement "path healing" on Array mutable APIs
-- [ ] Implement new useArbor based off this gist: https://gist.github.com/drborges/41fe24435d7f36189e96ee2a8e04c005
-- [ ] Remove built-in watcher implementations, tracking mechanism solves most of the use-cases. Watchers are last resort mechanisms.
-- [ ] track(node) creates a "virtual state tree" for the subtree represented by the given `node`. We should make this a first-class concept. This works similar to array windows which create a virtual array off of a given array.
-- [ ] Update tracking logic so it detects new props being added to an object. Use case:
-    - Adding new items to an array currently does not notify to component watching the array since the new index was not tracked (it's new...)
-    - Perhaps the issue above can be solve with a watcher? e.g. `useArbor(store.state.todos, watchNewProps())`
-    - Or perhaps, the `TrackedArbor` can by default notifiy subscribers of new props being added to nodes
-- [ ] Clean up tracking implementation.
