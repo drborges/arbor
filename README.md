@@ -1,6 +1,6 @@
 # Arbor
 
-[<img src="https://pics.paypal.com/00/s/MzUxMWFiZWUtMzU3Zi00MzgxLTg2YmUtNjRhM2U1YWUwMDg0/file.PNG" width="12%" />](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=E7PXJC6WW6M4S)
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/drborges)
 
 A fully typed, minimalistic proxy-based state tree library with very little boilerplate.
 
@@ -10,7 +10,7 @@ Arbor is not just another state management library, it focuses on developer expe
 
 Here's a simple Counter example:
 
-[![Edit counter-example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/counter-example-yj26xb?fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.tsx&theme=dark)
+[![Edit counter-example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/p/sandbox/counter-app-yj26xb?fontsize=14&hidenavigation=1&module=%2Fsrc%2FApp.tsx&theme=dark)
 
 ```tsx
 import { Arbor } from "@arborjs/store"
@@ -63,14 +63,19 @@ export default function App() {
 }
 ```
 
-Arbor optimally keeps track of accesses to nodes within the state tree via a proxying mechanism while creating a [Persistent Data Structure](https://en.wikipedia.org/wiki/Persistent_data_structure) that ensures mutations triggered to the state tree creates a new state snapshot via Structural Sharing. This allows libraries such as React to optimally compute re-renders out-of-the-box while giving developers the feeling of working with plain JavaScript APIs. Arbor also supports a simple plugin architecture (**experimental**) that allows extending the state stores with extra functionality such as persistency, logging, etc...
+Arbor optimally keeps track of accesses to nodes within the state tree via a proxying mechanism while creating a [Persistent Data Structure](https://en.wikipedia.org/wiki/Persistent_data_structure) that ensures mutations triggered to the state tree creates a new state snapshot via Structural Sharing. This allows libraries such as React to optimally compute re-renders out-of-the-box while giving developers the feeling of working with plain JavaScript APIs.
+
+Arbor also supports a simple plugin architecture (**experimental**) that allows extending the state stores with extra functionality such as persistency, logging, etc...
 
 Sounds promising? Check out the documentation below for more in-depth insights and since there's really very minimal boilerplate you might as well [check out a few more examples](https://github.com/drborges/arbor/tree/main/examples).
 
 ## Documentation
 
 - [Getting Started](): TODO
-- [Examples](): TODO
+- Examples:
+  - [Counter App](https://codesandbox.io/p/sandbox/counter-app-yj26xb);
+  - [Todo App](https://codesandbox.io/p/sandbox/base-todo-app-pzgld3);
+  - [Payments App](https://codesandbox.io/p/sandbox/payments-app-nvtcrm).
 - [Plugins](): TODO
 - [How Does It Do It?](): TODO
 
@@ -78,7 +83,7 @@ Help us improve our docs, PRs are very welcome!
 
 ## Support This Project
 
-[<img src="https://pics.paypal.com/00/s/MzUxMWFiZWUtMzU3Zi00MzgxLTg2YmUtNjRhM2U1YWUwMDg0/file.PNG" width="15%" />](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=E7PXJC6WW6M4S)
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/drborges)
 
 ## License
 
