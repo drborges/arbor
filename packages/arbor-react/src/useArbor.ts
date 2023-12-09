@@ -71,10 +71,16 @@ function useArborDeprecated<T extends object>(store: Store<T>): ArborNode<T> {
   const [state, setState] = useState(store.state)
 
   useEffect(() => {
+    // Forces a initial re-render in case the state changes before
+    // React has a chance to subscribe to the store
+    if (store.state !== state) {
+      setState(store.state)
+    }
+
     return store.subscribe(() => {
       setState(store.state)
     })
-  }, [store])
+  }, [state, store])
 
   return state
 }
