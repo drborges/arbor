@@ -2,11 +2,13 @@
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/drborges)
 
-A fully typed, minimalistic proxy-based state tree library with very little boilerplate.
+A fully typed reactive state tree library with very little boilerplate.
 
 ## Why Arbor?
 
-Arbor is not just another state management library, it focuses on developer experience and productivity. It does so by providing a very minimal API, with very little boilerplate, for the most part, you'll be working with plain Javascript objects and arrays (thanks to [ES6 Proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)). Arbor itself is framework-aganostic but comes with a React binding that will allow you to easily manage complex application state as if it were nothing, not having to worry about structural sharing, immutability, setting up context providers in order to share state across components, while getting optimal re-render management out-of-the-box.
+Arbor is not just another state management library, it focuses on developer experience and productivity. It does so by providing a very minimal API, with very little boilerplate, for the most part, you'll be working with plain Javascript objects, arrays and classes (thanks to [ES6 Proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)).
+
+Arbor itself is framework-aganostic but comes with a [React binding]() that will allows managing complex application state without the need to worry about structural sharing, memoization, immutability, prop drilling or managing complex context providers in order to share state across components, while getting optimal re-render out-of-the-box thanks to Arbor's [path tracking]() mechanism which ensures that components only re-render if they are affected by the state updades triggered on the store.
 
 Here's a simple Counter example:
 
@@ -23,11 +25,11 @@ const store = new Arbor({
   count: 0
 })
 
-/*
- * Component encapsulating the action buttons used to increment or decrement the counter
- */
 function Actions() {
-  // Connect the component to the store. Connected components will re-render whenever the store state changes
+  // Connect the component to the store so it can react to updates
+  //
+  // Connected components will only re-render if the store update
+  // affects the part of the state that the component depends on!
   const counter = useArbor(store)
 
   // Mutate the state using plain Javascript APIs
@@ -43,9 +45,6 @@ function Actions() {
   )
 }
 
-/*
- * Component encapsulating the counter display
- */
 function Counter() {
   // Easily share state across components, no need for context providers!
   const counter = useArbor(store)
@@ -67,17 +66,26 @@ Arbor optimally keeps track of accesses to nodes within the state tree via a pro
 
 Arbor also supports a simple plugin architecture (**experimental**) that allows extending the state stores with extra functionality such as persistency, logging, etc...
 
-Sounds promising? Check out the documentation below for more in-depth insights and since there's really very minimal boilerplate you might as well [check out a few more examples](https://github.com/drborges/arbor/tree/main/examples).
+Sounds promising? Check out the documentation below for more in-depth insights!
 
 ## Documentation
 
-- [Getting Started](): TODO
-- Examples:
-  - [Counter App](https://codesandbox.io/p/sandbox/counter-app-yj26xb);
-  - [Todo App](https://codesandbox.io/p/sandbox/base-todo-app-pzgld3);
-  - [Payments App](https://codesandbox.io/p/sandbox/payments-app-nvtcrm).
-- [Plugins](): TODO
-- [How Does It Do It?](): TODO
+- Getting Started
+  - Introduction
+  - Sharing State
+  - `useArbor` vs `useState`
+  - Custom Types
+  - Serializing State
+  - Project Structure
+  - Caveats
+- Learn by Example:
+  - [Counter App](https://codesandbox.io/p/sandbox/counter-app-yj26xb)
+  - [Todo App](https://codesandbox.io/p/sandbox/base-todo-app-pzgld3)
+  - [Payments App](https://codesandbox.io/p/sandbox/payments-app-nvtcrm)
+- Plugins:
+  - [Logging]()
+  - [LocalStorage Persitency]()
+  - [Backend Persistency]()
 
 Help us improve our docs, PRs are very welcome!
 
