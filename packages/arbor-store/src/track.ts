@@ -15,11 +15,6 @@ export type Tracked<T extends object = object> = T & {
   $tracked?: boolean
 }
 
-export type Watcher<T extends object, K extends object = T> = (
-  e: MutationEvent<T>,
-  target: ArborNode<K>
-) => boolean
-
 export function isArborNodeTracked<T extends object>(
   value: unknown
 ): value is ArborNode<T> {
@@ -148,9 +143,10 @@ class Tracker<T extends object> {
 
 // TODO: rename this to something that reflects its intention, which is the creation
 // of a store for a subtree in the given store.
-class BaseStore<T extends object> implements Store<T> {
+export class TrackedArbor<T extends object> implements Store<T> {
   protected originalStore: Arbor<T>
   protected targetNode: ArborNode<T>
+  readonly tracker = new Tracker()
 
   constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
     if (isNode(storeOrNode)) {
@@ -162,10 +158,14 @@ class BaseStore<T extends object> implements Store<T> {
     } else {
       throw new ArborError("track takes either an Arbor store or an ArborNode")
     }
+
+    this.tracker.track(this.targetNode)
   }
 
   get state() {
-    return this.originalStore.getNodeAt(path(this.targetNode)) as ArborNode<T>
+    return this.tracker.getOrCache(
+      this.originalStore.getNodeAt(path(this.targetNode))
+    ) as ArborNode<T>
   }
 
   setState(value: T): ArborNode<T> {
@@ -182,60 +182,10 @@ class BaseStore<T extends object> implements Store<T> {
     node: ArborNode<V>,
     subscriber: Subscriber<T>
   ): Unsubscribe {
-    return this.originalStore.subscribeTo(node, subscriber)
-  }
-}
-
-class TrackedArbor<T extends object> extends BaseStore<T> {
-  private tracker = new Tracker()
-
-  constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
-    super(storeOrNode)
-
-    this.tracker.track(this.targetNode)
-  }
-
-  get state() {
-    return this.tracker.getOrCache(super.state) as ArborNode<T>
-  }
-
-  subscribeTo<V extends object>(
-    node: ArborNode<V>,
-    subscriber: Subscriber<T>
-  ): Unsubscribe {
     return this.originalStore.subscribeTo(node, (event) => {
       if (this.tracker.affected(event)) {
         subscriber(event)
       }
     })
   }
-}
-
-class WatchedArbor<T extends object> extends BaseStore<T> {
-  constructor(
-    storeOrNode: Arbor<T> | ArborNode<T>,
-    private readonly watcher: Watcher<T>
-  ) {
-    super(storeOrNode)
-  }
-
-  subscribeTo<V extends object>(
-    node: ArborNode<V>,
-    subscriber: Subscriber<T>
-  ): Unsubscribe {
-    return this.originalStore.subscribeTo(node, (event) => {
-      if (this.watcher(event, this.targetNode)) {
-        subscriber(event)
-      }
-    })
-  }
-}
-
-export function track<T extends object>(
-  storeOrNode: Arbor<T> | ArborNode<T>,
-  watcher?: Watcher<T>
-): Store<T> {
-  return watcher
-    ? new WatchedArbor(storeOrNode, watcher)
-    : new TrackedArbor(storeOrNode)
 }

@@ -1,11 +1,10 @@
 import {
   Arbor,
   ArborNode,
-  Store,
-  Watcher,
   isNode,
   isProxiable,
-  track,
+  Store,
+  TrackedArbor,
 } from "@arborjs/store"
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react"
@@ -25,14 +24,11 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react"
  * automatically, and the behavior of the hook is similar to what you'd have when using useState.
  *
  * @param target the target to connect to.
- * @param watcher allows overriding Arbor's notification logic. Can be useful for handling very
- * specific re-rendering conditions that may not be handled by Arbor's path tracking behavior.
  *
  * @returns the current store's state as a reactive object.
  */
 export function useArbor<T extends object>(
-  target: ArborNode<T> | Arbor<T> | T,
-  watcher?: Watcher<T>
+  target: ArborNode<T> | Arbor<T> | T
 ): ArborNode<T> {
   if (!(target instanceof Arbor) && !isNode(target) && !isProxiable(target)) {
     throw new Error(
@@ -52,7 +48,7 @@ export function useArbor<T extends object>(
       targetNode = store.state
     }
 
-    return track(targetNode, watcher)
+    return new TrackedArbor(targetNode)
     // NOTE: useArbor has a similar behavior as the one of useState where
     // subsequent calls to the hook with new arguments do not create side-effects.
     // The hook's argument is simply the mechanism in which the hook is initialized
