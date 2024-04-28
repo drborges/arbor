@@ -130,7 +130,7 @@ class Tracker<T extends object> {
           track(target, prop)
         }
 
-        if (typeof child !== "object") {
+        if (child == null || typeof child !== "object") {
           return child
         }
 

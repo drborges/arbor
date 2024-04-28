@@ -2536,5 +2536,12 @@ describe("Arbor", () => {
 
       expect(boundFilter).not.toBe(tracked.state.filter)
     })
+
+    it("can handle null props", () => {
+      const store = new Arbor({ name: "Carol", email: null })
+      const tracked = track(store.state)
+
+      expect(tracked.state.email).toBeNull()
+    })
   })
 })
