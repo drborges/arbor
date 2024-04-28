@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import { Arbor, ImmutableArbor } from "./Arbor"
-import { Path } from "./Path"
-import { Seed } from "./Seed"
 import { ArborProxiable, detached, proxiable } from "./decorators"
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
+import { Path } from "./Path"
+import { Seed } from "./Seed"
 import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 import { isNode } from "./guards"
-import { isArborNodeTracked, TrackedArbor } from "./track"
+import { isArborNodeTracked, TrackedArbor } from "./TrackedArbor"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
