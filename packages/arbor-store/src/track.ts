@@ -1,5 +1,6 @@
 import { Arbor } from "./Arbor"
 import { Seed } from "./Seed"
+import { isDetachedProperty } from "./decorators"
 import { ArborError } from "./errors"
 import { isNode } from "./guards"
 import {
@@ -34,22 +35,23 @@ class Tracker<T extends object> {
     return this.cache.get(node)
   }
 
+  isTracking(node: ArborNode, prop: string) {
+    const seed = Seed.from(node)
+    const tracked = this.tracking.get(seed)
+
+    if (!tracked) {
+      return false
+    }
+
+    return tracked.has(prop)
+  }
+
   affected(event: MutationEvent<T>) {
     // Notify all listeners if the root of the store is replaced
     // TODO: at the moment I'm assuming this is a desirable behavior, though
     // user feedback will likely influence this behavior moving forward.
     if (event.mutationPath.isRoot() && event.metadata.operation === "set") {
       return true
-    }
-
-    const rootSeed = Seed.from(event.state)
-    const targetSeed = event.mutationPath.seeds.at(-1)
-    const tracked = this.tracking.get(targetSeed || rootSeed)
-
-    // If the affected node is not being tracked, then no need to notify
-    // any subscribers.
-    if (!tracked) {
-      return false
     }
 
     // If there are no props affected by the mutation, then the operation
@@ -63,6 +65,16 @@ class Tracker<T extends object> {
     // since they may need to react to the new prop so it can be "discovered"
     if (event.metadata.previouslyUndefined) {
       return true
+    }
+
+    const rootSeed = Seed.from(event.state)
+    const targetSeed = event.mutationPath.seeds.at(-1)
+    const tracked = this.tracking.get(targetSeed || rootSeed)
+
+    // If the affected node is not being tracked, then no need to notify
+    // any subscribers.
+    if (!tracked) {
+      return false
     }
 
     // Lastly, subscribers will be notified if any of the mutated props are
@@ -121,7 +133,11 @@ class Tracker<T extends object> {
           return child
         }
 
-        if (isNode(target) && !isGetter(target, prop as string)) {
+        if (
+          isNode(target) &&
+          !isGetter(target, prop as string) &&
+          !isDetachedProperty(target, prop)
+        ) {
           track(target, prop)
         }
 

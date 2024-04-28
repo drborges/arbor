@@ -2482,4 +2482,22 @@ describe("Arbor", () => {
       expect(tracked.state.email).toBeNull()
     })
   })
+
+  it("does not track detached props", () => {
+    @proxiable
+    class SomeNode {
+      @detached untrackedProp = "untracked"
+      trackedProp = "tracked"
+    }
+
+    const tracked = new TrackedArbor(new Arbor(new SomeNode()))
+
+    tracked.state.untrackedProp
+    tracked.state.trackedProp
+
+    expect(tracked.tracker.isTracking(tracked.state, "trackedProp")).toBe(true)
+    expect(tracked.tracker.isTracking(tracked.state, "untrackedProp")).toBe(
+      false
+    )
+  })
 })
