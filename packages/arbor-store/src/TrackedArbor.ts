@@ -25,7 +25,7 @@ export function isArborNodeTracked<T extends object>(
 class Tracker<T extends object> {
   private readonly bindings = new WeakMap()
   private readonly cache = new WeakMap<ArborNode, Tracked>()
-  private readonly tracking = new WeakMap<Seed, Set<string>>()
+  private tracking = new WeakMap<Seed, Set<string>>()
 
   getOrCache(node: ArborNode): Tracked {
     if (!this.cache.has(node)) {
@@ -44,6 +44,10 @@ class Tracker<T extends object> {
     }
 
     return tracked.has(prop)
+  }
+
+  reset() {
+    this.tracking = new WeakMap<Seed, Set<string>>()
   }
 
   affected(event: MutationEvent<T>) {

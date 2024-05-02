@@ -56,6 +56,8 @@ export function useArbor<T extends object>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  trackedStore.tracker.reset()
+
   return useSyncExternalStore
     ? // eslint-disable-next-line react-hooks/rules-of-hooks
       useArborNew(trackedStore)
