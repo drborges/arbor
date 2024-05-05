@@ -9,6 +9,8 @@ import {
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react"
 
+const useStore = useSyncExternalStore ? useArborNew : useArborDeprecated
+
 /**
  * Allow connecting a React component to an Arbor store allowing mutations to be triggered from
  * a reactive version of the store's state.
@@ -58,13 +60,11 @@ export function useArbor<T extends object>(
 
   trackedStore.tracker.reset()
 
-  return useSyncExternalStore
-    ? // eslint-disable-next-line react-hooks/rules-of-hooks
-      useArborNew(trackedStore)
-    : // eslint-disable-next-line react-hooks/rules-of-hooks
-      useArborDeprecated(trackedStore)
+  return useStore(trackedStore)
 }
 
+// For versions of React where useSyncExternalStore is not available we resort
+// to tracking the store's state as a local useState.
 function useArborDeprecated<T extends object>(store: Store<T>): ArborNode<T> {
   const [state, setState] = useState(store.state)
 
