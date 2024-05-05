@@ -83,6 +83,8 @@ function useArborDeprecated<T extends object>(store: Store<T>): ArborNode<T> {
   return state
 }
 
+// Levering useSyncExternalStore makes Arbor compatible with React's
+// concurrent mode.
 function useArborNew<T extends object>(store: Store<T>): ArborNode<T> {
   return useSyncExternalStore(store.subscribe.bind(store), () => store.state)
 }
