@@ -1,17 +1,7 @@
-import {
-  Arbor,
-  isArborNodeTracked,
-  proxiable,
-  unwrap,
-  Watcher,
-} from "@arborjs/store"
+import { Arbor, isArborNodeTracked, proxiable, unwrap } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react"
 
 import { useArbor } from "./useArbor"
-
-interface User {
-  name: string
-}
 
 describe("useArbor", () => {
   it("tracks accesses to node props", () => {
@@ -162,44 +152,6 @@ describe("useArbor", () => {
     })
 
     expect(store.state.users[0]).toEqual({ name: "Alice Updated" })
-  })
-
-  it("allows overriding the state tree watching logic", () => {
-    interface State {
-      users: User[]
-    }
-
-    const store = new Arbor({
-      users: [{ name: "Alice" }, { name: "Bob" }],
-    })
-
-    const state = store.state
-
-    // Only updates when changes are made to the state tree path: /users/1
-    const watchSecondUser =
-      (): Watcher<State> =>
-      ({ mutationPath }) =>
-        mutationPath.matches(store.state.users[1])
-
-    const { result } = renderHook(() => useArbor(store, watchSecondUser()))
-
-    expect(result.current).toBe(state)
-
-    act(() => {
-      store.state.users[0].name = "Carol"
-    })
-
-    expect(result.current).toBe(state)
-    expect(result.current).not.toBe(store.state)
-    expect(store.state.users[0].name).toBe("Carol")
-
-    act(() => {
-      store.state.users[1].name = "John"
-    })
-
-    expect(result.current).not.toBe(state)
-    expect(result.current).toBe(store.state)
-    expect(store.state.users[1].name).toBe("John")
   })
 
   it("throws an error when attemoting to initialize the hook with invalid values", () => {

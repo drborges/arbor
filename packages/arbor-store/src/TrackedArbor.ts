@@ -1,5 +1,6 @@
 import { Arbor } from "./Arbor"
 import { Seed } from "./Seed"
+import { isDetachedProperty } from "./decorators"
 import { ArborError } from "./errors"
 import { isNode } from "./guards"
 import {
@@ -15,11 +16,6 @@ export type Tracked<T extends object = object> = T & {
   $tracked?: boolean
 }
 
-export type Watcher<T extends object, K extends object = T> = (
-  e: MutationEvent<T>,
-  target: ArborNode<K>
-) => boolean
-
 export function isArborNodeTracked<T extends object>(
   value: unknown
 ): value is ArborNode<T> {
@@ -29,7 +25,7 @@ export function isArborNodeTracked<T extends object>(
 class Tracker<T extends object> {
   private readonly bindings = new WeakMap()
   private readonly cache = new WeakMap<ArborNode, Tracked>()
-  private readonly tracking = new WeakMap<Seed, Set<string>>()
+  private tracking = new WeakMap<Seed, Set<string>>()
 
   getOrCache(node: ArborNode): Tracked {
     if (!this.cache.has(node)) {
@@ -39,22 +35,27 @@ class Tracker<T extends object> {
     return this.cache.get(node)
   }
 
+  isTracking(node: ArborNode, prop: string) {
+    const seed = Seed.from(node)
+    const tracked = this.tracking.get(seed)
+
+    if (!tracked) {
+      return false
+    }
+
+    return tracked.has(prop)
+  }
+
+  reset() {
+    this.tracking = new WeakMap<Seed, Set<string>>()
+  }
+
   affected(event: MutationEvent<T>) {
     // Notify all listeners if the root of the store is replaced
     // TODO: at the moment I'm assuming this is a desirable behavior, though
     // user feedback will likely influence this behavior moving forward.
     if (event.mutationPath.isRoot() && event.metadata.operation === "set") {
       return true
-    }
-
-    const rootSeed = Seed.from(event.state)
-    const targetSeed = event.mutationPath.seeds.at(-1)
-    const tracked = this.tracking.get(targetSeed || rootSeed)
-
-    // If the affected node is not being tracked, then no need to notify
-    // any subscribers.
-    if (!tracked) {
-      return false
     }
 
     // If there are no props affected by the mutation, then the operation
@@ -68,6 +69,16 @@ class Tracker<T extends object> {
     // since they may need to react to the new prop so it can be "discovered"
     if (event.metadata.previouslyUndefined) {
       return true
+    }
+
+    const rootSeed = Seed.from(event.state)
+    const targetSeed = event.mutationPath.seeds.at(-1)
+    const tracked = this.tracking.get(targetSeed || rootSeed)
+
+    // If the affected node is not being tracked, then no need to notify
+    // any subscribers.
+    if (!tracked) {
+      return false
     }
 
     // Lastly, subscribers will be notified if any of the mutated props are
@@ -126,11 +137,15 @@ class Tracker<T extends object> {
           return child
         }
 
-        if (isNode(target) && !isGetter(target, prop as string)) {
+        if (
+          isNode(target) &&
+          !isGetter(target, prop as string) &&
+          !isDetachedProperty(target, prop)
+        ) {
           track(target, prop)
         }
 
-        if (typeof child !== "object") {
+        if (child == null || typeof child !== "object") {
           return child
         }
 
@@ -148,9 +163,10 @@ class Tracker<T extends object> {
 
 // TODO: rename this to something that reflects its intention, which is the creation
 // of a store for a subtree in the given store.
-class BaseStore<T extends object> implements Store<T> {
+export class TrackedArbor<T extends object> implements Store<T> {
   protected originalStore: Arbor<T>
   protected targetNode: ArborNode<T>
+  readonly tracker = new Tracker()
 
   constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
     if (isNode(storeOrNode)) {
@@ -162,10 +178,14 @@ class BaseStore<T extends object> implements Store<T> {
     } else {
       throw new ArborError("track takes either an Arbor store or an ArborNode")
     }
+
+    this.tracker.track(this.targetNode)
   }
 
   get state() {
-    return this.originalStore.getNodeAt(path(this.targetNode)) as ArborNode<T>
+    return this.tracker.getOrCache(
+      this.originalStore.getNodeAt(path(this.targetNode))
+    ) as ArborNode<T>
   }
 
   setState(value: T): ArborNode<T> {
@@ -182,60 +202,10 @@ class BaseStore<T extends object> implements Store<T> {
     node: ArborNode<V>,
     subscriber: Subscriber<T>
   ): Unsubscribe {
-    return this.originalStore.subscribeTo(node, subscriber)
-  }
-}
-
-class TrackedArbor<T extends object> extends BaseStore<T> {
-  private tracker = new Tracker()
-
-  constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
-    super(storeOrNode)
-
-    this.tracker.track(this.targetNode)
-  }
-
-  get state() {
-    return this.tracker.getOrCache(super.state) as ArborNode<T>
-  }
-
-  subscribeTo<V extends object>(
-    node: ArborNode<V>,
-    subscriber: Subscriber<T>
-  ): Unsubscribe {
     return this.originalStore.subscribeTo(node, (event) => {
       if (this.tracker.affected(event)) {
         subscriber(event)
       }
     })
   }
-}
-
-class WatchedArbor<T extends object> extends BaseStore<T> {
-  constructor(
-    storeOrNode: Arbor<T> | ArborNode<T>,
-    private readonly watcher: Watcher<T>
-  ) {
-    super(storeOrNode)
-  }
-
-  subscribeTo<V extends object>(
-    node: ArborNode<V>,
-    subscriber: Subscriber<T>
-  ): Unsubscribe {
-    return this.originalStore.subscribeTo(node, (event) => {
-      if (this.watcher(event, this.targetNode)) {
-        subscriber(event)
-      }
-    })
-  }
-}
-
-export function track<T extends object>(
-  storeOrNode: Arbor<T> | ArborNode<T>,
-  watcher?: Watcher<T>
-): Store<T> {
-  return watcher
-    ? new WatchedArbor(storeOrNode, watcher)
-    : new TrackedArbor(storeOrNode)
 }
