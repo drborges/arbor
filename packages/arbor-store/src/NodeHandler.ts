@@ -11,16 +11,12 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
 /**
  * Default node handler implementation.
+ *
+ * Implements the proxying mechanism used by Arbor to intercept access to fields of
+ * objects witihin the state tree as well as mutations to them, enabling subscribers
+ * to be notified of events they are interested in.
  */
 export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
-  /**
-   * Caches all method / function props in the proxied object while
-   * binding them to the proxy instance itself so that all logic
-   * implemented in these methods can run within the context of the
-   * proxy.
-   */
-  protected $bindings = new WeakMap()
-
   constructor(
     readonly $tree: Arbor,
     readonly $path: Path,
@@ -83,11 +79,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     // same value, keeping memory reference integrity (real useful in libs such as
     // React).
     if (typeof childValue === "function") {
-      if (!this.$bindings.has(childValue)) {
-        this.$bindings.set(childValue, childValue.bind(proxy))
-      }
-
-      return this.$bindings.get(childValue)
+      return childValue.bind(proxy)
     }
 
     if (!isProxiable(childValue)) {
