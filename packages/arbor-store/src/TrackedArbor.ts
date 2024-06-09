@@ -120,18 +120,20 @@ class Tracker<T extends object> {
         // proxied value in order to conform to Proxy invariants.
         if (!descriptor?.configurable || !descriptor.writable) {
           if (typeof child === "function") {
-            if (!bindings.has(child)) {
-              // Methods must be bound to the proxy so that 'this' within the method context
-              // points back to the proxy itself, allowing it to wrap children nodes as needed.
-              // Note that JS does not allow to re-bind a function, that is why we must first
-              // unwrap the proxied target so we can bind the original method (e.g. 'child) to
-              // the proxy.
-              const unwrapped = recursivelyUnwrap(target)
-              const unwrappedChild = Reflect.get(unwrapped, prop, proxy)
-              bindings.set(child, unwrappedChild.bind(proxy))
+            // Methods are cached after being bound to the proxy so that the reference to them
+            // always yield the same memory reference.
+            // This is particularly useful in libs like React, where React can determine if a
+            // child component needs to be re-rendered if any of its props are updated, making
+            // class methods of Arbor nodes a great option for components event handlers.
+            const unwrappedTarget = recursivelyUnwrap(target)
+            const unwrappedChild = Reflect.get(unwrappedTarget, prop, proxy)
+            if (!bindings.has(unwrappedChild)) {
+              // Methods are bound to the proxy so that 'this' within the method context
+              // points back to the proxy itself, allowing it to intercept access to nested objects.
+              bindings.set(unwrappedChild, child.bind(proxy))
             }
 
-            return bindings.get(child)
+            return bindings.get(unwrappedChild)
           }
 
           return child

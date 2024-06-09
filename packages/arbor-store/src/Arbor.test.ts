@@ -458,21 +458,6 @@ describe("Arbor", () => {
       expect(store.getNodeFor(alice)).toBe(store.state[1])
     })
 
-    it("memoizes references to methods within a node", () => {
-      const store = new Arbor({
-        users: [
-          { name: "Carol", active: true },
-          { name: "Alice", active: false },
-        ],
-
-        active() {
-          return this.users.filter((u) => u.active)
-        },
-      })
-
-      expect(store.state.active).toBe(store.state.active)
-    })
-
     it("binds node methods to the node itself", () => {
       const store = new Arbor({
         users: [
@@ -2446,33 +2431,98 @@ describe("Arbor", () => {
       expect(subscriber).toHaveBeenCalledTimes(1)
     })
 
-    it("handles method bindings correctly when the same method is accessed via original store and the tracked store", () => {
-      const store = new Arbor([{ name: "Carol", active: true }])
+    it("preserves children node path tracking when plucking them through a method operation (like filter, map, etc...)", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: false },
+      ])
+      const tracked = new TrackedArbor(store.state)
+
+      store.state.filter // binds filter to the original store
+      const filterBoundToTrackedStore = tracked.state.filter
+      const activeUsers = filterBoundToTrackedStore((u) => u.active)
+
+      expect(isArborNodeTracked(activeUsers[0])).toBe(true)
+    })
+
+    it("preserves path tracking on nodes 'plucked' from the state tree", () => {
+      const store = new Arbor([
+        { name: "Carol", active: true },
+        { name: "Alice", active: false },
+      ])
       const tracked = new TrackedArbor(store.state)
       const subscriber = jest.fn()
 
       tracked.subscribe(subscriber)
 
-      store.state.filter((u) => u.active)
-      const filteredTodos = tracked.state.filter((u) => u.active)
+      const carol = tracked.state[0]
 
-      filteredTodos[0].active = false
+      carol.active = false
 
-      expect(isArborNodeTracked(filteredTodos[0])).toBe(true)
+      expect(isArborNodeTracked(carol)).toBe(true)
       expect(subscriber).toHaveBeenCalledTimes(1)
     })
 
-    it("caches bound node methods until the node changes", () => {
-      const store = new Arbor([{ name: "Carol", active: true }])
-      const tracked = new TrackedArbor(store.state)
+    it("can track path access on nodes 'pluck' from the state tree", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Carol", active: true },
+          { name: "Alice", active: false },
+        ],
+      })
+      const tracked = new TrackedArbor(store)
 
-      const boundFilter = tracked.state.filter
+      const carol = tracked.state.users[0]
+      expect(isArborNodeTracked(carol)).toBe(true)
+    })
 
-      expect(boundFilter).toBe(tracked.state.filter)
+    it("ensure node methods have stable memory reference across updates", () => {
+      const store = new Arbor({
+        todos: ["Do the dishes"],
+        users: ["Carol", "Alice"],
+      })
 
-      store.state[0].active = false
+      const tracked = new TrackedArbor(store)
+      const userFilter = tracked.state.users.filter
 
-      expect(boundFilter).not.toBe(tracked.state.filter)
+      expect(userFilter).toBe(tracked.state.users.filter)
+
+      tracked.state.todos[0] = "Clean the house"
+
+      expect(userFilter).toBe(tracked.state.users.filter)
+
+      tracked.state.users.push("Bob")
+
+      expect(userFilter).toBe(tracked.state.users.filter)
+    })
+
+    it("can safely use a method reference across node updates", () => {
+      const store = new Arbor({
+        users: [
+          { name: "Carol", active: true },
+          { name: "Alice", active: false },
+        ],
+      })
+
+      const tracked = new TrackedArbor(store)
+      const userFilter = tracked.state.users.filter
+
+      expect(userFilter((u) => u.active)).toEqual([
+        { name: "Carol", active: true },
+      ])
+
+      store.state.users[1].active = true
+
+      expect(userFilter((u) => u.active)).toEqual([
+        { name: "Carol", active: true },
+        { name: "Alice", active: true },
+      ])
+
+      store.state.users[0].active = false
+
+      expect(userFilter((u) => u.active)).toEqual([
+        { name: "Alice", active: true },
+      ])
     })
 
     it("can handle null props", () => {
@@ -2499,5 +2549,36 @@ describe("Arbor", () => {
     expect(tracked.tracker.isTracking(tracked.state, "untrackedProp")).toBe(
       false
     )
+  })
+
+  it("binds methods to the path tracking proxy", () => {
+    @proxiable
+    class Todo {
+      constructor(public text = "") {}
+    }
+
+    @proxiable
+    class TodoApp {
+      todos: Todo[] = []
+
+      removeTodo(todo) {
+        this.todos = this.todos.filter((t) => t !== todo)
+      }
+    }
+
+    const store = new TrackedArbor(new Arbor(new TodoApp()))
+    const subscriber = jest.fn()
+
+    store.subscribe(subscriber)
+
+    const state = store.state
+    state.todos = [new Todo("Do the dishes"), new Todo("Clean the house")]
+    state.removeTodo(state.todos[0])
+    state.todos.push(new Todo("Walk the dogs"))
+
+    expect(subscriber.mock.calls.length).toBe(3)
+    expect(subscriber.mock.calls[0][0].metadata.operation).toEqual("set")
+    expect(subscriber.mock.calls[1][0].metadata.operation).toEqual("set")
+    expect(subscriber.mock.calls[2][0].metadata.operation).toEqual("push")
   })
 })
