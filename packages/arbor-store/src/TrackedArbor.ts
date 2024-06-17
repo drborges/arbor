@@ -23,7 +23,7 @@ export function isArborNodeTracked<T extends object>(
 }
 
 class Tracker<T extends object> {
-  private readonly bindings = new WeakMap()
+  private readonly bindings = new WeakMap<object, WeakMap<object, object>>()
   private readonly cache = new WeakMap<ArborNode, Tracked>()
   private tracking = new WeakMap<Seed, Set<string>>()
 
@@ -127,13 +127,18 @@ class Tracker<T extends object> {
             // class methods of Arbor nodes a great option for components event handlers.
             const unwrappedTarget = recursivelyUnwrap(target)
             const unwrappedChild = Reflect.get(unwrappedTarget, prop, proxy)
-            if (!bindings.has(unwrappedChild)) {
+            if (!bindings.has(unwrappedTarget)) {
               // Methods are bound to the proxy so that 'this' within the method context
               // points back to the proxy itself, allowing it to intercept access to nested objects.
-              bindings.set(unwrappedChild, child.bind(proxy))
+              bindings.set(unwrappedTarget, new WeakMap())
             }
 
-            return bindings.get(unwrappedChild)
+            const targetBidings = bindings.get(unwrappedTarget)
+            if (!targetBidings.has(unwrappedChild)) {
+              targetBidings.set(unwrappedChild, child.bind(proxy))
+            }
+
+            return bindings.get(unwrappedTarget).get(unwrappedChild)
           }
 
           return child

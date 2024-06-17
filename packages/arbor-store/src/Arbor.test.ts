@@ -2581,4 +2581,34 @@ describe("Arbor", () => {
     expect(subscriber.mock.calls[1][0].metadata.operation).toEqual("set")
     expect(subscriber.mock.calls[2][0].metadata.operation).toEqual("push")
   })
+
+  it("binds methods to the instance of the node they belong to", () => {
+    @proxiable
+    class Todo {
+      constructor(public text = "", public done = false) {}
+
+      toggle() {
+        this.done = !this.done
+      }
+    }
+
+    @proxiable
+    class TodoApp {
+      todos: Todo[] = []
+    }
+
+    const store = new TrackedArbor(new Arbor(new TodoApp()))
+    const subscriber = jest.fn()
+
+    store.subscribe(subscriber)
+
+    const state = store.state
+    state.todos = [new Todo("Do the dishes"), new Todo("Clean the house")]
+
+    state.todos[0].toggle()
+    state.todos[1].toggle()
+
+    expect(state.todos[0].done).toBe(true)
+    expect(state.todos[1].done).toBe(true)
+  })
 })
