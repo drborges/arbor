@@ -2,7 +2,7 @@
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/drborges)
 
-Official React adapter for [@arborjs/store](../arbor-store).
+Official React adapter for [@arborjs/store](../../arbor-store).
 
 ## Installation
 
@@ -76,11 +76,11 @@ function Actions() {
 }
 ```
 
-Stores can be as complex as you may need them to be, holding arrays, complex objects, or use [classes to build](../../README.md#Arbor_❤️_OOP) a more complex data model for your application.
+Stores can be as complex as you may need them to be, holding arrays, complex objects, or use [classes to build](../../README.md#arbor-%EF%B8%8F-oop) a more complex data model for your application.
 
 ## Optimal Re-Renders
 
-Arbor implements a path tracking mechanism that allows for [scoped store references](../../README.md#Scoped_Stores). This is what powers the `useArbor` hook, enabling Arbor to determine exactly which React components must re-render when a specific part of the state is changed, avoiding unnecessary re-render by defaulf.
+Arbor implements a path tracking mechanism that allows for [scoped store references](../../README.md#scoped-stores). This is what powers the `useArbor` hook, enabling Arbor to determine exactly which React components must re-render when a specific part of the state is changed, avoiding unnecessary re-render by defaulf.
 
 Also, Arbor ensures that object and method references are stable, e.g. their memory reference is kept the same across re-renders unless the object changes, this means you can safely pass store objects via prop or use their methods as event handlers to components memoized with React's [memo](https://react.dev/reference/react/memo) to prevent unnecessary re-render of component subtrees.
 
@@ -98,4 +98,4 @@ We've put together a couple of codesanboxes with examples on how to use Arbor in
 
 ## License
 
-Arbor is [MIT licensed](./LICENSE.md).
+Arbor is [MIT licensed](../../LICENSE.md).
