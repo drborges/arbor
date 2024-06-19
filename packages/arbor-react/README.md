@@ -41,7 +41,7 @@ export default function App() {
 import { Arbor, useArbor } from "@arborjs/react"
 
 const store = new Arbor({
-  count: 0
+  count: 0,
 })
 ```
 
@@ -58,7 +58,7 @@ function Counter() {
 
 3. Mutate the store state using plain JS APIs:
 
->[!NOTE]
+> [!NOTE]
 > We don't need to `useArbor` here because this component does not need to re-render when the store changes
 
 ```tsx
@@ -88,9 +88,9 @@ Also, Arbor ensures that object and method references are stable, e.g. their mem
 
 We've put together a couple of codesanboxes with examples on how to use Arbor in a React app with code comments further explaining some of the concepts which you may find helpful.
 
-  - [Counter App](https://codesandbox.io/p/sandbox/counter-app-yj26xb)
-  - [Todo App](https://codesandbox.io/p/sandbox/base-todo-app-pzgld3)
-  - [Payments App](https://codesandbox.io/p/sandbox/payments-app-nvtcrm)
+- [Counter App](https://codesandbox.io/p/sandbox/counter-app-yj26xb)
+- [Todo App](https://codesandbox.io/p/sandbox/base-todo-app-pzgld3)
+- [Payments App](https://codesandbox.io/p/sandbox/payments-app-nvtcrm)
 
 ## Support This Project
 
