@@ -41,10 +41,6 @@ export class Todo {
 @proxiable
 @serializable
 export class TodoList extends Array<Todo> {
-  constructor(...todos: Todo[]) {
-    super(...todos)
-  }
-
   static fromJSON(value: SerializedBy<TodoList>) {
     return new TodoList(...value)
   }
