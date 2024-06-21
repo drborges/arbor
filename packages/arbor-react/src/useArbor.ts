@@ -3,8 +3,8 @@ import {
   ArborNode,
   isNode,
   isProxiable,
+  ScopedStore,
   Store,
-  TrackedArbor,
 } from "@arborjs/store"
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react"
@@ -38,7 +38,7 @@ export function useArbor<T extends object>(
     )
   }
 
-  const trackedStore = useMemo(() => {
+  const scopedStore = useMemo(() => {
     let targetNode: ArborNode<T>
 
     if (target instanceof Arbor) {
@@ -50,7 +50,7 @@ export function useArbor<T extends object>(
       targetNode = store.state
     }
 
-    return new TrackedArbor(targetNode)
+    return new ScopedStore(targetNode)
     // NOTE: useArbor has a similar behavior as the one of useState where
     // subsequent calls to the hook with new arguments do not create side-effects.
     // The hook's argument is simply the mechanism in which the hook is initialized
@@ -58,9 +58,9 @@ export function useArbor<T extends object>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  trackedStore.tracker.reset()
+  scopedStore.scope.reset()
 
-  return useStore(trackedStore)
+  return useStore(scopedStore)
 }
 
 // For versions of React where useSyncExternalStore is not available we resort

@@ -22,7 +22,7 @@ export function isArborNodeTracked<T extends object>(
   return (value as Tracked)?.$tracked === true
 }
 
-class Tracker<T extends object> {
+class Scope<T extends object> {
   private readonly bindings = new WeakMap<object, WeakMap<object, object>>()
   private readonly cache = new WeakMap<ArborNode, Tracked>()
   private tracking = new WeakMap<Seed, Set<string>>()
@@ -168,12 +168,10 @@ class Tracker<T extends object> {
   }
 }
 
-// TODO: rename this to something that reflects its intention, which is the creation
-// of a store for a subtree in the given store.
-export class TrackedArbor<T extends object> implements Store<T> {
+export class ScopedStore<T extends object> implements Store<T> {
   protected originalStore: Arbor<T>
   protected targetNode: ArborNode<T>
-  readonly tracker = new Tracker()
+  readonly scope = new Scope()
 
   constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
     if (isNode(storeOrNode)) {
@@ -186,11 +184,11 @@ export class TrackedArbor<T extends object> implements Store<T> {
       throw new ArborError("track takes either an Arbor store or an ArborNode")
     }
 
-    this.tracker.track(this.targetNode)
+    this.scope.track(this.targetNode)
   }
 
   get state() {
-    return this.tracker.getOrCache(
+    return this.scope.getOrCache(
       this.originalStore.getNodeAt(path(this.targetNode))
     ) as ArborNode<T>
   }
@@ -210,7 +208,7 @@ export class TrackedArbor<T extends object> implements Store<T> {
     subscriber: Subscriber<T>
   ): Unsubscribe {
     return this.originalStore.subscribeTo(node, (event) => {
-      if (this.tracker.affected(event)) {
+      if (this.scope.affected(event)) {
         subscriber(event)
       }
     })
