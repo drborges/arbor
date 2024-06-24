@@ -2,7 +2,7 @@
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/drborges)
 
-Official React binding for [@arborjs/store](../arbor-store/README.md).
+Official React binding for [@arborjs/store](../arbor-store#arbor-store).
 
 ## Installation
 
@@ -18,14 +18,14 @@ Or via [yarn](https://classic.yarnpkg.com/en/docs/install)
 yarn add @arborjs/react
 ```
 
-Make sure you have `@arborjs/store` [installed](../arbor-store/README.md#installation).
+Make sure you have `@arborjs/store` [installed](../arbor-store#installation).
 
 ## Usage
 
-Similar to how you'd do in a [Vanilla JS app](../README.md#usage), using Arbor in a React app can be done in 3 simple steps.
+Similar to how you'd do in a [Vanilla JS app](../arbor-store#arbor-store), using Arbor in a React app can be done in 3 simple steps.
 
 > ![NOTE]
-> Make sure you take a look at the documentation for [@arborjs/store](../README.md#usage) before using this biding. Take a moment to also get familiar with some of the [caveats](../arbor-store/docs/Caveats.md) of working with Arbor.
+> Make sure you take a look at the documentation for [@arborjs/store](../arbor-store#usage) before using this biding. Take a moment to also get familiar with some of the [caveats](../arbor-store/docs/Caveats.md) of working with Arbor.
 
 Take the following React app as an example:
 
@@ -81,11 +81,11 @@ function Actions() {
 }
 ```
 
-Stores can be as complex as you may need them to be, holding arrays, complex objects, or use [classes to build](../../README.md#arbor-%EF%B8%8F-oop) a more complex data model for your application.
+Stores can be as complex as you may need them to be, holding arrays, complex objects, or use [classes to build](../arbor-store#arbor-%EF%B8%8F-oop) a more complex data model for your application.
 
 ## Optimal Re-Renders
 
-Arbor implements a path tracking mechanism that allows for [scoped store references](../arbor-store/README.md#scoped-stores). This is what powers the `useArbor` hook, enabling Arbor to determine exactly which React components must re-render when a specific part of the state is changed, avoiding unnecessary re-render by defaulf.
+Arbor implements a path tracking mechanism that allows for [scoped store references](../arbor-store#scoped-stores). This is what powers the `useArbor` hook, enabling Arbor to determine exactly which React components must re-render when a specific part of the state is changed, avoiding unnecessary re-render by defaulf.
 
 Also, Arbor ensures that object and method references are stable, e.g. their memory reference is kept the same across re-renders unless the object changes, this means you can safely pass store objects via prop or use their methods as event handlers to components memoized with React's [memo](https://react.dev/reference/react/memo) to prevent unnecessary re-render of component subtrees.
 
