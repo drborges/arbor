@@ -9,7 +9,7 @@ import { ArborNode } from "./types"
 import { detach, isDetached, merge, path, unwrap } from "./utilities"
 
 import { isNode } from "./guards"
-import { isArborNodeTracked, TrackedArbor } from "./TrackedArbor"
+import { isArborNodeTracked, ScopedStore } from "./ScopedStore"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -2167,22 +2167,22 @@ describe("Arbor", () => {
         ],
       })
 
-      const trackedStore = new TrackedArbor(store)
-      const root = trackedStore.state
-      const todos = trackedStore.state.todos
-      const todo0 = trackedStore.state.todos[0]
-      const todo1 = trackedStore.state.todos[1]
+      const scopedStore = new ScopedStore(store)
+      const root = scopedStore.state
+      const todos = scopedStore.state.todos
+      const todo0 = scopedStore.state.todos[0]
+      const todo1 = scopedStore.state.todos[1]
 
       todo0.active = true
 
-      expect(root).not.toBe(trackedStore.state)
-      expect(todos).not.toBe(trackedStore.state.todos)
-      expect(todo0).not.toBe(trackedStore.state.todos[0])
-      expect(todo1).toBe(trackedStore.state.todos[1])
+      expect(root).not.toBe(scopedStore.state)
+      expect(todos).not.toBe(scopedStore.state.todos)
+      expect(todo0).not.toBe(scopedStore.state.todos[0])
+      expect(todo1).toBe(scopedStore.state.todos[1])
 
-      expect(root).toEqual(trackedStore.state)
-      expect(todos).toEqual(trackedStore.state.todos)
-      expect(todo0).toEqual(trackedStore.state.todos[0])
+      expect(root).toEqual(scopedStore.state)
+      expect(todos).toEqual(scopedStore.state.todos)
+      expect(todo0).toEqual(scopedStore.state.todos[0])
     })
 
     it("reacts to mutations targeting paths being tracked", () => {
@@ -2194,20 +2194,20 @@ describe("Arbor", () => {
       })
 
       const subscriber = jest.fn()
-      const trackedStore = new TrackedArbor(store)
+      const scopedStore = new ScopedStore(store)
 
-      trackedStore.subscribe(subscriber)
+      scopedStore.subscribe(subscriber)
 
       // Tracks the following store paths
-      //  1. trackedStore.state.todos
-      //  2. trackedStore.state.todos[0]
-      //  2. trackedStore.state.todos[0].active
-      trackedStore.state.todos[0].active
+      //  1. scopedStore.state.todos
+      //  2. scopedStore.state.todos[0]
+      //  2. scopedStore.state.todos[0].active
+      scopedStore.state.todos[0].active
 
-      // Does not notifies trackedStore subscribers
+      // Does not notifies scopedStore subscribers
       store.state.todos[0].id = 3
       store.state.todos[0].text = "Do the dishes again"
-      // Does not notifies trackedStore subscribers
+      // Does not notifies scopedStore subscribers
       store.state.todos[1].id = 4
       store.state.todos[1].text = "Walk the dogs again"
       store.state.todos[1].active = false
@@ -2231,9 +2231,9 @@ describe("Arbor", () => {
       })
 
       const subscriber = jest.fn()
-      const trackedStore = new TrackedArbor(store)
+      const scopedStore = new ScopedStore(store)
 
-      trackedStore.subscribe(subscriber)
+      scopedStore.subscribe(subscriber)
 
       store.setState({ todos: [] })
 
@@ -2248,12 +2248,12 @@ describe("Arbor", () => {
         ],
       })
 
-      const trackedStore1 = new TrackedArbor(store)
+      const scopedStore1 = new ScopedStore(store)
 
-      expect(isArborNodeTracked(trackedStore1.state)).toEqual(true)
-      expect(isArborNodeTracked(trackedStore1.state.todos)).toEqual(true)
-      expect(isArborNodeTracked(trackedStore1.state.todos[0])).toEqual(true)
-      expect(isArborNodeTracked(trackedStore1.state.todos[1])).toEqual(true)
+      expect(isArborNodeTracked(scopedStore1.state)).toEqual(true)
+      expect(isArborNodeTracked(scopedStore1.state.todos)).toEqual(true)
+      expect(isArborNodeTracked(scopedStore1.state.todos[0])).toEqual(true)
+      expect(isArborNodeTracked(scopedStore1.state.todos[1])).toEqual(true)
     })
 
     it("automatically unwraps tracked node when creating a derived tracking scope", () => {
@@ -2264,18 +2264,18 @@ describe("Arbor", () => {
         ],
       })
 
-      const trackedStore1 = new TrackedArbor(store)
+      const scopedStore1 = new ScopedStore(store)
 
-      expect(trackedStore1.state).toEqual(store.state)
-      expect(trackedStore1.state).not.toBe(store.state)
-      expect(unwrap(trackedStore1.state)).toBe(store.state)
+      expect(scopedStore1.state).toEqual(store.state)
+      expect(scopedStore1.state).not.toBe(store.state)
+      expect(unwrap(scopedStore1.state)).toBe(store.state)
 
-      const trackedStore2 = new TrackedArbor(trackedStore1.state.todos[0])
+      const scopedStore2 = new ScopedStore(scopedStore1.state.todos[0])
 
-      expect(trackedStore2.state).toEqual(store.state.todos[0])
-      expect(trackedStore2.state).not.toBe(store.state.todos[0])
-      expect(trackedStore2.state).not.toBe(trackedStore1.state.todos[0])
-      expect(unwrap(trackedStore2.state)).toBe(store.state.todos[0])
+      expect(scopedStore2.state).toEqual(store.state.todos[0])
+      expect(scopedStore2.state).not.toBe(store.state.todos[0])
+      expect(scopedStore2.state).not.toBe(scopedStore1.state.todos[0])
+      expect(unwrap(scopedStore2.state)).toBe(store.state.todos[0])
     })
 
     it("isolates subscriptions to their own tracking scope", () => {
@@ -2289,26 +2289,26 @@ describe("Arbor", () => {
       const subscriber1 = jest.fn()
       const subscriber2 = jest.fn()
 
-      const trackedStore1 = new TrackedArbor(store)
-      trackedStore1.subscribe(subscriber1)
+      const scopedStore1 = new ScopedStore(store)
+      scopedStore1.subscribe(subscriber1)
 
-      // Causes trackedStore1 to watch mutations to the following paths:
+      // Causes scopedStore1 to watch mutations to the following paths:
       // 1. root
       // 2. root.todos
       // 3. root.todos[0]
-      const firstTodo = trackedStore1.state.todos[0]
+      const firstTodo = scopedStore1.state.todos[0]
 
-      const trackedStore2 = new TrackedArbor(firstTodo)
-      trackedStore2.subscribe(subscriber2)
+      const scopedStore2 = new ScopedStore(firstTodo)
+      scopedStore2.subscribe(subscriber2)
 
-      // Causes trackedStore2 to watch mutations to the following paths but does not affect trackedStore1:
+      // Causes scopedStore2 to watch mutations to the following paths but does not affect scopedStore1:
       // 1. root.todos[0].active
-      trackedStore2.state.active = true
+      scopedStore2.state.active = true
 
       expect(subscriber1).not.toHaveBeenCalled()
       expect(subscriber2).toHaveBeenCalledTimes(1)
 
-      trackedStore1.state.todos[2] = {
+      scopedStore1.state.todos[2] = {
         id: 3,
         text: "Learn Arbor",
         active: true,
@@ -2346,12 +2346,12 @@ describe("Arbor", () => {
         ],
       })
 
-      const trackedStore = new TrackedArbor(store)
+      const scopedStore = new ScopedStore(store)
 
-      const activeTodo = trackedStore.state.todos.find((t) => t.active)
+      const activeTodo = scopedStore.state.todos.find((t) => t.active)
 
       expect(isArborNodeTracked(activeTodo)).toBe(true)
-      expect(activeTodo).toBe(trackedStore.state.todos[1])
+      expect(activeTodo).toBe(scopedStore.state.todos[1])
     })
 
     it("handles mutations to the root of the store", () => {
@@ -2361,10 +2361,10 @@ describe("Arbor", () => {
       ])
 
       const subscriber = jest.fn()
-      const trackedStore = new TrackedArbor(store)
-      trackedStore.subscribe(subscriber)
+      const scopedStore = new ScopedStore(store)
+      scopedStore.subscribe(subscriber)
 
-      trackedStore.state.push({ id: 3, text: "Walk the dogs", active: true })
+      scopedStore.state.push({ id: 3, text: "Walk the dogs", active: true })
 
       expect(subscriber).toHaveBeenCalledTimes(1)
     })
@@ -2375,9 +2375,9 @@ describe("Arbor", () => {
         { id: 2, text: "Walk the dogs", active: true },
       ])
 
-      const trackedStore = new TrackedArbor(store.state[0])
+      const scopedStore = new ScopedStore(store.state[0])
 
-      expect(unwrap(trackedStore.state)).toBe(store.state[0])
+      expect(unwrap(scopedStore.state)).toBe(store.state[0])
     })
 
     it("creates a virtual state tree from a given subtree", () => {
@@ -2386,11 +2386,11 @@ describe("Arbor", () => {
         { id: 2, text: "Walk the dogs", active: true },
       ])
 
-      const trackedStore = new TrackedArbor(store.state[0])
+      const scopedStore = new ScopedStore(store.state[0])
 
-      expect(unwrap(trackedStore.state)).toBe(store.state[0])
+      expect(unwrap(scopedStore.state)).toBe(store.state[0])
 
-      const newState = trackedStore.setState({
+      const newState = scopedStore.setState({
         id: 3,
         text: "Learn Arbor",
         active: true,
@@ -2408,8 +2408,8 @@ describe("Arbor", () => {
       const store = new Arbor([{ name: "Alice" }, { name: "Bob" }])
 
       const subscriber = jest.fn()
-      const trackedStore = new TrackedArbor(store)
-      trackedStore.subscribe(subscriber)
+      const scopedStore = new ScopedStore(store)
+      scopedStore.subscribe(subscriber)
 
       store.state.push({ name: "Carol" })
 
@@ -2420,11 +2420,11 @@ describe("Arbor", () => {
       const store = new Arbor({ users: [{ name: "Alice" }, { name: "Bob" }] })
 
       const subscriber = jest.fn()
-      const trackedStore = new TrackedArbor(store)
-      trackedStore.subscribe(subscriber)
+      const scopedStore = new ScopedStore(store)
+      scopedStore.subscribe(subscriber)
 
       // track state.users
-      trackedStore.state.users[1]
+      scopedStore.state.users[1]
 
       store.state.users[2] = { name: "Carol" }
 
@@ -2436,7 +2436,7 @@ describe("Arbor", () => {
         { name: "Carol", active: true },
         { name: "Alice", active: false },
       ])
-      const tracked = new TrackedArbor(store.state)
+      const tracked = new ScopedStore(store.state)
 
       store.state.filter // binds filter to the original store
       const filterBoundToTrackedStore = tracked.state.filter
@@ -2450,7 +2450,7 @@ describe("Arbor", () => {
         { name: "Carol", active: true },
         { name: "Alice", active: false },
       ])
-      const tracked = new TrackedArbor(store.state)
+      const tracked = new ScopedStore(store.state)
       const subscriber = jest.fn()
 
       tracked.subscribe(subscriber)
@@ -2470,7 +2470,7 @@ describe("Arbor", () => {
           { name: "Alice", active: false },
         ],
       })
-      const tracked = new TrackedArbor(store)
+      const tracked = new ScopedStore(store)
 
       const carol = tracked.state.users[0]
       expect(isArborNodeTracked(carol)).toBe(true)
@@ -2482,7 +2482,7 @@ describe("Arbor", () => {
         users: ["Carol", "Alice"],
       })
 
-      const tracked = new TrackedArbor(store)
+      const tracked = new ScopedStore(store)
       const userFilter = tracked.state.users.filter
 
       expect(userFilter).toBe(tracked.state.users.filter)
@@ -2504,7 +2504,7 @@ describe("Arbor", () => {
         ],
       })
 
-      const tracked = new TrackedArbor(store)
+      const tracked = new ScopedStore(store)
       const userFilter = tracked.state.users.filter
 
       expect(userFilter((u) => u.active)).toEqual([
@@ -2527,7 +2527,7 @@ describe("Arbor", () => {
 
     it("can handle null props", () => {
       const store = new Arbor({ name: "Carol", email: null })
-      const tracked = new TrackedArbor(store.state)
+      const tracked = new ScopedStore(store.state)
 
       expect(tracked.state.email).toBeNull()
     })
@@ -2540,15 +2540,13 @@ describe("Arbor", () => {
       trackedProp = "tracked"
     }
 
-    const tracked = new TrackedArbor(new Arbor(new SomeNode()))
+    const store = new ScopedStore(new Arbor(new SomeNode()))
 
-    tracked.state.untrackedProp
-    tracked.state.trackedProp
+    store.state.untrackedProp
+    store.state.trackedProp
 
-    expect(tracked.tracker.isTracking(tracked.state, "trackedProp")).toBe(true)
-    expect(tracked.tracker.isTracking(tracked.state, "untrackedProp")).toBe(
-      false
-    )
+    expect(store.scope.isTracking(store.state, "trackedProp")).toBe(true)
+    expect(store.scope.isTracking(store.state, "untrackedProp")).toBe(false)
   })
 
   it("binds methods to the path tracking proxy", () => {
@@ -2566,7 +2564,7 @@ describe("Arbor", () => {
       }
     }
 
-    const store = new TrackedArbor(new Arbor(new TodoApp()))
+    const store = new ScopedStore(new Arbor(new TodoApp()))
     const subscriber = jest.fn()
 
     store.subscribe(subscriber)
@@ -2597,7 +2595,7 @@ describe("Arbor", () => {
       todos: Todo[] = []
     }
 
-    const store = new TrackedArbor(new Arbor(new TodoApp()))
+    const store = new ScopedStore(new Arbor(new TodoApp()))
     const subscriber = jest.fn()
 
     store.subscribe(subscriber)
