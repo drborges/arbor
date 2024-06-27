@@ -4,7 +4,7 @@
 
 ## Organizing Your Project
 
-Arbor does not enforce any sort of project structure in order to use it, however, the following structure has proved quite fitting for our needs and perhaps, it can work for you as well:
+Arbor does not enforce any project structure to use it, however, the following structure has proved quite fitting for our needs and perhaps, it can work for you as well:
 
 ```sh
 my-app/
@@ -24,7 +24,7 @@ The more "Arbor-specific" part of the setup are the directories named `models`, 
 
 1. `components`: Home to your React components;
 2. `helpers`: A place for helper functions used across the application;
-3. `models`: It's where you can defined your data model usually implemented using JS classes, but you can also define constructor functions that return your data types in plain JS objects/arrays if you prefer not to use more traditional OOP;
+3. `models`: It's where you can define your data model usually implemented using JS classes, but you can also define constructor functions that return your data types in plain JS objects/arrays if you prefer not to use more traditional OOP;
 4. `selectors`: Here you can define "selector" functions used to select something from the store by a given condition or UUID so you can reuse this lookup logic across your application;
 5. `stores`: This is where you define your Arbor store or stores if you decide to model your application using multiple ones.
 
@@ -32,28 +32,28 @@ Check out [this sample todo app](https://codesandbox.io/p/sandbox/todo-app-pzgld
 
 ## Serializing Custom Types
 
-One of Arbor's strenghts is the fact you can rely on built-in JS constructs to model your application state, for instance defining custom types in a more OOP way by using classes.
+One of Arbor's strengths is the fact you can rely on built-in JS constructs to model your application state, for instance defining custom types in a more OOP way by using classes.
 
 When choosing that path, you may run into a common scenario where serializing custom types you end up losing type information, meaning, deserializing the serialized data will not give you back instances of the types you defined, but rather, literal objects and arrays.
 
-One common solution is for you to create some serialization/deserialization logic that knows how to transform data accordingly. For small datasets that's usually Ok, but as your data model becomes more complex, this task gets quite tedious and error prone. To make this serialization/deserialization work easier, we've built [@arborjs/json](../packages/arbor-json/), check it out and let us know what you think 😁.
+One common solution is for you to create some serialization/deserialization logic that knows how to transform data accordingly. For small datasets that's usually OK, but as your data model becomes more complex, this task gets quite tedious and error-prone. To make this serialization/deserialization work easier, we've built [@arborjs/json](../packages/arbor-json/), check it out and let us know what you think 😁.
 
 ## Sharing State Across Apps
 
-You can connect different apps (React or not) through a global Arbor store! You can subscribe to store updates from different apps in order to react to changes accordingly.
+You can connect different apps (React or not) through a global Arbor store! You can subscribe to store updates from different apps to react to changes accordingly.
 
-This can be used as an integration meachism to keep two different apps in sync or aware of common data flows.
+This can be used as an integration mechanism to keep two different apps in sync or aware of common data flows.
 
 ## Local State With `useArbor`
 
 In React, you can also use Arbor to manage your component's local state to leverage all the reactivity goodies without necessarily having a global store.
 
-To do that, simply [pass an object](../packages//arbor-react/README.md#usearbor-vs-usestate) as the local state initial value to `useArbor` hook and it will return a reactive version of that object back to you. At this point, you can mutate that reactive object using Regular JS constructs and the React component will re-render accordingly.
+To do that, simply [pass an object](../packages//arbor-react#usearbor-vs-usestate) as the local state initial value to `useArbor` hook and it will return a reactive version of that object back to you. At this point, you can mutate that reactive object using Regular JS constructs and the React component will re-render accordingly.
 
 ## Detached fields vs `useRef`
 
 In React apps, sometimes you need to track a certain value without forcing a re-render of your components. For that purpose, we end up resorting to the [useRef](https://react.dev/reference/react/useRef) hook.
 
-In Arbor, you can achieve a similar result with `@detached` fields. Detached fields of `@proxiable` calsses are not attached to the store's [state tree](../packages/arbor-store/docs/StateTree.md) so you can freely change their value without triggering mutation events, that means React components will not re-render when these fields are updated.
+In Arbor, you can achieve a similar result with `@detached` fields. Detached fields of `@proxiable` classes are not attached to the store's [state tree](../packages/arbor-store/docs/StateTree.md) so you can freely change their value without triggering mutation events, which means React components will not re-render when these fields are updated.
 
-Check out the `@arborjs/react` README for a [usage example](../packages/arbor-react/README.md#detached-fields-vs-useref).
+Check out the `@arborjs/react` README for a [usage example](../packages/arbor-react#detached-fields-vs-useref).
