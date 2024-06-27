@@ -2,9 +2,9 @@
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/drborges)
 
-[RXJS](https://rxjs.dev/) binding for [@arborjs/store](../arbor-store/README.md).
+[RXJS](https://rxjs.dev/) binding for [@arborjs/store](../arbor-store#arbor-store).
 
-> ![WARNINIG]
+> [!WARNING]
 > This is currently an **experimental** project, use it at your own risk in production.
 
 ## Installation
@@ -21,7 +21,7 @@ Or via [yarn](https://classic.yarnpkg.com/en/docs/install)
 yarn add @arborjs/rxjs
 ```
 
-Make sure you have `@arborjs/store` [installed](../arbor-store/README.md#installation).
+Make sure you have `@arborjs/store` [installed](../arbor-store#installation).
 
 ## Usage
 
