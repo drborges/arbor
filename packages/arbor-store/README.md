@@ -118,7 +118,7 @@ console.log(scope1.state.counter1.count)
 => 0
 ```
 
-Now, should we change `counter1.count` from the original `store`, only `scope1` will react to the change since `scope2` has not yet accessed any part of the state, therefore does not depend on any particular part of the state:
+Now, should we change `counter1.count` from the original `store` (or from `scope1`), only `scope1` will react to the change since `scope2` has not yet accessed any part of the state, therefore does not depend on any particular part of the state:
 
 ```ts
 store.state.counter1.count++
@@ -126,13 +126,13 @@ store.state.counter1.count++
 => Scope1 counter2: 0
 ```
 
-Changing `counter2.count` will not notify either of scope since none have accessed that part of the state, meaning they do not depend on it:
+Changing `counter2.count` will not notify either scope since none have accessed that part of the state:
 
 ```ts
 store.state.counter2.count++ // no console logs are executed
 ```
 
-As soon as we access any part of the state from `scope2` it starts to react to changes to that specific part of the state since it now depends on it:
+As soon as we access any part of the state from `scope2` it starts to react to changes to the part of the state it has accessed since it now depends on it:
 
 ```ts
 console.log(scope2.state.counter1.count)
@@ -154,11 +154,11 @@ store.state.counter2.count++
 => Scope2 counter2: 1
 ```
 
-Note that mutations to `counter2` only notified `scope2` since `scope1` never accessed `counter1` so it does not depend on that part of the state.
+Note that mutations to `counter2` only notified `scope2` since `scope1` never accessed `counter2`.
 
 ## Subscriptions
 
-The simplest way to subscribe to store changes is from the store itself like in the previous examples, however, you may choose to subscribe to specific [nodes](docs/StateTree.md#nodes) of the [state tree](docs/StateTree.md) directly, keeping your subscriptions focused on a subsset of the application state:
+The simplest way to subscribe to store changes is from the store itself like in the previous examples, however, you may choose to subscribe to specific [nodes](docs/StateTree.md#nodes) of the [state tree](docs/StateTree.md) directly, keeping your subscriptions focused on a subset of the application state:
 
 ```ts
 const store = new Arbor({
