@@ -20,7 +20,7 @@ yarn add @arborjs/store
 
 ## Usage
 
-There are basically three steps to working with Arbor:
+There are three steps to working with Arbor:
 
 1. Create a `store` object to hold your application state:
 
@@ -66,16 +66,16 @@ counter.count = 5
 => Count: 5
 ```
 
-Arbor will lazily and recursively proxy every object composing the state of the store, no matter how deep and complex that state is, making every bit of it reactive, that basically means that you can subscribe to changes to any part of the state and react to changes accordingly simply relying on the old regular JS APIs you are already used to, such as assignments, or APIs like `Array#push` and `Array#splice`.
+Arbor will lazily and recursively proxy every object composing the state of the store, no matter how deep and complex that state is, making every bit of it reactive, that means that you can subscribe to changes to any part of the state and react to changes accordingly simply relying on the old regular JS APIs you are already used to, such as assignments, or APIs like `Array#push` and `Array#splice`.
 
 ## Scoped Stores
 
-Arbor implements a [path tracking](docs/PathTracking.md) mechanism that allows apps to have scoped references of a store, ultimatelly enabling different parts of an app to only react to state changes affecting the scope they are subscribed to.
+Arbor implements a [path tracking](docs/PathTracking.md) mechanism that allows apps to have scoped references of a store, ultimately enabling different parts of an app to react only to state changes affecting the scope they are subscribed to.
 
 > [!IMPORTANT]
-> This is what's behind optimal re-rendering behavior of the [React binding](../arbor-react/README.md), enabling Arbor to only re-render components that trully depend on the parts of the state being updated.
+> This is what's behind the optimal re-rendering behavior of the [React binding](../arbor-react#arbor-react-binding), enabling Arbor to only re-render components that truly depend on the parts of the state being updated.
 
-Let's take the previous counter example and extend it so we can track two different counters:
+Let's take the previous "counter" example and extend it so we can track two different counters:
 
 ```ts
 const store = new Arbor({
@@ -177,11 +177,11 @@ store.subscribeTo(store.state.counter1, (event) => {
 
 Focusing your subscriptions to specific state tree nodes can be interesting if you have a large number of subscribers that only care about a subset of your application state, making notifications more efficient since not every subscriber needs to be processed.
 
-If you are curious to better understand how this is done internally, check out the details of the [Subscription Tree](docs/StateTree.md#subscription-tree), mechanism used internally by Arbor to achieve this behavior.
+If you are curious to understand better how this is done internally, check out the details of the [Subscription Tree](docs/StateTree.md#subscription-tree), mechanism used by Arbor to achieve this behavior.
 
 ## Utility Functions
 
-Arbor also provides a couple utility functions that can be used to simplify certain operations in the [state tree](docs/StateTree.md):
+Arbor also provides a couple of utility functions that can be used to simplify certain operations in the [state tree](docs/StateTree.md):
 
 ### `detach`
 
@@ -270,9 +270,9 @@ unwrappedTodo.done = true
 
 ## Arbor ❤️ OOP
 
-Arbor will not enforce any particular data model style, you can use literal objects and arrays to represent your data model or go more "functional" style if that's what you prefer. However, Arbor really shines brighter in more complex applications when you start introducing abstractions to represent your data model usually via JS classes.
+Arbor will not enforce any particular data model style, you can use literal objects and arrays to represent your data model or go more "functional" style if that's what you prefer. However, Arbor shines brighter in more complex applications when you start introducing abstractions to represent your data model usually via JS classes.
 
-You can leverage JavaScript built-in constructs like classes to build more complex data models, all you have to do is decorate them with `@proxiable`, which let's Arbor know instances of the decorated class should be reactive.
+You can leverage JavaScript built-in constructs like classes to build more complex data models, all you have to do is decorate them with `@proxiable`, which lets Arbor know instances of the decorated class should be reactive.
 
 Here's what the data model for a Todo app could look like in Arbor:
 
@@ -290,7 +290,7 @@ class Todo {
   done = false
 
   // Detached fields are "detached" from the store's state tree so changing
-  // its value will not notify susbcribers.
+  // its value will not notify subscribers.
   @detached priorityChanged = false
 
   constructor(public content: string, public priority = 0) {}
@@ -363,11 +363,11 @@ doTheDishesTodo.priority++
 doTheDishesTodo.priorityChanged = true
 ```
 
-When building your data model like that, you may need to serialize that data model without losing type information, so when you deserialize that data you get back instances of the correct classes representing each part of your data. For that, check out [@arborjs/json](packages/arbor-json/).
+When building your data model like that, you may need to serialize that data model without losing type information, so when you deserialize that data you get back instances of the correct classes representing each part of your data. Check out [@arborjs/json](../arbor-json#arborjsjson) for that.
 
 ## Learn By Example
 
-We've put together a couple of codesanboxes with examples on how to use Arbor in a React app with code comments further explaining some of the concepts which you may find helpful.
+We've put together a couple of CodeSanboxes with examples of how to use Arbor in a React app with code comments further explaining some of the concepts that you may find helpful.
 
 > [!NOTE]
 > We'll put together some Vanilla JS examples of Arbor usage soon.
