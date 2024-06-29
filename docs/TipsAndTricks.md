@@ -62,11 +62,13 @@ Check out the `@arborjs/react` README for a [usage example](../packages/arbor-re
 
 Due to how the [components tree](https://react.dev/learn/understanding-your-ui-as-a-tree#your-ui-as-a-tree) works in React, every time a component re-renders it also re-renders its children. In other words, the entire component's subtree re-renders.
 
-When rendering a subtree happens to be an expensive task you may want to optimize your code so that the subtree only re-renders when absolutely needed. That's where [React.memo](https://react.dev/reference/react/memo) can be helpful. Components wrapped with `React.memo` will only re-render as part of their parent's rendering cycle, if their props have changed.
+When rendering a subtree happens to be an expensive task, you may want to optimize your code so that the subtree only re-renders when needed. That's where [React.memo](https://react.dev/reference/react/memo) can be helpful. Components wrapped with `React.memo` will only re-render as part of their parent's rendering cycle, if their props have changed.
 
 Arbor ensures objects in the store (a.k.a nodes of the state tree), have their memory reference stable across re-renders, only changing when that object is updated, same is true for methods defined in these objects, which means you can pass them as props to components wrapped with `React.memo` and leverage this optimization. Example:
 
 ```tsx
+import { Arbor, useArbor } from "@arborjs/react"
+
 const store = new Arbor([
   { id: 1, text: "Do the dishes", done: false },
   { id: 2, text: "Clean the house", done: true },
@@ -77,23 +79,19 @@ function TodoList() {
 
   return (
     <ul>
-      {todos.map(todo => (
+      {todos.map((todo, i) => (
         <TodoItem
           key={todo.id}
           todo={todo}
-          onDelete={todos.delete(todo)}
         />
       ))}
     </ul>
   )
 }
 
-const TodoItem = React.memo(({ todo, onDelete }) => {
+const TodoItem = React.memo(({ todo }) => {
   return (
-    <li>
-      {todo.text}
-      <button onClick={onDelete}>Delete</button>
-    </li>
+    <li>{todo.text}</li>
   )
 })
 ```
@@ -111,6 +109,8 @@ To achieve that desired ideal behavior, we can take advantage of Arbor's [path t
 Let's take the Todo List example from the previous section and optimize it to leverage Arbor's path tracking to ensure the `TodoList` component does not change when a `TodoItem` updates.
 
 ```tsx
+import { Arbor, detach, useArbor } from "@arborjs/react"
+
 const store = new Arbor([
   { id: 1, text: "Do the dishes", done: false },
   { id: 2, text: "Clean the house", done: true },
@@ -125,20 +125,19 @@ function TodoList() {
         <TodoItem
           key={todo.id}
           id={todo.id}
-          onDelete={todos.delete(todo)}
         />
       ))}
     </ul>
   )
 }
 
-const TodoItem = React.memo(({ id, onDelete }) => {
+const TodoItem = React.memo(({ id }) => {
   const todo = useArbor(store.state.find(todo => todo.id === id))
 
   return (
     <li>
       {todo.text}
-      <button onClick={onDelete}>Delete</button>
+      <button onClick={() => detach(todo)}>Delete</button>
     </li>
   )
 })
@@ -149,7 +148,7 @@ Let's break that code snippet down:
 1. We no longer pass `todo` as prop to `TodoItem`;
 2. Instead, we pass the `id` of the todo and let the `TodoItem` look up the todo from the store by its id and connect to the store via `useArbor` but specifically, it connects to the node representing that todo.
 
-By doing that, we connect `TodoList` and `TodoItem` to the store but each component is scoped to updates affecting the parts of the state that they depend on.
+By doing that, we connect `TodoList` and `TodoItem` to the store but each component is scoped to updates affecting the parts of the state they depend on.
 
 The `TodoItem` component will re-render every time the `text` or `id` of the todo changes, whereas the `TodoList` will re-render only if the state of the array changes, e.g. a todo is removed or added, or if the `id` of a todo item changes since the component references that field within the map loop.
 
