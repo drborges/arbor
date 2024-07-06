@@ -2609,4 +2609,21 @@ describe("Arbor", () => {
     expect(state.todos[0].done).toBe(true)
     expect(state.todos[1].done).toBe(true)
   })
+
+  it("can convert a map node from a scoped store to array", () => {
+    const store = new Arbor(
+      new Map([
+        [1, "Alice"],
+        [2, "Bob"],
+      ])
+    )
+
+    const scope = new ScopedStore(store)
+    const list = Array.from(scope.state)
+
+    expect(list).toEqual([
+      [1, "Alice"],
+      [2, "Bob"],
+    ])
+  })
 })

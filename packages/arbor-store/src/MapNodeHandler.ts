@@ -1,5 +1,4 @@
 import { NodeHandler } from "./NodeHandler"
-import { NotAnArborNodeError } from "./errors"
 import { isNode, isProxiable } from "./guards"
 import type { Link, Node } from "./types"
 
@@ -11,10 +10,11 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
   }
 
   *[Symbol.iterator]() {
-    if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
+    const mapProxy = this.$tree.getNodeAt(this.$path) as Map<unknown, T>
 
-    for (const entry of this.entries()) {
-      yield entry
+    for (const entry of this.$value.entries()) {
+      const childProxy = mapProxy.get(entry[0])
+      yield [entry[0], childProxy]
     }
   }
 
