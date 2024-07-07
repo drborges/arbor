@@ -1,11 +1,13 @@
-import { Arbor } from "./Arbor"
-import { Path } from "./Path"
-import { Subscribers } from "./Subscribers"
+import { describe, expect, it, vi } from "vitest"
+
+import { Arbor } from "../src/Arbor"
+import { Path } from "../src/Path"
+import { Subscribers } from "../src/Subscribers"
 
 describe("Subscribers", () => {
   it("notifies subscribers of mutation events", () => {
-    const subscriber1 = jest.fn()
-    const subscriber2 = jest.fn()
+    const subscriber1 = vi.fn()
+    const subscriber2 = vi.fn()
     const subscribers = new Subscribers()
     const mutationEvent = {
       store: new Arbor({}),
@@ -24,8 +26,8 @@ describe("Subscribers", () => {
   })
 
   it("does not notify subscribers that have canceled their subscription", () => {
-    const subscriber1 = jest.fn()
-    const subscriber2 = jest.fn()
+    const subscriber1 = vi.fn()
+    const subscriber2 = vi.fn()
     const subscribers = new Subscribers()
     const mutationEvent = {
       store: new Arbor({}),
@@ -50,9 +52,9 @@ describe("Subscribers", () => {
       const subscribers = new Subscribers()
 
       expect(subscribers.size).toBe(0)
-      subscribers.subscribe(jest.fn())
+      subscribers.subscribe(vi.fn())
       expect(subscribers.size).toBe(1)
-      subscribers.subscribe(jest.fn())
+      subscribers.subscribe(vi.fn())
       expect(subscribers.size).toBe(2)
     })
   })
