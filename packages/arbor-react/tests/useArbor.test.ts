@@ -1,7 +1,10 @@
+// @vitest-environment jsdom
+
 import { Arbor, isArborNodeTracked, proxiable, unwrap } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react"
+import { describe, expect, it } from "vitest"
 
-import { useArbor } from "./useArbor"
+import { useArbor } from "../src/useArbor"
 
 describe("useArbor", () => {
   it("tracks accesses to node props", () => {

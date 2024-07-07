@@ -59,14 +59,15 @@
     "react": "18.2.0",
     "react-test-renderer": "18.2.0",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "vitest": "^1.6.0"
   },
   "scripts": {
     "prettier": "prettier -w . ",
     "clean": "rm -rf dist",
     "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
-    "test": "jest --passWithNoTests",
-    "dev": "jest --watch",
+    "test": "vitest run",
+    "dev": "vitest -w",
     "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
     "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc"
   },
