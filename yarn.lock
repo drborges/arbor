@@ -32,6 +32,7 @@ __metadata:
     prettier: ^2.8.8
     ts-jest: ^29.1.0
     typescript: ^5.0.4
+    vitest: ^1.6.0
   languageName: unknown
   linkType: soft
 

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest"
 import {
   Json,
   Serialized,
@@ -5,7 +6,7 @@ import {
   parse,
   serializable,
   stringify,
-} from "./index"
+} from "../src"
 
 describe("Json", () => {
   describe("simple object", () => {
