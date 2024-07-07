@@ -1,18 +1,20 @@
-import debounce from "./debounce"
+import { describe, expect, it, vi } from "vitest"
+
+import debounce from "../src/debounce"
 
 describe("debounce", () => {
   it("calls debounced function at most once within the debounced period", () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
 
-    const fn = jest.fn()
+    const fn = vi.fn()
     const debounced = debounce(fn, 100)
 
     debounced()
     debounced()
     expect(fn).toHaveBeenCalledTimes(0)
-    jest.advanceTimersByTime(100)
+    vi.advanceTimersByTime(100)
     expect(fn).toHaveBeenCalledTimes(1)
 
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 })
