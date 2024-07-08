@@ -401,7 +401,7 @@ describe("Arbor", () => {
 
       store.setState(state)
 
-      expect(isNode(unwrap(store.state))).not.toBe(true)
+      expect(store.state).toBeProxiedExactlyOnce()
     })
 
     it("automatically unwraps nodes when creating a store off of an existing state tree", () => {
