@@ -457,7 +457,7 @@ describe("Arbor", () => {
 
       store.state[0] = alice
 
-      expect(isDetached(carol)).toBe(true)
+      expect(carol).toBeDetached()
       expect(store.getLinkFor(alice)).toBe("0")
       expect(store.getNodeFor(alice)).toBe(store.state[0])
       expect(store.getNodeFor(alice)).toBe(store.state[1])
@@ -757,7 +757,7 @@ describe("Arbor", () => {
         id: 3,
       })
 
-      expect(isDetached(firstTodo)).toBe(true)
+      expect(firstTodo).toBeDetached()
       expect(newNode).toBe(store.state.todos[0])
       expect(store.state).toEqual({
         todos: [{ id: 3 }, { id: 2 }],
@@ -768,7 +768,7 @@ describe("Arbor", () => {
         todos: [],
       })
 
-      expect(isDetached(root)).toBe(true)
+      expect(root).toBeDetached()
       expect(newRootNode).toBe(store.state)
       expect(store.state).toEqual({
         todos: [],
@@ -814,7 +814,7 @@ describe("Arbor", () => {
 
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toBe(bob)
-      expect(isDetached(alice)).toBe(true)
+      expect(alice).toBeDetached()
 
       carol.name = "Carol updated"
 
@@ -832,7 +832,7 @@ describe("Arbor", () => {
 
       const detachedAlice = detach(alice)
       expect(detachedAlice).toBe(aliceValue)
-      expect(isDetached(alice)).toBe(true)
+      expect(alice).toBeDetached()
 
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toBe(bob)
@@ -859,7 +859,7 @@ describe("Arbor", () => {
 
       store.state.pop()
 
-      expect(isDetached(bob)).toBe(true)
+      expect(bob).toBeDetached()
       expect(store.getLinkFor(alice)).toBe("0")
       expect(store.getLinkFor(carol)).toBe("1")
       expect(store.getLinkFor(bob)).toBeUndefined()
@@ -878,7 +878,7 @@ describe("Arbor", () => {
       const shifted = store.state.shift()
 
       expect(shifted).toBe(aliceValue)
-      expect(isDetached(alice)).toBe(true)
+      expect(alice).toBeDetached()
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toBe(bob)
       expect(store.state[2]).toBeUndefined()
@@ -928,8 +928,8 @@ describe("Arbor", () => {
 
       store.state.splice(1, 2, johnValue, biancaValue)
 
-      expect(isDetached(bob)).toBe(true)
-      expect(isDetached(alice)).toBe(true)
+      expect(bob).toBeDetached()
+      expect(alice).toBeDetached()
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toEqual(johnValue)
       expect(store.state[2]).toEqual(biancaValue)
@@ -1743,7 +1743,7 @@ describe("Arbor", () => {
 
       store.state.todos.set("123", todo2)
 
-      expect(isDetached(todo1)).toBe(true)
+      expect(todo1).toBeDetached()
       expect(store.state.todos.get("123")).toBe(todo2)
       expect(store.state.todos.get("123")).toBe(store.state.todos.get("abc"))
     })
@@ -1764,14 +1764,14 @@ describe("Arbor", () => {
 
       store.state.todos.delete("123")
 
-      expect(isDetached(todo1)).toBe(true)
-      expect(isDetached(todo2)).toBe(true)
+      expect(todo1).toBeDetached()
+      expect(todo2).toBeDetached()
       expect(store.state.todos.get("abc")).toEqual(todo2)
       expect(store.state.todos.get("123")).toBeUndefined()
 
       store.state.todos.delete("abc")
 
-      expect(isDetached(todo2)).toBe(true)
+      expect(todo2).toBeDetached()
       expect(store.state.todos.get("123")).toBeUndefined()
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
@@ -1854,8 +1854,8 @@ describe("Arbor", () => {
 
       store.state.todos.clear()
 
-      expect(isDetached(todo1)).toBe(true)
-      expect(isDetached(todo2)).toBe(true)
+      expect(todo1).toBeDetached()
+      expect(todo2).toBeDetached()
     })
 
     it("allows iterating over Map values", () => {
