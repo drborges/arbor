@@ -1,6 +1,6 @@
 {
   "extends": ["../../.eslintrc.json"],
-  "ignorePatterns": ["jest.config.js", "perf"],
+  "ignorePatterns": ["perf"],
   "parserOptions": {
     "project": ["./tsconfig.eslint.json"]
   }
