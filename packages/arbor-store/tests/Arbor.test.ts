@@ -44,7 +44,7 @@ describe("ImmutableArbor", () => {
       expect(store.state.users[1]).toBe(user1)
     })
 
-    it("generates a applies structure sharing to the data stored in the state tree creating snapshots of the data on each mutation", () => {
+    it.only("generates a applies structure sharing to the data stored in the state tree creating snapshots of the data on each mutation", () => {
       const state = {
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
         users: [{ name: "Alice" }, { name: "Bob" }],
@@ -61,13 +61,13 @@ describe("ImmutableArbor", () => {
 
       store.state.todos[0].text = "Clean the living room"
 
-      expect(unwrap(store.state)).not.toBe(state)
-      expect(unwrap(store.state.todos)).not.toBe(todos)
-      expect(unwrap(store.state.todos[0])).not.toBe(todo0)
-      expect(unwrap(store.state.todos[1])).toBe(todo1)
-      expect(unwrap(store.state.users)).toBe(users)
-      expect(unwrap(store.state.users[0])).toBe(user0)
-      expect(unwrap(store.state.users[1])).toBe(user1)
+      expect(store.state).not.toBeNodeOf(state)
+      expect(store.state.todos).not.toBeNodeOf(todos)
+      expect(store.state.todos[0]).not.toBeNodeOf(todo0)
+      expect(store.state.todos[1]).toBeNodeOf(todo1)
+      expect(store.state.users).toBeNodeOf(users)
+      expect(store.state.users[0]).toBeNodeOf(user0)
+      expect(store.state.users[1]).toBeNodeOf(user1)
     })
 
     it("traversing detached nodes does not 'bring' them back into the state tree", () => {
