@@ -7,6 +7,7 @@ expect.extend({
     const isDetachedNode = isDetached(received)
     return {
       pass: isDetachedNode,
+      actual: received,
       message: () =>
         `Received value is ${isDetachedNode ? "" : "not"} a detached node`,
     }

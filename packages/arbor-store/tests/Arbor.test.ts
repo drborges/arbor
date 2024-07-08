@@ -44,7 +44,7 @@ describe("ImmutableArbor", () => {
       expect(store.state.users[1]).toBe(user1)
     })
 
-    it.only("generates a applies structure sharing to the data stored in the state tree creating snapshots of the data on each mutation", () => {
+    it("generates a applies structure sharing to the data stored in the state tree creating snapshots of the data on each mutation", () => {
       const state = {
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
         users: [{ name: "Alice" }, { name: "Bob" }],
@@ -270,17 +270,17 @@ describe("Arbor", () => {
         { name: "Bob", active: true },
       ])
 
-      expect(isNode(store.state)).toBe(true)
-      expect(isNode(store.state[0])).toBe(true)
-      expect(isNode(store.state[1])).toBe(true)
-      expect(isNode(store.state[2])).toBe(true)
+      expect(store.state).toBeArborNode()
+      expect(store.state[0]).toBeArborNode()
+      expect(store.state[1]).toBeArborNode()
+      expect(store.state[2]).toBeArborNode()
 
       store.state[1].active = false
 
-      expect(isNode(store.state)).toBe(true)
-      expect(isNode(store.state[0])).toBe(true)
-      expect(isNode(store.state[1])).toBe(true)
-      expect(isNode(store.state[2])).toBe(true)
+      expect(store.state).toBeArborNode()
+      expect(store.state[0]).toBeArborNode()
+      expect(store.state[1]).toBeArborNode()
+      expect(store.state[2]).toBeArborNode()
     })
 
     it("directly mutates values wrapped by Arbor nodes", () => {

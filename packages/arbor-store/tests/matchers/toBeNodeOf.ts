@@ -9,6 +9,8 @@ expect.extend({
     const isNodeOf = receivedNode && unwrapped === expected
     return {
       pass: isNodeOf,
+      actual: received,
+      expected: expected,
       message: () =>
         `Received value is ${isNodeOf ? "" : "not"} node of given value`,
     }
