@@ -333,9 +333,9 @@ describe("Arbor", () => {
 
       const store = new Arbor(state)
 
-      expect(store.getNodeFor(state[0])).toBeUndefined()
-      expect(store.getNodeFor(state[1])).toBeUndefined()
-      expect(store.getNodeFor(state[2])).toBeUndefined()
+      expect(store).not.toHaveNodeFor(state[0])
+      expect(store).not.toHaveNodeFor(state[1])
+      expect(store).not.toHaveNodeFor(state[2])
 
       expect(store.getLinkFor(state[0])).toBeUndefined()
       expect(store.getLinkFor(state[1])).toBeUndefined()

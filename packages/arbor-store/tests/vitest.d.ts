@@ -5,5 +5,6 @@ declare module "vitest" {
     toBeDetached: () => T
     toBeArborNode: () => T
     toBeNodeOf: (expected: unknown) => T
+    toHaveNodeFor: (expected: unknown) => T
   }
 }
