@@ -6,5 +6,6 @@ declare module "vitest" {
     toBeArborNode: () => T
     toBeNodeOf: (expected: unknown) => T
     toHaveNodeFor: (expected: unknown) => T
+    toHaveLinkFor: (expected: unknown) => T
   }
 }
