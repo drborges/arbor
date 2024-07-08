@@ -1,15 +1,20 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
-import { Arbor, ImmutableArbor } from "./Arbor"
-import { ArborProxiable, detached, proxiable } from "./decorators"
-import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
-import { Path } from "./Path"
-import { Seed } from "./Seed"
-import { ArborNode } from "./types"
-import { detach, isDetached, merge, path, unwrap } from "./utilities"
+import { describe, expect, it, vi } from "vitest"
+import { Arbor, ImmutableArbor } from "../src/Arbor"
+import { ArborProxiable, detached, proxiable } from "../src/decorators"
+import {
+  ArborError,
+  DetachedNodeError,
+  NotAnArborNodeError,
+} from "../src/errors"
+import { Path } from "../src/Path"
+import { Seed } from "../src/Seed"
+import { ArborNode } from "../src/types"
+import { detach, isDetached, merge, path, unwrap } from "../src/utilities"
 
-import { isNode } from "./guards"
-import { isArborNodeTracked, ScopedStore } from "./ScopedStore"
+import { isNode } from "../src/guards"
+import { isArborNodeTracked, ScopedStore } from "../src/ScopedStore"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {
@@ -531,7 +536,7 @@ describe("Arbor", () => {
       })
 
       const counter = store.state
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       counter.count++
@@ -719,7 +724,7 @@ describe("Arbor", () => {
         new Todo("Walk the dogs"),
       ])
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state[0].count++
@@ -734,7 +739,7 @@ describe("Arbor", () => {
         count: 0,
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.setState({ count: 4 })
@@ -972,8 +977,8 @@ describe("Arbor", () => {
         { name: "Bob", age: 25 },
       ])
 
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
+      const subscriber1 = vi.fn()
+      const subscriber2 = vi.fn()
 
       store.subscribe(subscriber1)
       store.subscribe(subscriber2)
@@ -991,9 +996,9 @@ describe("Arbor", () => {
         { name: "Bob", age: 25 },
       ])
 
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
-      const subscriber3 = jest.fn()
+      const subscriber1 = vi.fn()
+      const subscriber2 = vi.fn()
+      const subscriber3 = vi.fn()
 
       store.subscribeTo(store.state, subscriber1)
       store.subscribeTo(store.state[0], subscriber2)
@@ -1015,8 +1020,8 @@ describe("Arbor", () => {
       ])
 
       const user0 = store.state[0]
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
+      const subscriber1 = vi.fn()
+      const subscriber2 = vi.fn()
 
       delete store.state[0]
 
@@ -1035,7 +1040,7 @@ describe("Arbor", () => {
       })
 
       const aliceNode = store.state.user
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state.user = alice
@@ -1060,7 +1065,7 @@ describe("Arbor", () => {
         "2": { text: "Walk the dogs" },
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       delete store.state["2"]
@@ -1093,7 +1098,7 @@ describe("Arbor", () => {
         "2": new Todo({ text: "Walk the dogs" }),
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       detach(store.state["2"])
@@ -1209,7 +1214,7 @@ describe("Arbor", () => {
     })
 
     it("subscribes to any store mutations", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Clean the house", status: "doing" },
@@ -1232,8 +1237,8 @@ describe("Arbor", () => {
     })
 
     it("subscribes to mutations on a specific state tree node", () => {
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
+      const subscriber1 = vi.fn()
+      const subscriber2 = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Clean the house", status: "doing" },
@@ -1287,7 +1292,7 @@ describe("Arbor", () => {
         },
       ])
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state[0].complete()
@@ -1308,7 +1313,7 @@ describe("Arbor", () => {
 
       const todo = new Todo("Do the dishes")
       const store = new Arbor([todo])
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state[0].complete()
@@ -1329,7 +1334,7 @@ describe("Arbor", () => {
 
       const todo = new Todo("Do the dishes")
       const store = new Arbor([todo])
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state[0].complete()
@@ -1481,7 +1486,7 @@ describe("Arbor", () => {
     })
 
     it("makes Array#push reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([{ text: "Do the dishes", status: "todo" }])
 
       store.subscribe(subscriber)
@@ -1502,7 +1507,7 @@ describe("Arbor", () => {
     })
 
     it("makes Array#splice reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
@@ -1523,7 +1528,7 @@ describe("Arbor", () => {
     })
 
     it("makes 'delete' reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
@@ -1547,7 +1552,7 @@ describe("Arbor", () => {
     })
 
     it("makes Array#shift reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
@@ -1572,7 +1577,7 @@ describe("Arbor", () => {
     })
 
     it("makes Array#pop reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
@@ -1597,7 +1602,7 @@ describe("Arbor", () => {
     })
 
     it("makes Array#unshift reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
@@ -1625,7 +1630,7 @@ describe("Arbor", () => {
     })
 
     it("makes Array#reverse reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Do the dishes", status: "todo" },
         { text: "Walk the dogs", status: "todo" },
@@ -1649,7 +1654,7 @@ describe("Arbor", () => {
     })
 
     it("makes Array#sort reactive", () => {
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const store = new Arbor([
         { text: "Walk the dogs", status: "todo" },
         { text: "Clean the house", status: "todo" },
@@ -1689,7 +1694,7 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state.todos.set("abc", new Todo("Clean the house"))
@@ -1715,7 +1720,7 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state.todos.set("123", todosMap.get("123")!)
@@ -1785,7 +1790,7 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state.todos.delete("abc")
@@ -1815,7 +1820,7 @@ describe("Arbor", () => {
         todos: todosMap,
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       store.subscribe(subscriber)
 
       store.state.todos.clear()
@@ -2193,7 +2198,7 @@ describe("Arbor", () => {
         ],
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const scopedStore = new ScopedStore(store)
 
       scopedStore.subscribe(subscriber)
@@ -2230,7 +2235,7 @@ describe("Arbor", () => {
         ],
       })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const scopedStore = new ScopedStore(store)
 
       scopedStore.subscribe(subscriber)
@@ -2286,8 +2291,8 @@ describe("Arbor", () => {
         ],
       })
 
-      const subscriber1 = jest.fn()
-      const subscriber2 = jest.fn()
+      const subscriber1 = vi.fn()
+      const subscriber2 = vi.fn()
 
       const scopedStore1 = new ScopedStore(store)
       scopedStore1.subscribe(subscriber1)
@@ -2360,7 +2365,7 @@ describe("Arbor", () => {
         { id: 2, text: "Walk the dogs", active: true },
       ])
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const scopedStore = new ScopedStore(store)
       scopedStore.subscribe(subscriber)
 
@@ -2407,7 +2412,7 @@ describe("Arbor", () => {
     it("tracks new array items being added", () => {
       const store = new Arbor([{ name: "Alice" }, { name: "Bob" }])
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const scopedStore = new ScopedStore(store)
       scopedStore.subscribe(subscriber)
 
@@ -2419,7 +2424,7 @@ describe("Arbor", () => {
     it("tracks new props being added to nodes", () => {
       const store = new Arbor({ users: [{ name: "Alice" }, { name: "Bob" }] })
 
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
       const scopedStore = new ScopedStore(store)
       scopedStore.subscribe(subscriber)
 
@@ -2451,7 +2456,7 @@ describe("Arbor", () => {
         { name: "Alice", active: false },
       ])
       const tracked = new ScopedStore(store.state)
-      const subscriber = jest.fn()
+      const subscriber = vi.fn()
 
       tracked.subscribe(subscriber)
 
@@ -2565,7 +2570,7 @@ describe("Arbor", () => {
     }
 
     const store = new ScopedStore(new Arbor(new TodoApp()))
-    const subscriber = jest.fn()
+    const subscriber = vi.fn()
 
     store.subscribe(subscriber)
 
@@ -2596,7 +2601,7 @@ describe("Arbor", () => {
     }
 
     const store = new ScopedStore(new Arbor(new TodoApp()))
-    const subscriber = jest.fn()
+    const subscriber = vi.fn()
 
     store.subscribe(subscriber)
 

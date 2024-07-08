@@ -1,6 +1,7 @@
 import { Arbor, ArborError, MutationEvent } from "@arborjs/store"
 import { filter } from "rxjs/operators"
-import { from } from "./from"
+import { describe, expect, it } from "vitest"
+import { from } from "../src/from"
 
 describe("from", () => {
   it("creates an observable from an Arbor store", () => {

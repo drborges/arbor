@@ -1,13 +1,9 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "jest"],
+  "plugins": ["@typescript-eslint"],
   "ignorePatterns": ["dist"],
-  "extends": [
-    "prettier",
-    "plugin:jest/recommended",
-    "plugin:@typescript-eslint/recommended"
-  ],
+  "extends": ["prettier", "plugin:@typescript-eslint/recommended"],
   "rules": {
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",

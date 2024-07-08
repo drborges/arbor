@@ -1,6 +1,9 @@
-import { Arbor } from "@arborjs/store"
+// @vitest-environment jsdom
 
-import LocalStorage from "./LocalStorage"
+import { Arbor } from "@arborjs/store"
+import { beforeEach, describe, expect, it } from "vitest"
+
+import LocalStorage from "../src/LocalStorage"
 
 const timeout = (period = 0) =>
   new Promise((resolve) => {
