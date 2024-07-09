@@ -36,10 +36,6 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return true
   }
 
-  get $seed() {
-    return Seed.from(this.$value)
-  }
-
   $traverse<C extends object>(link: Link): Node<C> {
     return this[link]
   }

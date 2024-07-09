@@ -174,8 +174,8 @@ export class Arbor<T extends object = object> {
     const node = this.getNodeFor(value)
 
     node?.$subscriptions.reset()
-    this.nodes.delete(node?.$seed)
-    this.links.delete(node?.$seed)
+    this.nodes.delete(Seed.from(node))
+    this.links.delete(Seed.from(node))
   }
 
   attachNode(node: Node, link: Link) {

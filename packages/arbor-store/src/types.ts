@@ -49,7 +49,6 @@ export type Link = string | number
 
 export type Node<T extends object = object> = T & {
   readonly $value: T
-  readonly $seed: Seed
   readonly $tree: Arbor
   readonly $subscriptions: Subscribers<T>
 

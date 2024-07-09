@@ -36,9 +36,9 @@ export class Seed {
     }
 
     if (isNode(value)) {
-      return value.$seed
+      return value.$value[ArborSeed]
     }
 
-    return value[ArborSeed]
+    return value?.[ArborSeed]
   }
 }
