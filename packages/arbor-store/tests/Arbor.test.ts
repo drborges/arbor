@@ -61,13 +61,13 @@ describe("ImmutableArbor", () => {
 
       store.state.todos[0].text = "Clean the living room"
 
-      expect(unwrap(store.state)).not.toBe(state)
-      expect(unwrap(store.state.todos)).not.toBe(todos)
-      expect(unwrap(store.state.todos[0])).not.toBe(todo0)
-      expect(unwrap(store.state.todos[1])).toBe(todo1)
-      expect(unwrap(store.state.users)).toBe(users)
-      expect(unwrap(store.state.users[0])).toBe(user0)
-      expect(unwrap(store.state.users[1])).toBe(user1)
+      expect(store.state).not.toBeNodeOf(state)
+      expect(store.state.todos).not.toBeNodeOf(todos)
+      expect(store.state.todos[0]).not.toBeNodeOf(todo0)
+      expect(store.state.todos[1]).toBeNodeOf(todo1)
+      expect(store.state.users).toBeNodeOf(users)
+      expect(store.state.users[0]).toBeNodeOf(user0)
+      expect(store.state.users[1]).toBeNodeOf(user1)
     })
 
     it("traversing detached nodes does not 'bring' them back into the state tree", () => {
@@ -270,17 +270,17 @@ describe("Arbor", () => {
         { name: "Bob", active: true },
       ])
 
-      expect(isNode(store.state)).toBe(true)
-      expect(isNode(store.state[0])).toBe(true)
-      expect(isNode(store.state[1])).toBe(true)
-      expect(isNode(store.state[2])).toBe(true)
+      expect(store.state).toBeArborNode()
+      expect(store.state[0]).toBeArborNode()
+      expect(store.state[1]).toBeArborNode()
+      expect(store.state[2]).toBeArborNode()
 
       store.state[1].active = false
 
-      expect(isNode(store.state)).toBe(true)
-      expect(isNode(store.state[0])).toBe(true)
-      expect(isNode(store.state[1])).toBe(true)
-      expect(isNode(store.state[2])).toBe(true)
+      expect(store.state).toBeArborNode()
+      expect(store.state[0]).toBeArborNode()
+      expect(store.state[1]).toBeArborNode()
+      expect(store.state[2]).toBeArborNode()
     })
 
     it("directly mutates values wrapped by Arbor nodes", () => {
@@ -333,13 +333,13 @@ describe("Arbor", () => {
 
       const store = new Arbor(state)
 
-      expect(store.getNodeFor(state[0])).toBeUndefined()
-      expect(store.getNodeFor(state[1])).toBeUndefined()
-      expect(store.getNodeFor(state[2])).toBeUndefined()
+      expect(store).not.toHaveNodeFor(state[0])
+      expect(store).not.toHaveNodeFor(state[1])
+      expect(store).not.toHaveNodeFor(state[2])
 
-      expect(store.getLinkFor(state[0])).toBeUndefined()
-      expect(store.getLinkFor(state[1])).toBeUndefined()
-      expect(store.getLinkFor(state[2])).toBeUndefined()
+      expect(store).not.toHaveLinkFor(state[0])
+      expect(store).not.toHaveLinkFor(state[1])
+      expect(store).not.toHaveLinkFor(state[2])
 
       store.state[0]
       store.state[1]
@@ -401,7 +401,7 @@ describe("Arbor", () => {
 
       store.setState(state)
 
-      expect(isNode(unwrap(store.state))).not.toBe(true)
+      expect(store.state).toBeProxiedExactlyOnce()
     })
 
     it("automatically unwraps nodes when creating a store off of an existing state tree", () => {
@@ -457,7 +457,7 @@ describe("Arbor", () => {
 
       store.state[0] = alice
 
-      expect(isDetached(carol)).toBe(true)
+      expect(carol).toBeDetached()
       expect(store.getLinkFor(alice)).toBe("0")
       expect(store.getNodeFor(alice)).toBe(store.state[0])
       expect(store.getNodeFor(alice)).toBe(store.state[1])
@@ -757,7 +757,7 @@ describe("Arbor", () => {
         id: 3,
       })
 
-      expect(isDetached(firstTodo)).toBe(true)
+      expect(firstTodo).toBeDetached()
       expect(newNode).toBe(store.state.todos[0])
       expect(store.state).toEqual({
         todos: [{ id: 3 }, { id: 2 }],
@@ -768,7 +768,7 @@ describe("Arbor", () => {
         todos: [],
       })
 
-      expect(isDetached(root)).toBe(true)
+      expect(root).toBeDetached()
       expect(newRootNode).toBe(store.state)
       expect(store.state).toEqual({
         todos: [],
@@ -814,7 +814,7 @@ describe("Arbor", () => {
 
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toBe(bob)
-      expect(isDetached(alice)).toBe(true)
+      expect(alice).toBeDetached()
 
       carol.name = "Carol updated"
 
@@ -832,7 +832,7 @@ describe("Arbor", () => {
 
       const detachedAlice = detach(alice)
       expect(detachedAlice).toBe(aliceValue)
-      expect(isDetached(alice)).toBe(true)
+      expect(alice).toBeDetached()
 
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toBe(bob)
@@ -859,7 +859,7 @@ describe("Arbor", () => {
 
       store.state.pop()
 
-      expect(isDetached(bob)).toBe(true)
+      expect(bob).toBeDetached()
       expect(store.getLinkFor(alice)).toBe("0")
       expect(store.getLinkFor(carol)).toBe("1")
       expect(store.getLinkFor(bob)).toBeUndefined()
@@ -878,7 +878,7 @@ describe("Arbor", () => {
       const shifted = store.state.shift()
 
       expect(shifted).toBe(aliceValue)
-      expect(isDetached(alice)).toBe(true)
+      expect(alice).toBeDetached()
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toBe(bob)
       expect(store.state[2]).toBeUndefined()
@@ -928,8 +928,8 @@ describe("Arbor", () => {
 
       store.state.splice(1, 2, johnValue, biancaValue)
 
-      expect(isDetached(bob)).toBe(true)
-      expect(isDetached(alice)).toBe(true)
+      expect(bob).toBeDetached()
+      expect(alice).toBeDetached()
       expect(store.state[0]).toBe(carol)
       expect(store.state[1]).toEqual(johnValue)
       expect(store.state[2]).toEqual(biancaValue)
@@ -1743,7 +1743,7 @@ describe("Arbor", () => {
 
       store.state.todos.set("123", todo2)
 
-      expect(isDetached(todo1)).toBe(true)
+      expect(todo1).toBeDetached()
       expect(store.state.todos.get("123")).toBe(todo2)
       expect(store.state.todos.get("123")).toBe(store.state.todos.get("abc"))
     })
@@ -1764,14 +1764,14 @@ describe("Arbor", () => {
 
       store.state.todos.delete("123")
 
-      expect(isDetached(todo1)).toBe(true)
-      expect(isDetached(todo2)).toBe(true)
+      expect(todo1).toBeDetached()
+      expect(todo2).toBeDetached()
       expect(store.state.todos.get("abc")).toEqual(todo2)
       expect(store.state.todos.get("123")).toBeUndefined()
 
       store.state.todos.delete("abc")
 
-      expect(isDetached(todo2)).toBe(true)
+      expect(todo2).toBeDetached()
       expect(store.state.todos.get("123")).toBeUndefined()
       expect(store.state.todos.get("abc")).toBeUndefined()
     })
@@ -1854,8 +1854,8 @@ describe("Arbor", () => {
 
       store.state.todos.clear()
 
-      expect(isDetached(todo1)).toBe(true)
-      expect(isDetached(todo2)).toBe(true)
+      expect(todo1).toBeDetached()
+      expect(todo2).toBeDetached()
     })
 
     it("allows iterating over Map values", () => {
