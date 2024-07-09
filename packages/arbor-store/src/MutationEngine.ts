@@ -74,7 +74,6 @@ export class MutationEngine<T extends object> {
           parent.$setChildValue(childCopy.$value, link)
         }
 
-        this.tree.attachNode(childCopy, link)
         return childCopy
       })
 
