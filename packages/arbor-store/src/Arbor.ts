@@ -142,6 +142,7 @@ export class Arbor<T extends object = object> {
 
   protected readonly links = new WeakMap<Seed, Link>()
   protected readonly nodes = new WeakMap<Seed, Node>()
+  protected readonly paths = new WeakMap<Seed, Path>()
 
   /**
    * Create a new Arbor instance.
@@ -159,6 +160,10 @@ export class Arbor<T extends object = object> {
 
   getNodeFor<V extends object>(value: V): Node<V> | undefined {
     return this.nodes.get(Seed.from(value)) as Node<V>
+  }
+
+  getPathFor<V extends object>(value: V): Path | undefined {
+    return this.paths.get(Seed.from(value))
   }
 
   getNodeAt<V extends object>(path: Path): Node<V> | undefined {
@@ -207,13 +212,14 @@ export class Arbor<T extends object = object> {
       throw new DetachedNodeError()
     }
 
-    const result = this.engine.mutate(node.$path, mutation)
+    const path = this.getPathFor(node)
+    const result = this.engine.mutate(path, mutation)
 
     this.root = result?.root
 
     Subscriptions.notify({
       state: this.state,
-      mutationPath: node.$path,
+      mutationPath: path,
       metadata: result.metadata,
     })
   }
@@ -236,9 +242,10 @@ export class Arbor<T extends object = object> {
   ): Node<V> {
     const seed = Seed.plant(value)
     const Handler = this.handlers.find((F) => F.accepts(value))
-    const handler = new Handler(this, path, value, subscribers)
+    const handler = new Handler(this, value, subscribers)
     const node = new Proxy<V>(value, handler) as Node<V>
     this.nodes.set(seed, node)
+    this.paths.set(seed, path)
 
     if (link) {
       this.links.set(seed, link)

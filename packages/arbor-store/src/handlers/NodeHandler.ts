@@ -1,11 +1,10 @@
 import { Arbor } from "../Arbor"
-import { Path } from "../Path"
 import { Seed } from "../Seed"
 import { Subscriptions } from "../Subscriptions"
 import { isDetachedProperty } from "../decorators"
 import { isNode, isProxiable } from "../guards"
 import type { Link, Node } from "../types"
-import { isGetter, recursivelyUnwrap } from "../utilities"
+import { isGetter, pathFor, recursivelyUnwrap } from "../utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
@@ -19,7 +18,6 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   constructor(
     readonly $tree: Arbor,
-    readonly $path: Path,
     readonly $value: T,
     readonly $subscriptions = new Subscriptions<T>()
   ) {}
@@ -162,7 +160,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   }
 
   private $createChildNode<V extends object>(link: Link, value: V): Node<V> {
-    const childPath = this.$path.child(Seed.plant(value))
+    const childPath = pathFor(this).child(Seed.plant(value))
     return this.$tree.createNode<V>(childPath, value, link)
   }
 }

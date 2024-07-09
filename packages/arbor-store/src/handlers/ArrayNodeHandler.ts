@@ -1,4 +1,5 @@
 import { Node } from "../types"
+import { pathFor } from "../utilities"
 import { NodeHandler } from "./NodeHandler"
 
 export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
@@ -52,7 +53,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
 
     this.refreshChildrenLinks()
 
-    return this.$tree.getNodeAt<Node<T>[]>(this.$path)
+    return this.$tree.getNodeAt<Node<T>[]>(pathFor(this))
   }
 
   pop(): T {
@@ -103,7 +104,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
 
     this.refreshChildrenLinks()
 
-    return this.$tree.getNodeAt(this.$path)
+    return this.$tree.getNodeAt(pathFor(this))
   }
 
   splice(start: number, deleteCount: number, ...items: T[]): T[] {
@@ -143,7 +144,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
   }
 
   private refreshChildrenLinks({ from = 0 } = {}) {
-    const node = this.$tree.getNodeAt<Node<T>[]>(this.$path)
+    const node = this.$tree.getNodeAt<Node<T>[]>(pathFor(this))
     for (let i = from; i < node.length; i++) {
       this.$tree.attachNode(node[i], i.toString())
     }

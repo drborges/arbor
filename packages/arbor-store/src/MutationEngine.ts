@@ -48,7 +48,7 @@ export class MutationEngine<T extends object> {
 
   clone<V extends object>(node: Node<V>): Node<V> {
     return this.tree.createNode<V>(
-      node.$path,
+      this.tree.getPathFor(node),
       this.mode === "snapshot" ? clone(node.$value) : node.$value,
       this.tree.getLinkFor(node),
       node.$subscriptions

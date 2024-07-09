@@ -54,8 +54,8 @@ export class Path {
     if (!isNode(node)) {
       throw new InvalidArgumentError("Argument must be an ArborNode")
     }
-
-    return node.$path.seeds.every((seed, index) => seed === this.seeds[index])
+    const path = node.$tree.getPathFor(node)
+    return path.seeds.every((seed, index) => seed === this.seeds[index])
   }
 
   matches(node: Path | ArborNode<object>) {
@@ -63,7 +63,8 @@ export class Path {
       throw new InvalidArgumentError("Argument must be an ArborNode")
     }
 
-    const sameLength = node.$path.seeds.length === this.seeds.length
+    const path = node.$tree.getPathFor(node)
+    const sameLength = path.seeds.length === this.seeds.length
 
     return this.affects(node) && sameLength
   }

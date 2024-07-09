@@ -16,12 +16,7 @@ export interface Handler {
   /**
    * Creates a new instance of the node handling strategy.
    */
-  new (
-    tree: Arbor,
-    path: Path,
-    value: unknown,
-    subscribers?: Subscribers
-  ): NodeHandler
+  new (tree: Arbor, value: unknown, subscribers?: Subscribers): NodeHandler
 
   /**
    * Checks if the strategy can handle the given value.
@@ -55,7 +50,6 @@ export type Link = string | number
 export type Node<T extends object = object> = T & {
   readonly $value: T
   readonly $seed: Seed
-  readonly $path: Path
   readonly $tree: Arbor
   readonly $subscriptions: Subscribers<T>
 

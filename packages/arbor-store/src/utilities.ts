@@ -71,16 +71,16 @@ export function merge<T extends object>(
  * @param node the node to determine the path for.
  * @returns the path of the node within the state tree.
  */
-export function pathFor<T extends object>(node: ArborNode<T>): Path {
-  if (!isNode<T>(node)) {
+export function pathFor<T extends object>(value: unknown): Path {
+  if (!isNode<T>(value)) {
     throw new NotAnArborNodeError()
   }
 
-  if (isDetached(node)) {
+  if (isDetached(value)) {
     throw new DetachedNodeError()
   }
 
-  return node.$path
+  return value.$tree.getPathFor(value)
 }
 
 // TODO: implement a readablePath(node: Path | ArborNode<T>): string that returns a dot notation version of the given path or node
