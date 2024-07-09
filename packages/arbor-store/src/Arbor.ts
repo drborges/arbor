@@ -1,12 +1,12 @@
-import { ArrayNodeHandler } from "./ArrayNodeHandler"
-import { MapNodeHandler } from "./MapNodeHandler"
+import { DetachedNodeError, NotAnArborNodeError } from "./errors"
+import { isNode } from "./guards"
+import { ArrayNodeHandler } from "./handlers/ArrayNodeHandler"
+import { MapNodeHandler } from "./handlers/MapNodeHandler"
+import { NodeHandler } from "./handlers/NodeHandler"
 import { MutationEngine } from "./MutationEngine"
-import { NodeHandler } from "./NodeHandler"
 import { Path } from "./Path"
 import { Seed } from "./Seed"
 import { Subscribers } from "./Subscribers"
-import { DetachedNodeError, NotAnArborNodeError } from "./errors"
-import { isNode } from "./guards"
 import type {
   ArborNode,
   Handler,

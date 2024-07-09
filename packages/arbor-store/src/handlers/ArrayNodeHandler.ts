@@ -1,5 +1,5 @@
+import { Node } from "../types"
 import { NodeHandler } from "./NodeHandler"
-import { Node } from "./types"
 
 export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
   T[]

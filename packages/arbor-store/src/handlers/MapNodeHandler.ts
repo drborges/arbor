@@ -1,7 +1,7 @@
+import { NotAnArborNodeError } from "../errors"
+import { isNode, isProxiable } from "../guards"
+import type { Link, Node } from "../types"
 import { NodeHandler } from "./NodeHandler"
-import { NotAnArborNodeError } from "./errors"
-import { isNode, isProxiable } from "./guards"
-import type { Link, Node } from "./types"
 
 export class MapNodeHandler<T extends object = object> extends NodeHandler<
   Map<unknown, T>

@@ -1,11 +1,11 @@
-import { Arbor } from "./Arbor"
-import { Path } from "./Path"
-import { Seed } from "./Seed"
-import { Subscribers } from "./Subscribers"
-import { isDetachedProperty } from "./decorators"
-import { isNode, isProxiable } from "./guards"
-import type { Link, Node } from "./types"
-import { isGetter, recursivelyUnwrap } from "./utilities"
+import { Arbor } from "../Arbor"
+import { Path } from "../Path"
+import { Seed } from "../Seed"
+import { Subscribers } from "../Subscribers"
+import { isDetachedProperty } from "../decorators"
+import { isNode, isProxiable } from "../guards"
+import type { Link, Node } from "../types"
+import { isGetter, recursivelyUnwrap } from "../utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
