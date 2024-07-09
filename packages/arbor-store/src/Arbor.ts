@@ -213,9 +213,10 @@ export class Arbor<T extends object = object> {
    * @param node the node within the state tree to be mutated.
    * @param mutation a function that performs the mutation to the node.
    */
-  mutate<V extends object>(node: Node<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(handler: NodeHandler<V>, mutation: Mutation<V>): void
-  mutate<V extends object>(node: unknown, mutation: Mutation<V>): void {
+  mutate<V extends object>(
+    node: NodeHandler<V> | Node<V>,
+    mutation: Mutation<V>
+  ): void {
     if (!isNode(node)) {
       throw new NotAnArborNodeError()
     }
