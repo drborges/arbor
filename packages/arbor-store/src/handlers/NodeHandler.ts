@@ -47,11 +47,6 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
   get(target: T, prop: string, proxy: Node<T>) {
     // Access $unwrap, $clone, $children, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
-
-    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
-      return Reflect.get(target, prop, proxy)
-    }
-
     // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
     // without conflicting with the ProxyHandler API.
     if (handlerApiAccess && !PROXY_HANDLER_API.includes(prop)) {
@@ -59,6 +54,10 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     }
 
     let childValue = Reflect.get(target, prop, proxy) as unknown
+
+    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
+      return childValue
+    }
 
     // Automatically unwrap proxied values that may have been used to initialize the store
     // either via new Arbor(...) or store.setState(...).
