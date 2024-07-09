@@ -226,6 +226,20 @@ export class Arbor<T extends object = object> {
     })
   }
 
+  traverse<V extends object>(
+    parent: Node,
+    link: Link,
+    childValue: V
+  ): Node<V> | undefined {
+    if (!this.getNodeFor(childValue)) {
+      const childSeed = Seed.plant(childValue)
+      const childPath = pathFor(parent).child(childSeed)
+      this.createNode(childPath, childValue, link)
+    }
+
+    return this.getNodeFor(childValue)
+  }
+
   /**
    * Adds a given value as a node at the given path within the state tree.
    *

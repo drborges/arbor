@@ -79,7 +79,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return childValue
     }
 
-    return this.$getOrCreateChild(prop, childValue)
+    return this.$tree.traverse(this, prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
@@ -104,7 +104,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
 
       // In case the new value happens to be an existing node, we preemptively add it back to the
       // state tree so that stale references to this node can continue to trigger mutations.
-      this.$createChildNode(prop, newValue.$value)
+      const path = pathFor(this).child(Seed.plant(value))
+      this.$tree.createNode(path, value, prop)
     }
 
     const previouslyUndefined = target[prop] === undefined
@@ -144,18 +145,5 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     }
 
     return true
-  }
-
-  protected $getOrCreateChild<V extends object>(link: Link, value: V): Node<V> {
-    if (!this.$tree.getNodeFor(value)) {
-      this.$createChildNode(link, value)
-    }
-
-    return this.$tree.getNodeFor(value)
-  }
-
-  private $createChildNode<V extends object>(link: Link, value: V): Node<V> {
-    const childPath = pathFor(this).child(Seed.plant(value))
-    return this.$tree.createNode<V>(childPath, value, link)
   }
 }
