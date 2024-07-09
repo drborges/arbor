@@ -1,5 +1,5 @@
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
-import { isNode } from "./guards"
+import { hasCustomClonningLogic, isNode } from "./guards"
 import { ArrayNodeHandler } from "./handlers/ArrayNodeHandler"
 import { MapNodeHandler } from "./handlers/MapNodeHandler"
 import { NodeHandler } from "./handlers/NodeHandler"
@@ -321,6 +321,15 @@ export class Arbor<T extends object = object> {
     }
   }
 
+  cloneNode<V extends object>(node: Node<V>): Node<V> {
+    return this.createNode<V>(
+      this.getPathFor(node),
+      node.$value,
+      this.getLinkFor(node),
+      node.$subscriptions
+    )
+  }
+
   /**
    * Subscribes to state tree updates.
    *
@@ -371,4 +380,29 @@ export class Arbor<T extends object = object> {
  */
 export class ImmutableArbor<T extends object> extends Arbor<T> {
   protected readonly engine = new MutationEngine<T>(this, "snapshot")
+
+  cloneNode<V extends object>(node: Node<V>): Node<V> {
+    return this.createNode<V>(
+      this.getPathFor(node),
+      this.clone(node.$value),
+      this.getLinkFor(node),
+      node.$subscriptions
+    )
+  }
+
+  private clone<T extends object>(value: T): T {
+    const clonedValue = hasCustomClonningLogic<T>(value)
+      ? value.$clone()
+      : this.cloneViaConstructor(value)
+
+    const seed = Seed.from(value)
+    Seed.plant(clonedValue, seed)
+    return clonedValue
+  }
+
+  private cloneViaConstructor<T extends object>(value: T): T {
+    const constructor = value.constructor as new () => T
+    const instance = new constructor()
+    return Object.assign(instance, value)
+  }
 }
