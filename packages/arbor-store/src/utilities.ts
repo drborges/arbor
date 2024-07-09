@@ -20,12 +20,14 @@ export function detach<T extends object>(node: ArborNode<T>): T {
     throw new DetachedNodeError()
   }
 
-  if (node.$path.isRoot()) {
+  const path = pathFor(node)
+
+  if (path.isRoot()) {
     throw new ArborError("Cannot detach store's root node")
   }
 
   const link = node.$tree.getLinkFor(node)
-  const parentNode = node.$tree.getNodeAt<Node>(node.$path.parent)
+  const parentNode = node.$tree.getNodeAt<Node>(path.parent)
   delete parentNode[link]
 
   return node.$value
@@ -60,7 +62,7 @@ export function merge<T extends object>(
     }
   })
 
-  return node.$tree.getNodeAt(node.$path)
+  return node.$tree.getNodeAt(pathFor(node))
 }
 
 /**
@@ -69,7 +71,7 @@ export function merge<T extends object>(
  * @param node the node to determine the path for.
  * @returns the path of the node within the state tree.
  */
-export function path<T extends object>(node: ArborNode<T>): Path {
+export function pathFor<T extends object>(node: ArborNode<T>): Path {
   if (!isNode<T>(node)) {
     throw new NotAnArborNodeError()
   }

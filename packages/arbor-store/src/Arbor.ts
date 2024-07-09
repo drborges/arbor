@@ -18,7 +18,7 @@ import type {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { isDetached, path, recursivelyUnwrap } from "./utilities"
+import { isDetached, pathFor, recursivelyUnwrap } from "./utilities"
 
 const attachValue =
   <T extends object>(value: T, link: Link) =>
@@ -280,7 +280,7 @@ export class Arbor<T extends object = object> {
     value: K | T
   ): ArborNode<K> | ArborNode<T> {
     const link = this.getLinkFor(node)
-    const targetPath = path(node)
+    const targetPath = pathFor(node)
     this.detachNodeFor(node)
 
     if (targetPath.isRoot()) {

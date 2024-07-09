@@ -10,7 +10,7 @@ import {
   Subscriber,
   Unsubscribe,
 } from "./types"
-import { isGetter, path, recursivelyUnwrap } from "./utilities"
+import { isGetter, pathFor, recursivelyUnwrap } from "./utilities"
 
 export type Tracked<T extends object = object> = T & {
   $tracked?: boolean
@@ -189,7 +189,7 @@ export class ScopedStore<T extends object> implements Store<T> {
 
   get state() {
     return this.scope.getOrCache(
-      this.originalStore.getNodeAt(path(this.targetNode))
+      this.originalStore.getNodeAt(pathFor(this.targetNode))
     ) as ArborNode<T>
   }
 

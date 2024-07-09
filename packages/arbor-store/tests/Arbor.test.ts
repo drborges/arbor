@@ -11,7 +11,7 @@ import {
 import { Path } from "../src/Path"
 import { Seed } from "../src/Seed"
 import { ArborNode } from "../src/types"
-import { detach, isDetached, merge, path, unwrap } from "../src/utilities"
+import { detach, isDetached, merge, pathFor, unwrap } from "../src/utilities"
 
 import { isNode } from "../src/guards"
 import { isArborNodeTracked, ScopedStore } from "../src/ScopedStore"
@@ -1382,7 +1382,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.todos[1])
-      expect(path(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
+      expect(pathFor(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
     })
 
     it("allows using object literal getters to select nodes within the state tree", () => {
@@ -1416,7 +1416,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.todos[1])
-      expect(path(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
+      expect(pathFor(activeTodos[0]).matches(store.state.todos[1])).toBe(true)
     })
 
     it("accounts for getters in the prototype chain", () => {
@@ -1460,7 +1460,7 @@ describe("Arbor", () => {
       expect(activeTodos[0].active).toBe(true)
       expect(activeTodos[0].text).toBe("Learn Arbor")
       expect(activeTodos[0]).toBe(store.state.all[1])
-      expect(path(activeTodos[0]).matches(store.state.all[1])).toBe(true)
+      expect(pathFor(activeTodos[0]).matches(store.state.all[1])).toBe(true)
     })
   })
 
@@ -1932,7 +1932,7 @@ describe("Arbor", () => {
 
       const todo = store.state.todos.get("123")!
 
-      const node = store.getNodeAt(path(todo))
+      const node = store.getNodeAt(pathFor(todo))
 
       expect(node).toBe(todo)
     })
@@ -2073,7 +2073,7 @@ describe("Arbor", () => {
         const node = { name: "Alice", age: 32 }
 
         expect(() => {
-          path(node)
+          pathFor(node)
         }).toThrow(NotAnArborNodeError)
       })
 
@@ -2089,7 +2089,7 @@ describe("Arbor", () => {
         detach(node)
 
         expect(() => {
-          path(node)
+          pathFor(node)
         }).toThrow(DetachedNodeError)
       })
 
