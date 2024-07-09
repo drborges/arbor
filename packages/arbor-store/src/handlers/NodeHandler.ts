@@ -1,7 +1,7 @@
 import { Arbor } from "../Arbor"
 import { Path } from "../Path"
 import { Seed } from "../Seed"
-import { Subscribers } from "../Subscribers"
+import { Subscriptions } from "../Subscriptions"
 import { isDetachedProperty } from "../decorators"
 import { isNode, isProxiable } from "../guards"
 import type { Link, Node } from "../types"
@@ -21,7 +21,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     readonly $tree: Arbor,
     readonly $path: Path,
     readonly $value: T,
-    readonly $subscribers = new Subscribers<T>()
+    readonly $subscriptions = new Subscriptions<T>()
   ) {}
 
   /**

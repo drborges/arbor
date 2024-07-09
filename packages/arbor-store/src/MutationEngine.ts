@@ -51,7 +51,7 @@ export class MutationEngine<T extends object> {
       node.$path,
       this.mode === "snapshot" ? clone(node.$value) : node.$value,
       this.tree.getLinkFor(node),
-      node.$subscribers
+      node.$subscriptions
     )
   }
 

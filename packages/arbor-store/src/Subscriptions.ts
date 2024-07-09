@@ -1,37 +1,37 @@
 import { MutationEvent, Node, Subscriber, Unsubscribe } from "./types"
 
-export class Subscribers<T extends object = object> {
-  constructor(private subscribers: Set<Subscriber<T>> = new Set()) {}
+export class Subscriptions<T extends object = object> {
+  constructor(private subscriptions: Set<Subscriber<T>> = new Set()) {}
 
   static notify(event: MutationEvent<object>) {
     const root = event.state as Node
-    root.$subscribers.notify(event)
+    root.$subscriptions.notify(event)
 
     event.mutationPath.walk(root, (child: Node) => {
-      child.$subscribers.notify(event)
+      child.$subscriptions.notify(event)
       return child
     })
   }
 
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    this.subscribers.add(subscriber)
+    this.subscriptions.add(subscriber)
 
     return () => {
-      this.subscribers.delete(subscriber)
+      this.subscriptions.delete(subscriber)
     }
   }
 
   notify(event: MutationEvent<T>) {
-    this.subscribers.forEach((subscriber) => {
+    this.subscriptions.forEach((subscriber) => {
       subscriber(event)
     })
   }
 
   reset() {
-    this.subscribers = new Set<Subscriber<T>>()
+    this.subscriptions = new Set<Subscriber<T>>()
   }
 
   get size() {
-    return this.subscribers.size
+    return this.subscriptions.size
   }
 }

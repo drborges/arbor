@@ -6,7 +6,7 @@ import { NodeHandler } from "./handlers/NodeHandler"
 import { MutationEngine } from "./MutationEngine"
 import { Path } from "./Path"
 import { Seed } from "./Seed"
-import { Subscribers } from "./Subscribers"
+import { Subscriptions } from "./Subscriptions"
 import type {
   ArborNode,
   Handler,
@@ -168,7 +168,7 @@ export class Arbor<T extends object = object> {
   detachNodeFor<V extends object>(value: V) {
     const node = this.getNodeFor(value)
 
-    node?.$subscribers.reset()
+    node?.$subscriptions.reset()
     this.nodes.delete(node?.$seed)
     this.links.delete(node?.$seed)
   }
@@ -211,7 +211,7 @@ export class Arbor<T extends object = object> {
 
     this.root = result?.root
 
-    Subscribers.notify({
+    Subscriptions.notify({
       state: this.state,
       mutationPath: node.$path,
       metadata: result.metadata,
@@ -232,7 +232,7 @@ export class Arbor<T extends object = object> {
     path: Path,
     value: V,
     link?: Link,
-    subscribers = new Subscribers<V>()
+    subscribers = new Subscriptions<V>()
   ): Node<V> {
     const seed = Seed.plant(value)
     const Handler = this.handlers.find((F) => F.accepts(value))
@@ -258,12 +258,12 @@ export class Arbor<T extends object = object> {
       Path.root,
       recursivelyUnwrap<T>(value),
       null,
-      this.root?.$subscribers
+      this.root?.$subscriptions
     )
 
     this.root = current
 
-    Subscribers.notify({
+    Subscriptions.notify({
       state: this.state,
       mutationPath: Path.root,
       metadata: {
@@ -315,7 +315,7 @@ export class Arbor<T extends object = object> {
   ): Unsubscribe {
     if (!isNode(node)) throw new NotAnArborNodeError()
 
-    return node.$subscribers.subscribe(subscriber)
+    return node.$subscriptions.subscribe(subscriber)
   }
 
   /**

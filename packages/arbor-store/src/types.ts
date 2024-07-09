@@ -2,7 +2,7 @@ import { Arbor } from "./Arbor"
 import { NodeHandler } from "./NodeHandler"
 import { Path } from "./Path"
 import { Seed } from "./Seed"
-import { Subscribers } from "./Subscribers"
+import { Subscribers } from "./Subscriptions"
 
 export type Unwrappable<T extends object> = {
   $value: T
@@ -57,7 +57,7 @@ export type Node<T extends object = object> = T & {
   readonly $seed: Seed
   readonly $path: Path
   readonly $tree: Arbor
-  readonly $subscribers: Subscribers<T>
+  readonly $subscriptions: Subscribers<T>
 
   $traverse<C extends object>(link: Link): C
   $attachValue<C extends object>(value: C, link: Link): void
