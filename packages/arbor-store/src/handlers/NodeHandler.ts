@@ -36,11 +36,11 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return true
   }
 
-  $traverse<C extends object>(link: Link): Node<C> {
+  $getChildNode<C extends object>(link: Link): Node<C> {
     return this[link]
   }
 
-  $attachValue<C extends object>(value: C, link: Link) {
+  $setChildValue<C extends object>(value: C, link: Link) {
     this.$value[link] = value
   }
 

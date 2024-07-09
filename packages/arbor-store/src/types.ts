@@ -1,7 +1,6 @@
 import { Arbor } from "./Arbor"
 import { NodeHandler } from "./NodeHandler"
 import { Path } from "./Path"
-import { Seed } from "./Seed"
 import { Subscribers } from "./Subscriptions"
 
 export type Unwrappable<T extends object> = {
@@ -52,8 +51,8 @@ export type Node<T extends object = object> = T & {
   readonly $tree: Arbor
   readonly $subscriptions: Subscribers<T>
 
-  $traverse<C extends object>(link: Link): C
-  $attachValue<C extends object>(value: C, link: Link): void
+  $getChildNode<C extends object>(link: Link): Node<C>
+  $setChildValue<C extends object>(value: C, link: Link): void
 }
 
 export type Plugin<T extends object> = {

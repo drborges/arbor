@@ -71,7 +71,7 @@ export class MutationEngine<T extends object> {
         // concurrent mode, as long as we apply structural sharing on the
         // proxy tree and use `useSyncExternalStore` we should be good.
         if (this.mode === "snapshot") {
-          parent.$attachValue(childCopy.$value, link)
+          parent.$setChildValue(childCopy.$value, link)
         }
 
         this.tree.attachNode(childCopy, link)

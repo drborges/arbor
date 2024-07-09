@@ -23,7 +23,7 @@ import { isDetached, pathFor, recursivelyUnwrap } from "./utilities"
 const attachValue =
   <T extends object>(value: T, link: Link) =>
   (_: T, node: Node<T>) => {
-    node.$attachValue(value, link)
+    node.$setChildValue(value, link)
     return {
       operation: "set",
       props: [link],
@@ -311,7 +311,7 @@ export class Arbor<T extends object = object> {
     } else {
       const parentNode = this.getNodeAt(targetPath.parent)
       this.mutate(parentNode, attachValue(value, link))
-      return parentNode.$traverse(link)
+      return parentNode.$getChildNode(link)
     }
   }
 

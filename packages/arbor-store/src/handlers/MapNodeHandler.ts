@@ -18,11 +18,11 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
     }
   }
 
-  $traverse<C extends object>(link: Link): C {
-    return (this as unknown as Map<unknown, T>).get(link) as unknown as C
+  $getChildNode<C extends object>(link: Link): Node<C> {
+    return (this as unknown as Map<unknown, T>).get(link) as unknown as Node<C>
   }
 
-  $attachValue<C extends object>(value: C, link: Link) {
+  $setChildValue<C extends object>(value: C, link: Link) {
     this.$value.set(link, value as unknown as T)
   }
 
