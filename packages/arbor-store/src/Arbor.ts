@@ -173,16 +173,26 @@ export class Arbor<T extends object = object> {
   detachNodeFor<V extends object>(value: V) {
     const node = this.getNodeFor(value)
 
-    node?.$subscriptions.reset()
-    this.#nodes.delete(Seed.from(node))
-    this.#links.delete(Seed.from(node))
+    if (node) {
+      const seed = Seed.from(node)
+
+      node.$subscriptions.reset()
+      this.#nodes.delete(seed)
+      this.#links.delete(seed)
+      this.#paths.delete(seed)
+    }
   }
 
-  attachNode(node: Node, link: Link) {
+  attachNode(node: Node, link?: Link, path?: Path) {
     const seed = Seed.from(node)
+
     if (seed) {
       this.#nodes.set(seed, node)
       this.#links.set(seed, link)
+
+      if (path) {
+        this.#paths.set(seed, path)
+      }
     }
   }
 
@@ -256,16 +266,12 @@ export class Arbor<T extends object = object> {
     link?: Link,
     subscribers = new Subscriptions<V>()
   ): Node<V> {
-    const seed = Seed.plant(value)
+    Seed.plant(value)
     const Handler = this.handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, value, subscribers)
     const node = new Proxy<V>(value, handler) as Node<V>
-    this.#nodes.set(seed, node)
-    this.#paths.set(seed, path)
 
-    if (link) {
-      this.#links.set(seed, link)
-    }
+    this.attachNode(node, link, path)
 
     return node
   }

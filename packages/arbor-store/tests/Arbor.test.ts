@@ -321,7 +321,7 @@ describe("Arbor", () => {
 
       expect(store.getNodeFor(state)).toBe(store.state)
       // Root nodes do not have a parent node, thus, no link from parent to child
-      expect(store.getLinkFor(state)).toBeUndefined()
+      expect(store.getLinkFor(state)).toBeNull()
     })
 
     it("lazily add nodes to the state tree as they are accessed", () => {
