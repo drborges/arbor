@@ -180,8 +180,10 @@ export class Arbor<T extends object = object> {
 
   attachNode(node: Node, link: Link) {
     const seed = Seed.from(node)
-    this.nodes.set(seed, node)
-    this.links.set(seed, link)
+    if (seed) {
+      this.nodes.set(seed, node)
+      this.links.set(seed, link)
+    }
   }
 
   /**
