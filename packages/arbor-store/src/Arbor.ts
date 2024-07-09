@@ -265,11 +265,11 @@ export class Arbor<T extends object = object> {
     path: Path,
     value: V,
     link?: Link,
-    subscribers = new Subscriptions<V>()
+    subscriptions = new Subscriptions<V>()
   ): Node<V> {
     Seed.plant(value)
     const Handler = this.handlers.find((F) => F.accepts(value))
-    const handler = new Handler(this, value, subscribers)
+    const handler = new Handler(this, value, subscriptions)
     const node = new Proxy<V>(value, handler) as Node<V>
 
     this.attachNode(node, link, path)

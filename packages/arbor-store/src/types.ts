@@ -1,7 +1,7 @@
 import { Arbor } from "./Arbor"
-import { NodeHandler } from "./NodeHandler"
+import { NodeHandler } from "./handlers/NodeHandler"
 import { Path } from "./Path"
-import { Subscribers } from "./Subscriptions"
+import { Subscriptions } from "./Subscriptions"
 
 export type Unwrappable<T extends object> = {
   $value: T
@@ -15,7 +15,7 @@ export interface Handler {
   /**
    * Creates a new instance of the node handling strategy.
    */
-  new (tree: Arbor, value: unknown, subscribers?: Subscribers): NodeHandler
+  new (tree: Arbor, value: unknown, subscriptions?: Subscriptions): NodeHandler
 
   /**
    * Checks if the strategy can handle the given value.
@@ -49,7 +49,7 @@ export type Link = string | number
 export type Node<T extends object = object> = T & {
   readonly $value: T
   readonly $tree: Arbor
-  readonly $subscriptions: Subscribers<T>
+  readonly $subscriptions: Subscriptions<T>
 
   $getChildNode<C extends object>(link: Link): Node<C>
   $setChildValue<C extends object>(value: C, link: Link): void
