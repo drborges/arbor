@@ -140,9 +140,9 @@ export class Arbor<T extends object = object> {
    */
   root: Node<T>
 
-  protected readonly links = new WeakMap<Seed, Link>()
-  protected readonly nodes = new WeakMap<Seed, Node>()
-  protected readonly paths = new WeakMap<Seed, Path>()
+  #links = new WeakMap<Seed, Link>()
+  #nodes = new WeakMap<Seed, Node>()
+  #paths = new WeakMap<Seed, Path>()
 
   /**
    * Create a new Arbor instance.
@@ -155,15 +155,15 @@ export class Arbor<T extends object = object> {
   }
 
   getLinkFor(value: object): Link | undefined {
-    return this.links.get(Seed.from(value))
+    return this.#links.get(Seed.from(value))
   }
 
   getNodeFor<V extends object>(value: V): Node<V> | undefined {
-    return this.nodes.get(Seed.from(value)) as Node<V>
+    return this.#nodes.get(Seed.from(value)) as Node<V>
   }
 
   getPathFor<V extends object>(value: V): Path | undefined {
-    return this.paths.get(Seed.from(value))
+    return this.#paths.get(Seed.from(value))
   }
 
   getNodeAt<V extends object>(path: Path): Node<V> | undefined {
@@ -174,15 +174,15 @@ export class Arbor<T extends object = object> {
     const node = this.getNodeFor(value)
 
     node?.$subscriptions.reset()
-    this.nodes.delete(Seed.from(node))
-    this.links.delete(Seed.from(node))
+    this.#nodes.delete(Seed.from(node))
+    this.#links.delete(Seed.from(node))
   }
 
   attachNode(node: Node, link: Link) {
     const seed = Seed.from(node)
     if (seed) {
-      this.nodes.set(seed, node)
-      this.links.set(seed, link)
+      this.#nodes.set(seed, node)
+      this.#links.set(seed, link)
     }
   }
 
@@ -260,11 +260,11 @@ export class Arbor<T extends object = object> {
     const Handler = this.handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, value, subscribers)
     const node = new Proxy<V>(value, handler) as Node<V>
-    this.nodes.set(seed, node)
-    this.paths.set(seed, path)
+    this.#nodes.set(seed, node)
+    this.#paths.set(seed, path)
 
     if (link) {
-      this.links.set(seed, link)
+      this.#links.set(seed, link)
     }
 
     return node
