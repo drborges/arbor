@@ -166,7 +166,11 @@ export class Arbor<T extends object = object> {
   }
 
   getNodeAt<V extends object>(path: Path): Node<V> | undefined {
-    return path.walk(this.root)
+    if (path.isRoot()) {
+      return this.root as unknown as Node<V>
+    }
+
+    return this.#nodes.get(path.seeds.at(-1)) as Node<V>
   }
 
   detachNodeFor<V extends object>(value: V) {
