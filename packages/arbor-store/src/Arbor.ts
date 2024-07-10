@@ -325,15 +325,6 @@ export class Arbor<T extends object = object> {
     }
   }
 
-  cloneNode<V extends object>(node: Node<V>): Node<V> {
-    return this.createNode<V>(
-      this.getPathFor(node),
-      node.$value,
-      this.getLinkFor(node),
-      node.$subscriptions
-    )
-  }
-
   /**
    * Subscribes to state tree updates.
    *
