@@ -1,5 +1,5 @@
 import { Seed } from "./Seed"
-import { InvalidArgumentError, NotAnArborNodeError } from "./errors"
+import { NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import type { ArborNode, Node, Visitor } from "./types"
 
@@ -52,7 +52,7 @@ export class Path {
 
   affects(node: ArborNode<object>): boolean {
     if (!isNode(node)) {
-      throw new InvalidArgumentError("Argument must be an ArborNode")
+      throw new NotAnArborNodeError()
     }
     const path = node.$tree.getPathFor(node)
     return path.seeds.every((seed, index) => seed === this.seeds[index])
@@ -60,7 +60,7 @@ export class Path {
 
   matches(node: Path | ArborNode<object>) {
     if (!isNode(node)) {
-      throw new InvalidArgumentError("Argument must be an ArborNode")
+      throw new NotAnArborNodeError()
     }
 
     const path = node.$tree.getPathFor(node)
