@@ -3,10 +3,6 @@ import { NodeHandler } from "./handlers/NodeHandler"
 import { Path } from "./Path"
 import { Subscriptions } from "./Subscriptions"
 
-export type Unwrappable<T extends object> = {
-  $value: T
-}
-
 /**
  * Describes a Node Hnalder constructor capable of determining which
  * kinds of nodes it is able to handle.
