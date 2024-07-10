@@ -1,7 +1,7 @@
 import "vitest"
 
 declare module "vitest" {
-  interface Assertion<T = unknown> {
+  interface Assertion<T> {
     toBeDetached: () => T
     toBeArborNode: () => T
     toBeProxiedExactlyOnce: () => T
