@@ -1,5 +1,5 @@
 import { Arbor } from "./Arbor"
-import { Path } from "./Path"
+import { Path } from "./path"
 import { Mutation, MutationResult } from "./types"
 
 export type MutationMode = "eager" | "snapshot"

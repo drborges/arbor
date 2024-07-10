@@ -1,6 +1,6 @@
 import { Arbor } from "./Arbor"
 import { NodeHandler } from "./handlers/NodeHandler"
-import { Path } from "./Path"
+import { Path } from "./path"
 import { Subscriptions } from "./Subscriptions"
 
 /**

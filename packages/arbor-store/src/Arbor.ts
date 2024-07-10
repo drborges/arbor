@@ -4,8 +4,7 @@ import { ArrayNodeHandler } from "./handlers/ArrayNodeHandler"
 import { MapNodeHandler } from "./handlers/MapNodeHandler"
 import { NodeHandler } from "./handlers/NodeHandler"
 import { MutationEngine } from "./MutationEngine"
-import { Path } from "./Path"
-import { Seed } from "./Seed"
+import { Path, Seed } from "./path"
 import { Subscriptions } from "./Subscriptions"
 import type {
   ArborNode,

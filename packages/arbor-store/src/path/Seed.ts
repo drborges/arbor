@@ -1,4 +1,4 @@
-import { isNode } from "./guards"
+import { isNode } from "../guards"
 
 export const ArborSeed = Symbol.for("ArborSeed")
 

@@ -1,8 +1,8 @@
 import { Arbor } from "./Arbor"
-import { Seed } from "./Seed"
 import { isDetachedProperty } from "./decorators"
 import { ArborError } from "./errors"
 import { isNode } from "./guards"
+import { Seed } from "./path"
 import {
   ArborNode,
   MutationEvent,

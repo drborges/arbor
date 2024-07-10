@@ -1,8 +1,8 @@
 import { Arbor } from "../Arbor"
-import { Seed } from "../Seed"
-import { Subscriptions } from "../Subscriptions"
 import { isDetachedProperty } from "../decorators"
 import { isNode, isProxiable } from "../guards"
+import { Seed } from "../path"
+import { Subscriptions } from "../Subscriptions"
 import type { Link, Node } from "../types"
 import { isGetter, pathFor, recursivelyUnwrap } from "../utilities"
 

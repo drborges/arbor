@@ -8,8 +8,8 @@ import {
   DetachedNodeError,
   NotAnArborNodeError,
 } from "../src/errors"
-import { Path } from "../src/Path"
-import { Seed } from "../src/Seed"
+import { Seed } from "../src/path"
+import { Path } from "../src/path/Path"
 import { ArborNode } from "../src/types"
 import { detach, isDetached, merge, pathFor, unwrap } from "../src/utilities"
 

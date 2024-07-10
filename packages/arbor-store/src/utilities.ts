@@ -1,6 +1,6 @@
-import { Path } from "./Path"
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
+import { Path } from "./path"
 import type { ArborNode, Node } from "./types"
 
 /**
