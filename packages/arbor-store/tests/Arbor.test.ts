@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import { describe, expect, it, vi } from "vitest"
-import { Arbor, ImmutableArbor } from "../src/Arbor"
+import { Arbor } from "../src/Arbor"
 import { ArborProxiable, detached, proxiable } from "../src/decorators"
 import {
   ArborError,
   DetachedNodeError,
   NotAnArborNodeError,
 } from "../src/errors"
+import { ImmutableArbor } from "../src/ImmutableArbor"
 import { Seed } from "../src/path"
 import { Path } from "../src/path/Path"
 import { ArborNode } from "../src/types"
