@@ -79,7 +79,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return childValue
     }
 
-    return this.$tree.traverse(this, prop, childValue)
+    return this.$tree.traverse(proxy, prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {

@@ -55,7 +55,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
           return value
         }
 
-        return this.$tree.traverse(this, key, value)
+        return this.$tree.traverse(proxy, key, value)
       }
     }
 
