@@ -116,14 +116,14 @@ describe("ImmutableArbor", () => {
 
       const store = new ImmutableArbor(state)
 
-      const todo0 = store.root.todos[0]
+      const todo0 = store.state.todos[0]
 
-      delete store.root.todos[0]
+      delete store.state.todos[0]
 
       expect(() => {
         todo0.text = "No longer in the state tree"
       }).toThrow(DetachedNodeError)
-      expect(store.root).toEqual({
+      expect(store.state).toEqual({
         todos: [{ text: "Walk the dogs" }],
       })
     })
@@ -133,17 +133,17 @@ describe("ImmutableArbor", () => {
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
       })
 
-      const todo0Node = store.root.todos[0]
-      const todo1Node = store.root.todos[1]
+      const todo0Node = store.state.todos[0]
+      const todo1Node = store.state.todos[1]
 
-      store.root.todos[0] = todo1Node
+      store.state.todos[0] = todo1Node
 
-      expect(store.root.todos[0]).not.toBe(todo1Node)
-      expect(store.root.todos[1]).not.toBe(todo1Node)
-      expect(unwrap(store.root.todos[0])).toBe(unwrap(todo1Node))
-      expect(unwrap(store.root.todos[1])).toBe(unwrap(todo1Node))
+      expect(store.state.todos[0]).not.toBe(todo1Node)
+      expect(store.state.todos[1]).not.toBe(todo1Node)
+      expect(unwrap(store.state.todos[0])).toBe(unwrap(todo1Node))
+      expect(unwrap(store.state.todos[1])).toBe(unwrap(todo1Node))
       expect(store.getNodeFor(todo0Node)).toBe(undefined)
-      expect(store.root).toEqual({
+      expect(store.state).toEqual({
         todos: [{ text: "Walk the dogs" }, { text: "Walk the dogs" }],
       })
     })
@@ -157,29 +157,29 @@ describe("ImmutableArbor", () => {
 
       const todo0 = state.todos[0]
       const todo1 = state.todos[1]
-      const todo0Node = store.root.todos[0]
-      const todo1Node = store.root.todos[1]
+      const todo0Node = store.state.todos[0]
+      const todo1Node = store.state.todos[1]
 
-      store.root.todos[0] = todo1Node
-      store.root.todos[1] = todo0Node
+      store.state.todos[0] = todo1Node
+      store.state.todos[1] = todo0Node
 
-      expect(unwrap(store.root.todos)).toEqual([
+      expect(unwrap(store.state.todos)).toEqual([
         { text: "Walk the dogs" },
         { text: "Clean the house" },
       ])
 
-      expect(unwrap(store.root.todos[0])).toBe(todo1)
-      expect(unwrap(store.root.todos[1])).toBe(todo0)
+      expect(unwrap(store.state.todos[0])).toBe(todo1)
+      expect(unwrap(store.state.todos[1])).toBe(todo0)
       expect(todo1Node.text).toEqual("Walk the dogs")
-      expect(store.root.todos[0].text).toEqual("Walk the dogs")
-      expect(store.root.todos[1].text).toEqual("Clean the house")
+      expect(store.state.todos[0].text).toEqual("Walk the dogs")
+      expect(store.state.todos[1].text).toEqual("Clean the house")
 
       todo1Node.text = "Walk the dogs updated"
 
       expect(todo1Node.text).toEqual("Walk the dogs")
-      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
-      expect(store.root.todos[1].text).toEqual("Clean the house")
-      expect(unwrap(store.root.todos)).toEqual([
+      expect(store.state.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.state.todos[1].text).toEqual("Clean the house")
+      expect(unwrap(store.state.todos)).toEqual([
         { text: "Walk the dogs updated" },
         { text: "Clean the house" },
       ])
@@ -188,9 +188,9 @@ describe("ImmutableArbor", () => {
 
       expect(todo0Node.text).toEqual("Clean the house")
       expect(todo1Node.text).toEqual("Walk the dogs")
-      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
-      expect(store.root.todos[1].text).toEqual("Clean the house updated")
-      expect(unwrap(store.root.todos)).toEqual([
+      expect(store.state.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.state.todos[1].text).toEqual("Clean the house updated")
+      expect(unwrap(store.state.todos)).toEqual([
         { text: "Walk the dogs updated" },
         { text: "Clean the house updated" },
       ])
@@ -588,29 +588,29 @@ describe("Arbor", () => {
 
       const todo0 = state.todos[0]
       const todo1 = state.todos[1]
-      const todo0Node = store.root.todos[0]
-      const todo1Node = store.root.todos[1]
+      const todo0Node = store.state.todos[0]
+      const todo1Node = store.state.todos[1]
 
-      store.root.todos[0] = todo1Node
-      store.root.todos[1] = todo0Node
+      store.state.todos[0] = todo1Node
+      store.state.todos[1] = todo0Node
 
-      expect(unwrap(store.root.todos)).toEqual([
+      expect(unwrap(store.state.todos)).toEqual([
         { text: "Walk the dogs" },
         { text: "Clean the house" },
       ])
 
-      expect(unwrap(store.root.todos[0])).toBe(todo1)
-      expect(unwrap(store.root.todos[1])).toBe(todo0)
+      expect(unwrap(store.state.todos[0])).toBe(todo1)
+      expect(unwrap(store.state.todos[1])).toBe(todo0)
       expect(todo1Node.text).toEqual("Walk the dogs")
-      expect(store.root.todos[0].text).toEqual("Walk the dogs")
-      expect(store.root.todos[1].text).toEqual("Clean the house")
+      expect(store.state.todos[0].text).toEqual("Walk the dogs")
+      expect(store.state.todos[1].text).toEqual("Clean the house")
 
       todo1Node.text = "Walk the dogs updated"
 
       expect(todo1Node.text).toEqual("Walk the dogs updated")
-      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
-      expect(store.root.todos[1].text).toEqual("Clean the house")
-      expect(unwrap(store.root.todos)).toEqual([
+      expect(store.state.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.state.todos[1].text).toEqual("Clean the house")
+      expect(unwrap(store.state.todos)).toEqual([
         { text: "Walk the dogs updated" },
         { text: "Clean the house" },
       ])
@@ -619,9 +619,9 @@ describe("Arbor", () => {
 
       expect(todo0Node.text).toEqual("Clean the house updated")
       expect(todo1Node.text).toEqual("Walk the dogs updated")
-      expect(store.root.todos[0].text).toEqual("Walk the dogs updated")
-      expect(store.root.todos[1].text).toEqual("Clean the house updated")
-      expect(unwrap(store.root.todos)).toEqual([
+      expect(store.state.todos[0].text).toEqual("Walk the dogs updated")
+      expect(store.state.todos[1].text).toEqual("Clean the house updated")
+      expect(unwrap(store.state.todos)).toEqual([
         { text: "Walk the dogs updated" },
         { text: "Clean the house updated" },
       ])
@@ -632,10 +632,10 @@ describe("Arbor", () => {
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
       })
 
-      const todo0Node = store.root.todos[0]
-      const todo1Node = store.root.todos[1]
+      const todo0Node = store.state.todos[0]
+      const todo1Node = store.state.todos[1]
 
-      store.root.todos[0] = todo1Node
+      store.state.todos[0] = todo1Node
 
       expect(
         () => (todo0Node.text = "this update should throw an error")
@@ -647,12 +647,12 @@ describe("Arbor", () => {
         todos: [{ text: "Clean the house" }, { text: "Walk the dogs" }],
       })
 
-      const todo1Node = store.root.todos[1]
+      const todo1Node = store.state.todos[1]
 
-      store.root.todos[0] = todo1Node
+      store.state.todos[0] = todo1Node
 
-      expect(store.root.todos[0]).toBe(store.root.todos[1])
-      expect(store.root).toEqual({
+      expect(store.state.todos[0]).toBe(store.state.todos[1])
+      expect(store.state).toEqual({
         todos: [{ text: "Walk the dogs" }, { text: "Walk the dogs" }],
       })
     })

@@ -29,10 +29,11 @@ export class MutationEngine<T extends object> {
 
   mutate<V extends object>(
     path: Path,
+    rootNode: Node<T>,
     mutation: Mutation<V>
   ): MutationResult<T> {
     try {
-      const root = this.cloneNode(this.tree.root)
+      const root = this.cloneNode(rootNode)
 
       const targetNode = path.walk<V>(root, (child, parent) => {
         const childCopy = this.cloneNode(child)

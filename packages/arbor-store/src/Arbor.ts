@@ -29,49 +29,6 @@ const attachValue =
     }
   }
 
-/**
- * Refreshes the nodes affected by the mutation path via structural sharing
- * at the state tree level, not affecting the values wrapped by the state
- * tree nodes.
- *
- * The algorithm is simple and allows computing diffs of the state tree
- * via simple referential equality checks, which comes quite handy in
- * contexts such as React's which can optimally re-compute re-renders
- * via reference checks.
- *
- * Here's a more concrete example, take the following store:
- *
- * cosnt store = new Arbor({
- *   todos: [
- *     { id: 1, text: "Clean the house", done: false },
- *      { id: 2, text: "Walk the dogs", done: false },
- *   ]
- * })
- *
- * That can be represented by the following state tree:
- *
- *               "/"
- *                |
- *             "todos"
- *           _____|_____
- *          |           |
- *         "0"         "1"
- *
- * where the follow is true:
- *
- * 1. `store.state` is referenced by the state tree path `"/"`
- * 2. `store.state.todos` is referenced by the state tree path `"/todos"`
- * 3. `store.state.todos[0]` is referenced by the state tree path `"/todos/0"`
- * 4. `store.state.todos[1]` is referenced by the state tree path `"/todos/1"`
- *
- * When mutations are applied to say path `"/todos/0"`, all nodes belonging to that path
- * are refreshed via structural sharing, ultimately not affecting nodes outside of that path,
- * for example:
- *
- * `store.state.todos[0].done = true`: causes all nodes intersecting `"/todos/0"` to be refreshed, e.g.
- * `"/"`, `"/todos"` and `"/todos/0"`, leaving `"/todos/1"` untouched.
- */
-
 /*
  * Default list of state tree node Proxy handlers.
  *
@@ -82,19 +39,39 @@ const attachValue =
 const defaultNodeHandlers = [ArrayNodeHandler, MapNodeHandler, NodeHandler]
 
 /**
- * Implements the Arbor state tree abstraction
+ * Arbor's Observable State Tree (OST) implementation.
  *
- * This class provides a Proxy-based API for managing
- * the state tree data structure, allowing for a simple
- * JS based API to trigger mutations that result in new
- * state values through structural sharing.
+ * Use this class to make your data observable and reactive.
  *
  * @example
- *
- * ```ts
- * const store = new Arbor({ users: [] })
+ * ```
+ * const store = new Arbor([
+ *   { text: "todo 1" },
+ *   { text: "todo 2" },
+ * ])
  * ```
  *
+ * The OST data structure is what powers Arbor so it may be interesting to visualize how that works.
+ *
+ * Here's an example, let's imagine a todo list application, you may choose to represent its state as an array of todo items,
+ * the code example above creates an Arbor store that makes that state observable and reactive.
+ *
+ * The OST powering that state will look something like this:
+ *
+ *                     |array| <-- #root
+ *           _____________|_____________
+ *          |                           |
+ *          | "0"                       | "1"
+ *          |                           |
+ *      |object| <-- todo 1         |object| <-- todo 2
+ *
+ * Where:
+ *
+ * 1. The root Node of the OST (`stor`.state`) is the array of todos;
+ * 2. That root Node has 2 children Nodes, one for each todo object in the store;
+ * 3. The indices of the array (`0` and `1`) represent the links between the root Node and its children Nodes;
+ * 4. Finally, the OST is built lazily for memory efficiency. That means Nodes are created lazily as you access them
+ *    from the store.
  */
 export class Arbor<T extends object = object> {
   /**
@@ -135,18 +112,34 @@ export class Arbor<T extends object = object> {
   protected readonly extensions: Handler[] = []
 
   /**
-   * Reference to the root node of the state tree
+   * Root node of the observable state tree (OST).
+   *
+   * A few things to keep in mind:
+   *
+   * 1. Traversing the OST always starts from the root node;
+   * 2. Mutations affect a specific Path within the OST, that path contains a list
+   *    of seed values, each identifying a OST node composing the mutation path,
+   *    this path always starts with the root node.
    */
-  root: Node<T>
-
-  #links = new WeakMap<Seed, Link>()
+  #root: Node<T>
+  /**
+   * The nodes composing the OST identified by a unique seed value assigned
+   * to each node upon its creation.
+   */
   #nodes = new WeakMap<Seed, Node>()
+  /**
+   * Links composing the OST identified by the seed of the node they connect to.
+   */
+  #links = new WeakMap<Seed, Link>()
+  /**
+   * Paths composing the OST identified by the seed of the node they point to.
+   */
   #paths = new WeakMap<Seed, Path>()
 
   /**
    * Create a new Arbor instance.
    *
-   * @param initialState the initial state tree value
+   * @param initialState the initial OST state.
    */
   constructor(initialState: T) {
     this.handlers = [...this.extensions, ...defaultNodeHandlers]
@@ -167,7 +160,7 @@ export class Arbor<T extends object = object> {
 
   getNodeAt<V extends object>(path: Path): Node<V> | undefined {
     if (path.isRoot()) {
-      return this.root as unknown as Node<V>
+      return this.#root as unknown as Node<V>
     }
 
     return this.#nodes.get(path.seeds.at(-1)) as Node<V>
@@ -229,9 +222,9 @@ export class Arbor<T extends object = object> {
     }
 
     const path = this.getPathFor(node)
-    const result = this.engine.mutate(path, mutation)
+    const result = this.engine.mutate(path, this.#root, mutation)
 
-    this.root = result?.root
+    this.#root = result?.root
 
     Subscriptions.notify({
       state: this.state,
@@ -290,10 +283,10 @@ export class Arbor<T extends object = object> {
       Path.root,
       recursivelyUnwrap<T>(value),
       null,
-      this.root?.$subscriptions
+      this.#root?.$subscriptions
     )
 
-    this.root = current
+    this.#root = current
 
     Subscriptions.notify({
       state: this.state,
@@ -331,7 +324,7 @@ export class Arbor<T extends object = object> {
    * @returns an unsubscribe function that can be used to cancel the subscriber.
    */
   subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    return this.subscribeTo(this.root as ArborNode<T>, subscriber)
+    return this.subscribeTo(this.#root as ArborNode<T>, subscriber)
   }
 
   /**
@@ -364,6 +357,6 @@ export class Arbor<T extends object = object> {
    * Returns the current state of the store
    */
   get state(): ArborNode<T> {
-    return this.root
+    return this.#root
   }
 }
