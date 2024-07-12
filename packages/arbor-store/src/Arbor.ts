@@ -246,8 +246,7 @@ export class Arbor<T extends object = object> {
     childValue: V
   ): Node<V> | undefined {
     if (!this.getNodeFor(childValue)) {
-      const childSeed = Seed.plant(childValue)
-      const childPath = pathFor(parent).child(childSeed)
+      const childPath = pathFor(parent).child(Seed.plant(childValue))
       this.createNode(childPath, childValue, link)
     }
 

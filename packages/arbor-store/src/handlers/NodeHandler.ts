@@ -91,6 +91,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true
 
+    // Detached properties do not trigger mutation events
+    // they are mutated in place.
     if (isDetachedProperty(target, prop)) {
       target[prop] = value
       return true
@@ -127,6 +129,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     if (prop in target) {
       const childValue = Reflect.get(target, prop)
 
+      // Detached properties do not trigger mutation events
+      // they are mutated in place.
       if (isDetachedProperty(target, prop)) {
         delete target[prop]
         return true
