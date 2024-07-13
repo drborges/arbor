@@ -1,2 +1,2 @@
-export { Path } from "./Path"
-export { Seed } from "./Seed"
+export { Path } from "./path"
+export { Seed } from "./seed"

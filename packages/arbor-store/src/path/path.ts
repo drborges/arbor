@@ -1,7 +1,7 @@
 import { NotAnArborNodeError } from "../errors"
 import { isNode } from "../guards"
 import type { ArborNode, Node, Visitor } from "../types"
-import { Seed } from "./Seed"
+import { Seed } from "./seed"
 
 export class Path {
   readonly seeds: Seed[]

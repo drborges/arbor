@@ -1,11 +1,11 @@
+import { MutationEngine } from "./engine"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
-import { ArrayNodeHandler } from "./handlers/ArrayNodeHandler"
-import { MapNodeHandler } from "./handlers/MapNodeHandler"
-import { NodeHandler } from "./handlers/NodeHandler"
-import { MutationEngine } from "./MutationEngine"
+import { ArrayHandler } from "./handlers/array"
+import { DefaultHandler } from "./handlers/default"
+import { MapHandler } from "./handlers/map"
 import { Path, Seed } from "./path"
-import { Subscriptions } from "./Subscriptions"
+import { Subscriptions } from "./subscriptions"
 import type {
   ArborNode,
   Handler,
@@ -36,7 +36,7 @@ const attachValue =
  * within the state tree as well as hook into write operations so that subscribers can
  * be notified accordingly and the next state tree generated via structural sharing.
  */
-const defaultNodeHandlers = [ArrayNodeHandler, MapNodeHandler, NodeHandler]
+const defaultDefaultHandlers = [ArrayHandler, MapHandler, DefaultHandler]
 
 /**
  * Arbor's Observable State Tree (OST) implementation.
@@ -96,7 +96,7 @@ export class Arbor<T extends object = object> {
    * @example
    *
    * ```ts
-   * class TodoListNodeHandler extends NodeHandler<Map<unknown, TodoList>> {
+   * class TodoListDefaultHandler extends DefaultHandler<Map<unknown, TodoList>> {
    *  static accepts(value: unknown) {
    *    return value instanceof TodoList
    *  }
@@ -105,7 +105,7 @@ export class Arbor<T extends object = object> {
    * }
    *
    * class MyArbor extends Arbor<TodoList> {
-   *   extensions = [TodoListNodeHandler]
+   *   extensions = [TodoListDefaultHandler]
    * }
    * ```
    */
@@ -142,7 +142,7 @@ export class Arbor<T extends object = object> {
    * @param initialState the initial OST state.
    */
   constructor(initialState: T) {
-    this.handlers = [...this.extensions, ...defaultNodeHandlers]
+    this.handlers = [...this.extensions, ...defaultDefaultHandlers]
     this.setState(initialState)
   }
 
@@ -210,7 +210,7 @@ export class Arbor<T extends object = object> {
    * @param mutation a function that performs the mutation to the node.
    */
   mutate<V extends object>(
-    node: NodeHandler<V> | Node<V>,
+    node: DefaultHandler<V> | Node<V>,
     mutation: Mutation<V>
   ): void {
     if (!isNode(node)) {

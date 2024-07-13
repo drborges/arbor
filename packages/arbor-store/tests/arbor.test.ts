@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable max-classes-per-file */
 import { describe, expect, it, vi } from "vitest"
-import { Arbor } from "../src/Arbor"
+import { Arbor } from "../src/arbor"
 import { ArborProxiable, detached, proxiable } from "../src/decorators"
 import {
   ArborError,
   DetachedNodeError,
   NotAnArborNodeError,
 } from "../src/errors"
-import { ImmutableArbor } from "../src/ImmutableArbor"
+import { ImmutableArbor } from "../src/immutable"
 import { Seed } from "../src/path"
-import { Path } from "../src/path/Path"
+import { Path } from "../src/path/path"
 import { ArborNode } from "../src/types"
 import {
   detach,
@@ -22,7 +22,7 @@ import {
 } from "../src/utilities"
 
 import { isNode } from "../src/guards"
-import { ScopedStore } from "../src/scoping/ScopedStore"
+import { ScopedStore } from "../src/scoping/store"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {

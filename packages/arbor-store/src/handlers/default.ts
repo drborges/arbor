@@ -1,8 +1,8 @@
-import { Arbor } from "../Arbor"
+import { Arbor } from "../arbor"
 import { isDetachedProperty } from "../decorators"
 import { isNode, isProxiable } from "../guards"
 import { Seed } from "../path"
-import { Subscriptions } from "../Subscriptions"
+import { Subscriptions } from "../subscriptions"
 import type { Link, Node } from "../types"
 import { isGetter, pathFor, recursivelyUnwrap } from "../utilities"
 
@@ -15,7 +15,9 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
  * objects witihin the state tree as well as mutations to them, enabling subscribers
  * to be notified of events they are interested in.
  */
-export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
+export class DefaultHandler<T extends object = object>
+  implements ProxyHandler<T>
+{
   constructor(
     readonly $tree: Arbor,
     readonly $value: T,

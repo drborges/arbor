@@ -1,8 +1,8 @@
 import { Node } from "../types"
 import { pathFor } from "../utilities"
-import { NodeHandler } from "./NodeHandler"
+import { DefaultHandler } from "./default"
 
-export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
+export class ArrayHandler<T extends object = object> extends DefaultHandler<
   Node<T>[]
 > {
   static accepts(value: unknown) {

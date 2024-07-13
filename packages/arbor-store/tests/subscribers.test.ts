@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { Arbor } from "../src/Arbor"
-import { Path } from "../src/path/Path"
-import { Subscriptions } from "../src/Subscriptions"
+import { Arbor } from "../src/arbor"
+import { Path } from "../src/path/path"
+import { Subscriptions } from "../src/subscriptions"
 
 describe("Subscriptions", () => {
   it("notifies subscribers of mutation events", () => {

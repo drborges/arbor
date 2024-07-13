@@ -1,5 +1,5 @@
-import { Arbor } from "./Arbor"
-import { MutationEngine } from "./MutationEngine"
+import { Arbor } from "./arbor"
+import { MutationEngine } from "./engine"
 
 /**
  * @experimental it appears we don't necessarily have to go full immutable to leverage React 18

@@ -1,7 +1,7 @@
-import { Arbor } from "./Arbor"
-import { NodeHandler } from "./handlers/NodeHandler"
+import { Arbor } from "./arbor"
+import { DefaultHandler } from "./handlers/default"
 import { Path } from "./path"
-import { Subscriptions } from "./Subscriptions"
+import { Subscriptions } from "./subscriptions"
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
@@ -11,7 +11,11 @@ export interface Handler {
   /**
    * Creates a new instance of the node handling strategy.
    */
-  new (tree: Arbor, value: unknown, subscriptions?: Subscriptions): NodeHandler
+  new (
+    tree: Arbor,
+    value: unknown,
+    subscriptions?: Subscriptions
+  ): DefaultHandler
 
   /**
    * Checks if the strategy can handle the given value.

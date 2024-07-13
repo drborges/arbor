@@ -1,4 +1,4 @@
-import { Arbor } from "./Arbor"
+import { Arbor } from "./arbor"
 import { ArborProxiable } from "./decorators"
 import type { ArborNode, Clonnable, Node } from "./types"
 

@@ -1,4 +1,4 @@
-import { Arbor } from "./Arbor"
+import { Arbor } from "./arbor"
 import { hasCustomClonningLogic } from "./guards"
 import { Path, Seed } from "./path"
 import { Mutation, MutationResult, Node } from "./types"

@@ -1,7 +1,7 @@
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import { Path } from "./path"
-import { Tracked } from "./scoping/Scope"
+import { Tracked } from "./scoping/scope"
 import type { ArborNode, Node } from "./types"
 
 /**

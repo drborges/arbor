@@ -1,9 +1,9 @@
-import { Arbor } from "../Arbor"
+import { Arbor } from "../arbor"
 import { ArborError } from "../errors"
 import { isNode } from "../guards"
 import { ArborNode, Store, Subscriber, Unsubscribe } from "../types"
 import { pathFor } from "../utilities"
-import { Scope } from "./Scope"
+import { Scope } from "./scope"
 
 export class ScopedStore<T extends object> implements Store<T> {
   protected originalStore: Arbor<T>
