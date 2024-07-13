@@ -22,7 +22,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
     return (this as unknown as Map<unknown, T>).get(link) as unknown as Node<C>
   }
 
-  $setChildValue<C extends object>(value: C, link: Link) {
+  $setChildValue<C extends object>(link: Link, value: C) {
     this.$value.set(link, value as unknown as T)
   }
 

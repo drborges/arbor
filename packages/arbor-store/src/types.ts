@@ -48,7 +48,7 @@ export type Node<T extends object = object> = T & {
   readonly $subscriptions: Subscriptions<T>
 
   $getChildNode<C extends object>(link: Link): Node<C>
-  $setChildValue<C extends object>(value: C, link: Link): void
+  $setChildValue<C extends object>(link: Link, value: C): void
 }
 
 export type Plugin<T extends object> = {

@@ -40,7 +40,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return this[link]
   }
 
-  $setChildValue<C extends object>(value: C, link: Link) {
+  $setChildValue<C extends object>(link: Link, value: C) {
     this.$value[link] = value
   }
 

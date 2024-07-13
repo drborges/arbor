@@ -40,7 +40,7 @@ export class MutationEngine<T extends object> {
 
         if (this.mode === "snapshot") {
           const link = this.tree.getLinkFor(childCopy)
-          parent.$setChildValue(childCopy.$value, link)
+          parent.$setChildValue(link, childCopy.$value)
         }
 
         return childCopy
