@@ -1,28 +1,14 @@
-import { Arbor } from "./Arbor"
-import { isDetachedProperty } from "./decorators"
-import { ArborError } from "./errors"
-import { isNode } from "./guards"
-import { Seed } from "./path"
-import {
-  ArborNode,
-  MutationEvent,
-  Store,
-  Subscriber,
-  Unsubscribe,
-} from "./types"
-import { isGetter, pathFor, recursivelyUnwrap } from "./utilities"
+import { isDetachedProperty } from "../decorators"
+import { isNode } from "../guards"
+import { Seed } from "../path"
+import { ArborNode, MutationEvent } from "../types"
+import { isGetter, recursivelyUnwrap } from "../utilities"
 
 export type Tracked<T extends object = object> = T & {
   $tracked?: boolean
 }
 
-export function isArborNodeTracked<T extends object>(
-  value: unknown
-): value is ArborNode<T> {
-  return (value as Tracked)?.$tracked === true
-}
-
-class Scope<T extends object> {
+export class Scope<T extends object> {
   private readonly bindings = new WeakMap<object, WeakMap<object, object>>()
   private readonly cache = new WeakMap<ArborNode, Tracked>()
   private tracking = new WeakMap<Seed, Set<string>>()
@@ -164,53 +150,6 @@ class Scope<T extends object> {
 
         return Reflect.set(target, prop, newValue, proxy)
       },
-    })
-  }
-}
-
-export class ScopedStore<T extends object> implements Store<T> {
-  protected originalStore: Arbor<T>
-  protected targetNode: ArborNode<T>
-  readonly scope = new Scope()
-
-  constructor(storeOrNode: Arbor<T> | ArborNode<T>) {
-    if (isNode(storeOrNode)) {
-      this.originalStore = storeOrNode.$tree as Arbor<T>
-      this.targetNode = storeOrNode as ArborNode<T>
-    } else if (storeOrNode instanceof Arbor) {
-      this.originalStore = storeOrNode
-      this.targetNode = storeOrNode.state as ArborNode<T>
-    } else {
-      throw new ArborError("track takes either an Arbor store or an ArborNode")
-    }
-
-    this.scope.track(this.targetNode)
-  }
-
-  get state() {
-    return this.scope.getOrCache(
-      this.originalStore.getNodeAt(pathFor(this.targetNode))
-    ) as ArborNode<T>
-  }
-
-  setState(value: T): ArborNode<T> {
-    this.targetNode = this.originalStore.setNode(this.targetNode, value)
-
-    return this.state
-  }
-
-  subscribe(subscriber: Subscriber<T>): Unsubscribe {
-    return this.subscribeTo(this.targetNode, subscriber)
-  }
-
-  subscribeTo<V extends object>(
-    node: ArborNode<V>,
-    subscriber: Subscriber<T>
-  ): Unsubscribe {
-    return this.originalStore.subscribeTo(node, (event) => {
-      if (this.scope.affected(event)) {
-        subscriber(event)
-      }
     })
   }
 }

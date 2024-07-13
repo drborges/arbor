@@ -12,10 +12,17 @@ import { ImmutableArbor } from "../src/ImmutableArbor"
 import { Seed } from "../src/path"
 import { Path } from "../src/path/Path"
 import { ArborNode } from "../src/types"
-import { detach, isDetached, merge, pathFor, unwrap } from "../src/utilities"
+import {
+  detach,
+  isArborNodeTracked,
+  isDetached,
+  merge,
+  pathFor,
+  unwrap,
+} from "../src/utilities"
 
 import { isNode } from "../src/guards"
-import { isArborNodeTracked, ScopedStore } from "../src/ScopedStore"
+import { ScopedStore } from "../src/scoping/ScopedStore"
 
 describe("ImmutableArbor", () => {
   describe("Example: State Tree and Structural Sharing", () => {

@@ -1,6 +1,7 @@
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import { Path } from "./path"
+import { Tracked } from "./scoping/Scope"
 import type { ArborNode, Node } from "./types"
 
 /**
@@ -83,8 +84,6 @@ export function pathFor<T extends object>(value: unknown): Path {
   return value.$tree.getPathFor(value)
 }
 
-// TODO: implement a readablePath(node: Path | ArborNode<T>): string that returns a dot notation version of the given path or node
-
 /**
  * Checks if node is no longer in the state tree.
  *
@@ -146,4 +145,10 @@ export function isGetter(target: object, prop: string) {
   }
 
   return isGetter(Object.getPrototypeOf(target), prop)
+}
+
+export function isArborNodeTracked<T extends object>(
+  value: unknown
+): value is ArborNode<T> {
+  return (value as Tracked)?.$tracked === true
 }
