@@ -12,14 +12,7 @@ import { ImmutableArbor } from "../src/immutable"
 import { Seed } from "../src/path"
 import { Path } from "../src/path/path"
 import { ArborNode } from "../src/types"
-import {
-  detach,
-  isArborNodeTracked,
-  isDetached,
-  merge,
-  pathFor,
-  unwrap,
-} from "../src/utilities"
+import { detach, isDetached, merge, pathFor, unwrap } from "../src/utilities"
 
 import { isNode } from "../src/guards"
 import { ScopedStore } from "../src/scoping/store"
@@ -2263,10 +2256,10 @@ describe("Arbor", () => {
 
       const scopedStore1 = new ScopedStore(store)
 
-      expect(isArborNodeTracked(scopedStore1.state)).toEqual(true)
-      expect(isArborNodeTracked(scopedStore1.state.todos)).toEqual(true)
-      expect(isArborNodeTracked(scopedStore1.state.todos[0])).toEqual(true)
-      expect(isArborNodeTracked(scopedStore1.state.todos[1])).toEqual(true)
+      expect(scopedStore1.state).toBeTrackedNode()
+      expect(scopedStore1.state.todos).toBeTrackedNode()
+      expect(scopedStore1.state.todos[0]).toBeTrackedNode()
+      expect(scopedStore1.state.todos[1]).toBeTrackedNode()
     })
 
     it("automatically unwraps tracked node when creating a derived tracking scope", () => {
@@ -2363,7 +2356,7 @@ describe("Arbor", () => {
 
       const activeTodo = scopedStore.state.todos.find((t) => t.active)
 
-      expect(isArborNodeTracked(activeTodo)).toBe(true)
+      expect(activeTodo).toBeTrackedNode()
       expect(activeTodo).toBe(scopedStore.state.todos[1])
     })
 
@@ -2455,7 +2448,7 @@ describe("Arbor", () => {
       const filterBoundToTrackedStore = tracked.state.filter
       const activeUsers = filterBoundToTrackedStore((u) => u.active)
 
-      expect(isArborNodeTracked(activeUsers[0])).toBe(true)
+      expect(activeUsers[0]).toBeTrackedNode()
     })
 
     it("preserves path tracking on nodes 'plucked' from the state tree", () => {
@@ -2472,7 +2465,7 @@ describe("Arbor", () => {
 
       carol.active = false
 
-      expect(isArborNodeTracked(carol)).toBe(true)
+      expect(carol).toBeTrackedNode()
       expect(subscriber).toHaveBeenCalledTimes(1)
     })
 
@@ -2486,7 +2479,7 @@ describe("Arbor", () => {
       const tracked = new ScopedStore(store)
 
       const carol = tracked.state.users[0]
-      expect(isArborNodeTracked(carol)).toBe(true)
+      expect(carol).toBeTrackedNode()
     })
 
     it("ensure node methods have stable memory reference across updates", () => {

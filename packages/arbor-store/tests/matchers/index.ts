@@ -1,6 +1,7 @@
 import "./toBeArborNode"
 import "./toBeDetached"
 import "./toBeNodeOf"
+import "./toBeProxiedExactlyOnce"
+import "./toBeTrackedNode"
 import "./toHaveLinkFor"
 import "./toHaveNodeFor"
-import "./toBeProxiedExactlyOnce"
