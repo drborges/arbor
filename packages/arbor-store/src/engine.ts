@@ -10,8 +10,7 @@ function clone<T extends object>(value: T): T {
     ? value.$clone()
     : cloneViaConstructor(value)
 
-  const seed = Seed.from(value)
-  Seed.plant(clonedValue, seed)
+  Seed.plant(clonedValue, Seed.from(value))
   return clonedValue
 }
 

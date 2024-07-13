@@ -5,6 +5,7 @@ import { ArrayHandler } from "./handlers/array"
 import { DefaultHandler } from "./handlers/default"
 import { MapHandler } from "./handlers/map"
 import { Path, Seed } from "./path"
+import { SeedMap } from "./seedmap"
 import { Subscriptions } from "./subscriptions"
 import type {
   ArborNode,
@@ -126,15 +127,15 @@ export class Arbor<T extends object = object> {
    * The nodes composing the OST identified by a unique seed value assigned
    * to each node upon its creation.
    */
-  #nodes = new WeakMap<Seed, Node>()
+  #nodes = new SeedMap<Node>()
   /**
    * Links composing the OST identified by the seed of the node they connect to.
    */
-  #links = new WeakMap<Seed, Link>()
+  #links = new SeedMap<Link>()
   /**
    * Paths composing the OST identified by the seed of the node they point to.
    */
-  #paths = new WeakMap<Seed, Path>()
+  #paths = new SeedMap<Path>()
 
   /**
    * Create a new Arbor instance.
@@ -147,15 +148,15 @@ export class Arbor<T extends object = object> {
   }
 
   getLinkFor(value: object): Link | undefined {
-    return this.#links.get(Seed.from(value))
+    return this.#links.getFor(value)
   }
 
   getNodeFor<V extends object>(value: V): Node<V> | undefined {
-    return this.#nodes.get(Seed.from(value)) as Node<V>
+    return this.#nodes.getFor(value) as Node<V>
   }
 
   getPathFor<V extends object>(value: V): Path | undefined {
-    return this.#paths.get(Seed.from(value))
+    return this.#paths.getFor(value)
   }
 
   getNodeAt<V extends object>(path: Path): Node<V> | undefined {
