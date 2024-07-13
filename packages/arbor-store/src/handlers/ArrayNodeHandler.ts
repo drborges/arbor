@@ -3,7 +3,7 @@ import { pathFor } from "../utilities"
 import { NodeHandler } from "./NodeHandler"
 
 export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
-  T[]
+  Node<T>[]
 > {
   static accepts(value: unknown) {
     return Array.isArray(value)
@@ -144,7 +144,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
   }
 
   private refreshChildrenLinks({ from = 0 } = {}) {
-    const node = this.$tree.getNodeAt<Node<T>[]>(pathFor(this))
+    const node = this.$tree.getNodeFor(this.$value)
     for (let i = from; i < node.length; i++) {
       this.$tree.attachNode(node[i], i.toString())
     }
