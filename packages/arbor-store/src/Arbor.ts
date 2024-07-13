@@ -262,7 +262,6 @@ export class Arbor<T extends object = object> {
     link?: Link,
     subscriptions = new Subscriptions<V>()
   ): Node<V> {
-    Seed.plant(value)
     const Handler = this.handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, value, subscriptions)
     const node = new Proxy<V>(value, handler) as Node<V>
@@ -279,6 +278,7 @@ export class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): ArborNode<T> {
+    Seed.plant(value)
     const current = this.createNode(
       Path.root,
       recursivelyUnwrap<T>(value),
