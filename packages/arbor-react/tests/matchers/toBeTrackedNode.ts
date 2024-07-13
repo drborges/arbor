@@ -1,8 +1,9 @@
 import { expect } from "vitest"
 
 expect.extend({
-  toBeTrackedNode(received) {
-    const isTracked = (received as any)?.$tracked === true
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toBeTrackedNode(received: any) {
+    const isTracked = received.$tracked === true
     return {
       pass: isTracked,
       actual: received,
