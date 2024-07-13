@@ -1,7 +1,6 @@
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import { Path } from "./path"
-import { Tracked } from "./scoping/scope"
 import type { ArborNode, Node } from "./types"
 
 /**
@@ -145,10 +144,4 @@ export function isGetter(target: object, prop: string) {
   }
 
   return isGetter(Object.getPrototypeOf(target), prop)
-}
-
-export function isArborNodeTracked<T extends object>(
-  value: unknown
-): value is ArborNode<T> {
-  return (value as Tracked)?.$tracked === true
 }
