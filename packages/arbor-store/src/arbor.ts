@@ -37,7 +37,7 @@ const attachValue =
  * within the state tree as well as hook into write operations so that subscribers can
  * be notified accordingly and the next state tree generated via structural sharing.
  */
-const defaultDefaultHandlers = [ArrayHandler, MapHandler, DefaultHandler]
+const defaultHandlers = [ArrayHandler, MapHandler, DefaultHandler]
 
 /**
  * Arbor's Observable State Tree (OST) implementation.
@@ -92,12 +92,17 @@ export class Arbor<T extends object = object> {
   /**
    * List of node handlers used to extend Arbor's default proxying mechanism.
    *
+   * This is an advanced feature and developers will rarely have to rely on this mechanism,
+   * this is available as a way for us to quiquily experiment on new node handler implementations
+   * and as a short gap to scenarios not originally accounted for. Any custom node handler
+   * addressing common use cases, shall eventually be part of Arbor's internals.
+   *
    * The best way to extend Arbor is to subclass it with your list of node handlers:
    *
    * @example
    *
    * ```ts
-   * class TodoListDefaultHandler extends DefaultHandler<Map<unknown, TodoList>> {
+   * class TodoListHandler extends DefaultHandler<Map<unknown, TodoList>> {
    *  static accepts(value: unknown) {
    *    return value instanceof TodoList
    *  }
@@ -106,7 +111,7 @@ export class Arbor<T extends object = object> {
    * }
    *
    * class MyArbor extends Arbor<TodoList> {
-   *   extensions = [TodoListDefaultHandler]
+   *   extensions = [TodoListHandler]
    * }
    * ```
    */
@@ -143,7 +148,7 @@ export class Arbor<T extends object = object> {
    * @param initialState the initial OST state.
    */
   constructor(initialState: T) {
-    this.handlers = [...this.extensions, ...defaultDefaultHandlers]
+    this.handlers = [...this.extensions, ...defaultHandlers]
     this.setState(initialState)
   }
 
