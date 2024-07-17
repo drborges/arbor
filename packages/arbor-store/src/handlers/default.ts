@@ -47,7 +47,7 @@ export class DefaultHandler<T extends object = object>
   }
 
   get(target: T, prop: string, proxy: Node<T>) {
-    // Access $unwrap, $clone, $children, etc...
+    // Access Node properties, e.g. $tree, $value, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
     // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
     // without conflicting with the ProxyHandler API.

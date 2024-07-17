@@ -1,15 +1,11 @@
 import { Arbor } from "./arbor"
-import { hasCustomClonningLogic } from "./guards"
 import { Path, Seed } from "./path"
 import { Mutation, MutationResult, Node } from "./types"
 
 export type MutationMode = "eager" | "snapshot"
 
 function clone<T extends object>(value: T): T {
-  const clonedValue = hasCustomClonningLogic<T>(value)
-    ? value.$clone()
-    : cloneViaConstructor(value)
-
+  const clonedValue = cloneViaConstructor(value)
   Seed.plant(clonedValue, Seed.from(value))
   return clonedValue
 }

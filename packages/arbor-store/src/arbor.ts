@@ -235,7 +235,7 @@ export class Arbor<T extends object = object> {
     Subscriptions.notify({
       state: this.state,
       mutationPath: path,
-      metadata: result.metadata,
+      metadata: result?.metadata,
     })
   }
 

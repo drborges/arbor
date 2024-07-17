@@ -86,7 +86,3 @@ export type MutationResult<T extends object> = {
   root: Node<T>
   metadata: MutationMetadata
 }
-
-export type Clonnable<T extends object> = {
-  $clone(): T
-}
