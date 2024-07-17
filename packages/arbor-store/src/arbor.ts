@@ -85,7 +85,7 @@ export class Arbor<T extends object = object> {
    * Users can extend this list with new strategies allowing them to customize the proxying
    * behavior of Arbor.
    */
-  private readonly handlers: Handler[]
+  readonly #handlers: Handler[]
 
   protected readonly engine = new MutationEngine<T>(this)
 
@@ -148,7 +148,7 @@ export class Arbor<T extends object = object> {
    * @param initialState the initial OST state.
    */
   constructor(initialState: T) {
-    this.handlers = [...this.extensions, ...defaultHandlers]
+    this.#handlers = [...this.extensions, ...defaultHandlers]
     this.setState(initialState)
   }
 
@@ -268,7 +268,7 @@ export class Arbor<T extends object = object> {
     link?: Link,
     subscriptions = new Subscriptions<V>()
   ): Node<V> {
-    const Handler = this.handlers.find((F) => F.accepts(value))
+    const Handler = this.#handlers.find((F) => F.accepts(value))
     const handler = new Handler(this, value, subscriptions)
     const node = new Proxy<V>(value, handler) as Node<V>
 
