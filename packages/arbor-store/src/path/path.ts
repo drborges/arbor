@@ -50,25 +50,6 @@ export class Path {
     return new Path(...this.seeds.slice(0, this.seeds.length - 1))
   }
 
-  affects(node: ArborNode<object>): boolean {
-    if (!isNode(node)) {
-      throw new NotAnArborNodeError()
-    }
-    const path = node.$tree.getPathFor(node)
-    return path.seeds.every((seed, index) => seed === this.seeds[index])
-  }
-
-  matches(node: Path | ArborNode<object>) {
-    if (!isNode(node)) {
-      throw new NotAnArborNodeError()
-    }
-
-    const path = node.$tree.getPathFor(node)
-    const sameLength = path.seeds.length === this.seeds.length
-
-    return this.affects(node) && sameLength
-  }
-
   /**
    * Checks if the path points to the root of a state tree.
    *
