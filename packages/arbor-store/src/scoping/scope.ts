@@ -1,3 +1,4 @@
+import { Arbor } from "../arbor"
 import { isDetachedProperty } from "../decorators"
 import { isNode } from "../guards"
 import { Seed } from "../path"
@@ -138,7 +139,11 @@ export class Scope<T extends object> {
           track(target, prop)
         }
 
-        if (child == null || typeof child !== "object") {
+        if (
+          child == null ||
+          child instanceof Arbor ||
+          typeof child !== "object"
+        ) {
           return child
         }
 

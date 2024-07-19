@@ -2644,4 +2644,25 @@ describe("Arbor", () => {
     expect(todos.state.get(0)).toBe(2)
     expect(todos.state.get(1)).toBeUndefined()
   })
+
+  it("does not proxy instances of Arbor when used as fields of a store", () => {
+    const store1 = new Arbor<Array<{ text: string }>>([
+      { text: "Do the dishes" },
+    ])
+
+    @proxiable
+    class Form {
+      constructor(readonly store = store1) {}
+
+      addTodo(text: string) {
+        this.store.state.push({ text })
+      }
+    }
+
+    const store2 = new ScopedStore(new Arbor(new Form(store1)))
+
+    store2.state.addTodo("LOL")
+
+    expect(store1.state).toEqual([{ text: "Do the dishes" }, { text: "LOL" }])
+  })
 })
