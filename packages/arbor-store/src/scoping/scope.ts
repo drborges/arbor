@@ -141,6 +141,13 @@ export class Scope<T extends object> {
 
         if (
           child == null ||
+          // There's no point in tracking access to Arbor stores being referenced
+          // without other stores since they are not connected to each other.
+          // Also, we cannot proxy Arbor instance since itself relies on #private
+          // fields to hide internal concerns which gets in the way of the proxying
+          // mechanism.
+          //
+          // See "Private Properties" section of the Caveats.md for more details.
           child instanceof Arbor ||
           typeof child !== "object"
         ) {

@@ -2665,4 +2665,30 @@ describe("Arbor", () => {
 
     expect(store1.state).toEqual([{ text: "Do the dishes" }, { text: "LOL" }])
   })
+
+  it("track nodes accessed through a getter", () => {
+    @proxiable
+    class TodoApp {
+      todos = [
+        { text: "Do the dishes", done: false },
+        { text: "Walk the dogs", done: true },
+      ]
+
+      get activeTodos() {
+        return this.todos.filter((todo) => !todo.done)
+      }
+    }
+
+    const scoped = new ScopedStore(new Arbor(new TodoApp()))
+    const todo = scoped.state.activeTodos[0]
+
+    expect(scoped).toBeTracking(todo, "done")
+    expect(scoped).not.toBeTracking(todo, "text")
+
+    // access the first todo in the result so the scoped store
+    // start tracking changes to the todo's "text" prop.
+    todo.text
+
+    expect(scoped).toBeTracking(todo, "text")
+  })
 })
