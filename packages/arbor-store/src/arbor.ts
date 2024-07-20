@@ -14,7 +14,6 @@ import type {
   Mutation,
   Node,
   Plugin,
-  Store,
   Subscriber,
   Unsubscribe,
 } from "./types"
@@ -356,7 +355,7 @@ export class Arbor<T extends object = object> {
    * @returns a promise that gets resolved when the plugin completes its configuration steps.
    */
   use(plugin: Plugin<T>) {
-    return plugin.configure(this as Store<T>)
+    return plugin.configure(this)
   }
 
   /**

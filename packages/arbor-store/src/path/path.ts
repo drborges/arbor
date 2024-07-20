@@ -1,7 +1,9 @@
 import { NotAnArborNodeError } from "../errors"
 import { isNode } from "../guards"
-import type { ArborNode, Node, Visitor } from "../types"
+import type { ArborNode, Node } from "../types"
 import { Seed } from "./seed"
+
+export type Visitor = (child: Node, parent: Node) => Node
 
 export class Path {
   readonly seeds: Seed[]
@@ -29,7 +31,7 @@ export class Path {
         throw new NotAnArborNodeError()
       }
 
-      return this.seeds.reduce<Node>((parent, seed) => {
+      return this.seeds.reduce((parent, seed) => {
         const child = parent.$tree.getNodeFor(seed)
         return visit(child, parent)
       }, node) as Node<T>

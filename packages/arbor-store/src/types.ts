@@ -33,19 +33,8 @@ export type ArborNode<T extends object = object> = {
     : T[K]
 }
 
-export type Unsubscribe = () => void
-export type MutationEvent<T extends object> = {
-  state: ArborNode<T>
-  mutationPath: Path
-  metadata: MutationMetadata
-}
-
-export type Subscriber<T extends object = object> = (
-  event: MutationEvent<T>
-) => void
-
 export type Link = string | number
-
+export type Unsubscribe = () => void
 export type Node<T extends object = object> = T & {
   readonly $value: T
   readonly $tree: Arbor
@@ -69,8 +58,6 @@ export type Store<T extends object> = {
   ): Unsubscribe
 }
 
-export type Visitor = (child: Node, parent: Node) => Node
-
 export type MutationMetadata = {
   readonly operation: string
   readonly previouslyUndefined?: boolean
@@ -86,3 +73,13 @@ export type MutationResult<T extends object> = {
   root: Node<T>
   metadata: MutationMetadata
 }
+
+export type MutationEvent<T extends object> = {
+  state: ArborNode<T>
+  mutationPath: Path
+  metadata: MutationMetadata
+}
+
+export type Subscriber<T extends object = object> = (
+  event: MutationEvent<T>
+) => void
