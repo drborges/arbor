@@ -3,6 +3,7 @@ import { ArborNode } from "../src"
 
 declare module "vitest" {
   interface Assertion<T> {
+    toBeSeeded: () => T
     toBeDetached: () => T
     toBeArborNode: () => T
     toBeTrackedNode: () => T

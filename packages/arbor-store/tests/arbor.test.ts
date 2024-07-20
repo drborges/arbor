@@ -80,7 +80,16 @@ describe("ImmutableArbor", () => {
 
       const todos = store.state.todos
 
+      expect(state).toBeSeeded()
+      expect(state.todos).toBeSeeded()
+      expect(state.todos[0]).not.toBeSeeded()
+      expect(state.todos[1]).not.toBeSeeded()
+
       delete store.state.todos[0]
+
+      // mutations do not seed nodes.
+      // Nodes are only seeded when accessed/read
+      expect(state.todos[0]).not.toBeSeeded()
 
       // todos[0] should still exist in the previous snapshot
       expect(todos.length).toEqual(2)
