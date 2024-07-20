@@ -84,7 +84,7 @@ describe("ImmutableArbor", () => {
 
       // todos[0] should still exist in the previous snapshot
       expect(todos.length).toEqual(2)
-      expect(unwrap(todos[0])).toBe(state.todos[0])
+      expect(todos[0]).toBeNodeOf(state.todos[0])
 
       expect(store.state).toEqual({ todos: [{ text: "Walk the dogs" }] })
       expect(store.state.todos).toEqual([{ text: "Walk the dogs" }])

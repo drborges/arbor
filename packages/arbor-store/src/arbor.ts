@@ -1,4 +1,4 @@
-import { MutationEngine } from "./engine"
+import { DefaultEngine } from "./engines"
 import { DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
 import { ArrayHandler } from "./handlers/array"
@@ -87,7 +87,7 @@ export class Arbor<T extends object = object> {
    */
   readonly #handlers: Handler[]
 
-  protected readonly engine = new MutationEngine<T>(this)
+  protected readonly engine = new DefaultEngine<T>(this)
 
   /**
    * List of node handlers used to extend Arbor's default proxying mechanism.

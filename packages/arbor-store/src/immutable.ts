@@ -1,10 +1,12 @@
 import { Arbor } from "./arbor"
-import { MutationEngine } from "./engine"
+import { SnapshotEngine } from "./engines"
 
 /**
- * @experimental it appears we don't necessarily have to go full immutable to leverage React 18
- * concurrent mode so we'll likely end up removing the 'snapshot' mutation mode idea.
+ * Relies on structural sharing algorithm to generate state snapshots
+ * as the store gets mutates.
+ *
+ * @experimental
  */
 export class ImmutableArbor<T extends object> extends Arbor<T> {
-  protected readonly engine = new MutationEngine<T>(this, "snapshot")
+  protected readonly engine = new SnapshotEngine<T>(this)
 }

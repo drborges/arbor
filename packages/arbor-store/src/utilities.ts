@@ -1,6 +1,6 @@
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
-import { Path } from "./path"
+import { Path, Seed } from "./path"
 import type { ArborNode, Node } from "./types"
 
 /**
@@ -144,4 +144,15 @@ export function isGetter(target: object, prop: string) {
   }
 
   return isGetter(Object.getPrototypeOf(target), prop)
+}
+
+export function parentOf(node: Node) {
+  const nodePath = pathFor(node)
+
+  if (nodePath.isRoot()) {
+    return null
+  }
+
+  const parentSeed = nodePath.seeds.at(-2) || Seed.from(node.$tree.state)
+  return node.$tree.getNodeFor(parentSeed)
 }
