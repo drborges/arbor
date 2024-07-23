@@ -3,8 +3,6 @@ import { isNode } from "../guards"
 import type { ArborNode, Node } from "../types"
 import { Seed } from "./seed"
 
-export type Visitor = (child: Node, parent: Node) => Node
-
 export class Path {
   readonly seeds: Seed[]
 
@@ -24,7 +22,7 @@ export class Path {
 
   walk<T extends object = object>(
     node: ArborNode<object>,
-    visit: Visitor = (child) => child
+    visit: (_node: Node) => Node
   ): Node<T> {
     try {
       if (!isNode(node)) {
@@ -32,8 +30,7 @@ export class Path {
       }
 
       return this.seeds.reduce((parent, seed) => {
-        const child = parent.$tree.getNodeFor(seed)
-        return visit(child, parent)
+        return visit(parent.$tree.getNodeFor(seed))
       }, node) as Node<T>
     } catch (e) {
       return undefined
