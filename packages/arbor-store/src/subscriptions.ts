@@ -6,7 +6,7 @@ export class Subscriptions<T extends object = object> {
   static notify(event: MutationEvent<object>) {
     const root = event.state as Node
 
-    event.mutationPath.walk(root, (child: Node) => {
+    root.$tree.walk(event.mutationPath, (child: Node) => {
       child.$subscriptions.notify(event)
       return child
     })

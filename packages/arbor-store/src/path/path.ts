@@ -1,6 +1,3 @@
-import { NotAnArborNodeError } from "../errors"
-import { isNode } from "../guards"
-import type { Node } from "../types"
 import { Seed } from "./seed"
 
 export class Path {
@@ -22,28 +19,6 @@ export class Path {
 
   child(seed: Seed): Path {
     return new Path(...this.seeds.concat([seed]))
-  }
-
-  walk<T extends object = object>(
-    node: Node,
-    visit: (_node: Node) => Node
-  ): Node<T> {
-    try {
-      if (!isNode(node)) {
-        throw new NotAnArborNodeError()
-      }
-
-      let targetNode = node
-      const tree = node.$tree
-
-      for (const seed of this.seeds) {
-        targetNode = visit(tree.getNodeFor<T>(seed))
-      }
-
-      return targetNode as Node<T>
-    } catch (e) {
-      return undefined
-    }
   }
 
   get parent(): Path {

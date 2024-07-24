@@ -7,15 +7,15 @@ export class DefaultEngine<T extends object> {
 
   mutate<V extends object>(
     path: Path,
-    rootNode: Node<T>,
     mutation: Mutation<V>
   ): MutationResult<T> {
     try {
-      const targetNode = path.walk<V>(rootNode, this.cloneNode.bind(this))
+      const targetNode = this.tree.walk<V>(path, this.cloneNode.bind(this))
+      // TODO: maybe let's just pass targetNode to a mutation function and let it do it's thing?
       const metadata = mutation(targetNode.$value, targetNode)
 
       return {
-        root: this.tree.getNodeFor(rootNode),
+        root: this.tree.getNodeFor(this.tree.state),
         metadata,
       }
     } catch (e) {

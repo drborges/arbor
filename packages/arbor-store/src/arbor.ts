@@ -159,7 +159,7 @@ export class Arbor<T extends object = object> {
     return this.#nodes.getFor(value) as Node<V>
   }
 
-  getPathFor<V extends object>(value: V): Path | undefined {
+  getPathFor(value: object): Path | undefined {
     return this.#paths.getFor(value)
   }
 
@@ -171,7 +171,7 @@ export class Arbor<T extends object = object> {
     return this.#nodes.get(path.seeds.at(-1)) as Node<V>
   }
 
-  detachNodeFor<V extends object>(value: V) {
+  detachNodeFor(value: object) {
     const node = this.getNodeFor(value)
 
     if (node) {
@@ -227,7 +227,7 @@ export class Arbor<T extends object = object> {
     }
 
     const path = this.getPathFor(node)
-    const result = this.engine.mutate(path, this.#root, mutation)
+    const result = this.engine.mutate(path, mutation)
 
     this.#root = result?.root
 
@@ -249,6 +249,30 @@ export class Arbor<T extends object = object> {
     }
 
     return this.getNodeFor(childValue)
+  }
+
+  /**
+   * Walks a given tree Path, visiting each node belonging to it.
+   *
+   * @param path the path to be walked.
+   * @param visit a function responsible for "visiting" a node.
+   * @returns the node which the path is targetting.
+   */
+  walk<V extends object = object>(
+    path: Path,
+    visit: (_node: Node<V>) => Node<V>
+  ): Node<V> {
+    try {
+      let targetNode: Node<V>
+
+      for (const seed of path.seeds) {
+        targetNode = visit(this.getNodeFor<V>(seed))
+      }
+
+      return targetNode
+    } catch (e) {
+      return undefined
+    }
   }
 
   /**
