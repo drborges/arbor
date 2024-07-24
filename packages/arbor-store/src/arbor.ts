@@ -155,7 +155,7 @@ export class Arbor<T extends object = object> {
     return this.#links.getFor(value)
   }
 
-  getNodeFor<V extends object>(value: object): Node<V> | undefined {
+  getNodeFor<V extends object>(value: V | Seed): Node<V> | undefined {
     return this.#nodes.getFor(value) as Node<V>
   }
 
@@ -261,15 +261,9 @@ export class Arbor<T extends object = object> {
   walk<V extends object = object>(
     path: Path,
     visit: (_node: Node<V>) => Node<V>
-  ): Node<V> {
+  ): Node<V>[] {
     try {
-      let targetNode: Node<V>
-
-      for (const seed of path.seeds) {
-        targetNode = visit(this.getNodeFor<V>(seed))
-      }
-
-      return targetNode
+      return path.seeds.map((seed) => visit(this.getNodeFor<V>(seed)))
     } catch (e) {
       return undefined
     }
@@ -309,14 +303,13 @@ export class Arbor<T extends object = object> {
   setState(value: T): ArborNode<T> {
     const seed = Seed.plant(value)
     const path = Path.root(seed)
-    const current = this.createNode(
+
+    this.#root = this.createNode(
       path,
       recursivelyUnwrap<T>(value),
       null,
       this.#root?.$subscriptions
     )
-
-    this.#root = current
 
     Subscriptions.notify({
       state: this.state,
@@ -327,7 +320,7 @@ export class Arbor<T extends object = object> {
       },
     })
 
-    return current
+    return this.#root
   }
 
   setNode<K extends object>(
