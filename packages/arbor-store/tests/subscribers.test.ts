@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import { Arbor } from "../src/arbor"
 import { Path } from "../src/path/path"
 import { Subscriptions } from "../src/subscriptions"
+import { Seed } from "../src/path"
 
 describe("Subscriptions", () => {
   it("notifies subscribers of mutation events", () => {
@@ -11,7 +12,7 @@ describe("Subscriptions", () => {
     const subscribers = new Subscriptions()
     const mutationEvent = {
       store: new Arbor({}),
-      mutationPath: Path.root,
+      mutationPath: Path.root(new Seed()),
       metadata: { operation: "", props: [] },
       state: { previous: { count: 1 }, current: { count: 2 } },
     }
@@ -31,7 +32,7 @@ describe("Subscriptions", () => {
     const subscribers = new Subscriptions()
     const mutationEvent = {
       store: new Arbor({}),
-      mutationPath: Path.root,
+      mutationPath: Path.root(new Seed()),
       metadata: { operation: "", props: [] },
       state: { previous: { count: 1 }, current: { count: 2 } },
     }

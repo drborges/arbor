@@ -284,7 +284,7 @@ export class Arbor<T extends object = object> {
    */
   setState(value: T): ArborNode<T> {
     const seed = Seed.plant(value)
-    const path = Path.root.child(seed)
+    const path = Path.root(seed)
     const current = this.createNode(
       path,
       recursivelyUnwrap<T>(value),

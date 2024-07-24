@@ -16,6 +16,10 @@ export class Path {
     this.seeds = seeds
   }
 
+  static root(seed: Seed) {
+    return new Path(seed)
+  }
+
   child(seed: Seed): Path {
     return new Path(...this.seeds.concat([seed]))
   }
@@ -40,10 +44,6 @@ export class Path {
     } catch (e) {
       return undefined
     }
-  }
-
-  static get root() {
-    return new Path()
   }
 
   get parent(): Path {

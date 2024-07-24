@@ -2112,7 +2112,7 @@ describe("Arbor", () => {
           ],
         })
 
-        const rootPath = Path.root.child(Seed.from(store.state))
+        const rootPath = Path.root(Seed.from(store.state))
         const todosPath = rootPath.child(Seed.from(store.state.todos))
         const todo0Path = todosPath.child(Seed.from(store.state.todos[0]))
         const todo1Path = todosPath.child(Seed.from(store.state.todos[1]))
