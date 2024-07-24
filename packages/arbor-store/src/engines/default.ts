@@ -11,12 +11,11 @@ export class DefaultEngine<T extends object> {
     mutation: Mutation<V>
   ): MutationResult<T> {
     try {
-      const root = this.cloneNode(rootNode)
-      const targetNode = path.walk<V>(root, this.cloneNode.bind(this))
+      const targetNode = path.walk<V>(rootNode, this.cloneNode.bind(this))
       const metadata = mutation(targetNode.$value, targetNode)
 
       return {
-        root,
+        root: this.tree.getNodeFor(rootNode),
         metadata,
       }
     } catch (e) {

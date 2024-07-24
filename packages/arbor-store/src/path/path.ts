@@ -1,6 +1,6 @@
 import { NotAnArborNodeError } from "../errors"
 import { isNode } from "../guards"
-import type { ArborNode, Node } from "../types"
+import type { Node } from "../types"
 import { Seed } from "./seed"
 
 export class Path {
@@ -21,7 +21,7 @@ export class Path {
   }
 
   walk<T extends object = object>(
-    node: ArborNode<object>,
+    node: Node,
     visit: (_node: Node) => Node
   ): Node<T> {
     try {
@@ -29,9 +29,14 @@ export class Path {
         throw new NotAnArborNodeError()
       }
 
-      return this.seeds.reduce((parent, seed) => {
-        return visit(parent.$tree.getNodeFor(seed))
-      }, node) as Node<T>
+      let targetNode = node
+      const tree = node.$tree
+
+      for (const seed of this.seeds) {
+        targetNode = visit(tree.getNodeFor<T>(seed))
+      }
+
+      return targetNode as Node<T>
     } catch (e) {
       return undefined
     }
@@ -55,6 +60,6 @@ export class Path {
    * @returns true if the path points to the root of a state tree, false otherwise.
    */
   isRoot() {
-    return this.seeds.length === 0
+    return this.seeds.length === 1
   }
 }

@@ -1207,8 +1207,9 @@ describe("Arbor", () => {
 
       return new Promise((resolve) => {
         store.subscribe((event) => {
-          expect(event.mutationPath.seeds.length).toBe(1)
-          expect(event.mutationPath.seeds[0]).toBe(Seed.from(store.state[0]))
+          expect(event.mutationPath.seeds.length).toBe(2)
+          expect(event.mutationPath.seeds[0]).toBe(Seed.from(store.state))
+          expect(event.mutationPath.seeds[1]).toBe(Seed.from(store.state[0]))
           expect(event.metadata.props).toEqual(["status"])
           expect(event.metadata.operation).toEqual("set")
           expect(event.state).toEqual([
@@ -2111,7 +2112,7 @@ describe("Arbor", () => {
           ],
         })
 
-        const rootPath = Path.root
+        const rootPath = Path.root.child(Seed.from(store.state))
         const todosPath = rootPath.child(Seed.from(store.state.todos))
         const todo0Path = todosPath.child(Seed.from(store.state.todos[0]))
         const todo1Path = todosPath.child(Seed.from(store.state.todos[1]))

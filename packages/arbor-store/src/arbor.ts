@@ -155,7 +155,7 @@ export class Arbor<T extends object = object> {
     return this.#links.getFor(value)
   }
 
-  getNodeFor<V extends object>(value: V): Node<V> | undefined {
+  getNodeFor<V extends object>(value: object): Node<V> | undefined {
     return this.#nodes.getFor(value) as Node<V>
   }
 
@@ -283,9 +283,10 @@ export class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): ArborNode<T> {
-    Seed.plant(value)
+    const seed = Seed.plant(value)
+    const path = Path.root.child(seed)
     const current = this.createNode(
-      Path.root,
+      path,
       recursivelyUnwrap<T>(value),
       null,
       this.#root?.$subscriptions
@@ -295,7 +296,7 @@ export class Arbor<T extends object = object> {
 
     Subscriptions.notify({
       state: this.state,
-      mutationPath: Path.root,
+      mutationPath: path,
       metadata: {
         operation: "set",
         props: [],
