@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable max-classes-per-file */
 import { describe, expect, it, vi } from "vitest"
 import { Arbor } from "../src/arbor"
 import { ArborProxiable, detached, proxiable } from "../src/decorators"
@@ -2487,5 +2485,48 @@ describe("Arbor", () => {
     todo.text
 
     expect(scoped).toBeTracking(todo, "text")
+  })
+
+  describe("state tree diff", () => {
+    describe("root note mutations", () => {
+      it("seeds the root node upon its creation", () => {
+        const state = { count: 0 }
+
+        new Arbor(state)
+
+        expect(state).toBeSeeded()
+      })
+
+      it("creates a new node reference for the new root node state", () => {
+        const store = new Arbor({ count: 0 })
+
+        const root = store.state
+        store.state.count++
+        const newRoot = store.state
+
+        expect(root).not.toBe(newRoot)
+      })
+
+      it("preserves the reference of the value being wrapped by the node", () => {
+        const state = { count: 0 }
+        const store = new Arbor(state)
+
+        store.state.count++
+
+        expect(store.state).toBeNodeOf(state)
+      })
+
+      it("replaces the root node with a new one", () => {
+        const state = { count: 0 }
+        const store = new Arbor(state)
+        const root = store.state
+
+        store.setState({ count: 1 })
+
+        expect(store.state).toBeSeeded()
+        expect(store.state).not.toBe(root)
+        expect(store.state).not.toBeNodeOf(state)
+      })
+    })
   })
 })

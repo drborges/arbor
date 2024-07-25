@@ -105,8 +105,6 @@ export class Arbor<T extends object = object> {
    *  static accepts(value: unknown) {
    *    return value instanceof TodoList
    *  }
-   *
-   *  // Omitted implementation details
    * }
    *
    * class MyArbor extends Arbor<TodoList> {

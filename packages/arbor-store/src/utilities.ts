@@ -90,6 +90,9 @@ export function pathFor<T extends object>(value: unknown): Path {
  * @returns true if node is no longer in the state tree, false otherwise.
  */
 export function isDetached<T extends object>(node: T): boolean {
+  // TODO: we need to walk the node's path and check if any intermediary node is detached
+  // this would cover cases where one may have a stale reference to a node deep in the OST
+  // but an ancestor has been detached.'
   if (!isNode(node)) return true
 
   return !node.$tree.getLinkFor(node) && !node.$tree.getNodeFor<Node>(node)
