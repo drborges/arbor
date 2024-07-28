@@ -1,6 +1,18 @@
+import { Arbor } from "arbor"
 import { Node } from "../types"
 import { pathFor } from "../utilities"
 import { DefaultHandler } from "./default"
+
+function refreshChildrenLinks(
+  tree: Arbor,
+  nodeValue: object[],
+  { from = 0 } = {}
+) {
+  const node = tree.getNodeFor<unknown[]>(nodeValue) as Node<Node[]>
+  for (let i = from; i < node.length; i++) {
+    tree.attachNode(node[i], i.toString())
+  }
+}
 
 export class ArrayHandler<T extends object = object> extends DefaultHandler<
   Node<T>[]
@@ -21,7 +33,7 @@ export class ArrayHandler<T extends object = object> extends DefaultHandler<
       }
     })
 
-    this.refreshChildrenLinks({ from: parseInt(prop) })
+    refreshChildrenLinks(this.$tree, this.$value, { from: parseInt(prop) })
 
     return true
   }
@@ -51,7 +63,7 @@ export class ArrayHandler<T extends object = object> extends DefaultHandler<
       }
     })
 
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
     return this.$tree.getNodeAt<Node<T>[]>(pathFor(this))
   }
@@ -87,7 +99,7 @@ export class ArrayHandler<T extends object = object> extends DefaultHandler<
     })
 
     this.$tree.detachNodeFor(shifted)
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
     return shifted
   }
@@ -102,7 +114,7 @@ export class ArrayHandler<T extends object = object> extends DefaultHandler<
       }
     })
 
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
     return this.$tree.getNodeAt(pathFor(this))
   }
@@ -122,7 +134,7 @@ export class ArrayHandler<T extends object = object> extends DefaultHandler<
     })
 
     deleted.forEach(this.$tree.detachNodeFor.bind(this.$tree))
-    this.refreshChildrenLinks({ from: start })
+    refreshChildrenLinks(this.$tree, this.$value, { from: start })
     return deleted
   }
 
@@ -138,15 +150,8 @@ export class ArrayHandler<T extends object = object> extends DefaultHandler<
       }
     })
 
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
     return size
-  }
-
-  private refreshChildrenLinks({ from = 0 } = {}) {
-    const node = this.$tree.getNodeFor(this.$value)
-    for (let i = from; i < node.length; i++) {
-      this.$tree.attachNode(node[i], i.toString())
-    }
   }
 }

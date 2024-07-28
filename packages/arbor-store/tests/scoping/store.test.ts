@@ -435,6 +435,35 @@ describe("path tracking", () => {
     expect(state.todos[1].done).toBe(true)
   })
 
+  it("prevents object methods from conflicting with the Proxy API", () => {
+    @proxiable
+    class NumberList {
+      items: number[] = []
+
+      get(index: number) {
+        return this.items[index]
+      }
+
+      set(index: number, value: number) {
+        this.items[index] = value
+      }
+
+      deleteProperty(index: number) {
+        this.items.splice(index, 1)
+      }
+    }
+
+    const todos = new ScopedStore(new Arbor(new NumberList()))
+
+    todos.state.set(0, 1)
+    todos.state.set(1, 2)
+    expect(todos.state.get(0)).toBe(1)
+    expect(todos.state.get(1)).toBe(2)
+    todos.state.deleteProperty(0)
+    expect(todos.state.get(0)).toBe(2)
+    expect(todos.state.get(1)).toBeUndefined()
+  })
+
   it("does not proxy instances of Arbor when used as fields of a store", () => {
     const store1 = new Arbor<Array<{ text: string }>>([
       { text: "Do the dishes" },
