@@ -510,4 +510,94 @@ describe("path tracking", () => {
 
     expect(scoped).toBeTracking(todo, "text")
   })
+
+  it("tracks changes to boolean fields accessed via a getter on a node", () => {
+    @proxiable
+    class Node {
+      flag = false
+    }
+
+    @proxiable
+    class App {
+      node = new Node()
+
+      get flag() {
+        return this.node.flag
+      }
+    }
+
+    const scoped = new ScopedStore(new Arbor(new App()))
+
+    const subscriber = vi.fn()
+    scoped.subscribe(subscriber)
+
+    const node = scoped.state.node // warms up the cache
+
+    expect(scoped).not.toBeTracking(node, "flag")
+
+    node.flag // warms up the cache
+
+    expect(scoped).toBeTracking(node, "flag")
+
+    node.flag = true
+
+    expect(subscriber).toHaveBeenCalledOnce()
+  })
+
+  it("does not track fields that are not accessed due to short-circuite logic", () => {
+    @proxiable
+    class App {
+      flag1 = false
+      flag2 = true
+
+      get check() {
+        // "flag2" will not be tracked by just calling App#check since
+        // due to short-circuit boolean logic "this.flag2" is
+        // never accessed
+        return this.flag1 && this.flag2
+      }
+    }
+
+    const scoped = new ScopedStore(new Arbor(new App()))
+    const node = scoped.state
+
+    expect(scoped).not.toBeTracking(node, "flag1")
+    expect(scoped).not.toBeTracking(node, "flag2")
+
+    // warms up the cache
+    // causes "scoped" to track "flag1" but not "flag2"
+    scoped.state.check
+
+    expect(scoped).toBeTracking(node, "flag1")
+    expect(scoped).not.toBeTracking(node, "flag2")
+  })
+
+  it("tracks eagarly accessed fields prior to short-circuit logic", () => {
+    @proxiable
+    class App {
+      flag1 = false
+      flag2 = true
+
+      get check() {
+        const flag1 = this.flag1
+        const flag2 = this.flag2
+        // By accessing the fields first, we give Arbor a chance
+        // to track these access before the short-circuit logic runs
+        return flag1 && flag2
+      }
+    }
+
+    const scoped = new ScopedStore(new Arbor(new App()))
+    const node = scoped.state
+
+    expect(scoped).not.toBeTracking(node, "flag1")
+    expect(scoped).not.toBeTracking(node, "flag2")
+
+    // warms up the cache
+    // causes "scoped" to track "flag1" but not "flag2"
+    scoped.state.check
+
+    expect(scoped).toBeTracking(node, "flag1")
+    expect(scoped).toBeTracking(node, "flag2")
+  })
 })
