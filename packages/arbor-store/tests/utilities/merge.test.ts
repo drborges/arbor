@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 import { Arbor } from "../../src/arbor"
 import { NotAnArborNodeError, DetachedNodeError } from "../../src/errors"
 import { merge, detach } from "../../src/utilities"
