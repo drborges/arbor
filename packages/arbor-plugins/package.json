@@ -32,6 +32,7 @@
   "exports": {
     ".": {
       "require": "./dist/index.cjs.js",
+      "import": "./dist/index.esm.js",
       "default": "./dist/index.esm.js"
     }
   },

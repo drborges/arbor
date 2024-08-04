@@ -10,7 +10,7 @@
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "experimentalDecorators": true,
-    "lib": ["es2021", "dom", "dom.iterable"],
+    "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "react"
   },
   "exclude": ["examples"]

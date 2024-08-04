@@ -1,9 +1,9 @@
-import { NodeHandler } from "./NodeHandler"
-import { NotAnArborNodeError } from "./errors"
-import { isNode, isProxiable } from "./guards"
-import type { Link, Node } from "./types"
+import { NotAnArborNodeError } from "../errors"
+import { isNode, isProxiable } from "../guards"
+import type { Link, Node } from "../types"
+import { DefaultHandler } from "./default"
 
-export class MapNodeHandler<T extends object = object> extends NodeHandler<
+export class MapHandler<T extends object = object> extends DefaultHandler<
   Map<unknown, T>
 > {
   static accepts(value: unknown) {
@@ -18,11 +18,11 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
     }
   }
 
-  $traverse<C extends object>(link: Link): C {
-    return (this as unknown as Map<unknown, T>).get(link) as unknown as C
+  $getChildNode<C extends object>(link: Link): Node<C> {
+    return (this as unknown as Map<unknown, T>).get(link) as unknown as Node<C>
   }
 
-  $attachValue<C extends object>(value: C, link: Link) {
+  $setChildValue<C extends object>(link: Link, value: C) {
     this.$value.set(link, value as unknown as T)
   }
 
@@ -55,7 +55,7 @@ export class MapNodeHandler<T extends object = object> extends NodeHandler<
           return value
         }
 
-        return this.$getOrCreateChild(key, value)
+        return this.$tree.traverse(proxy, key, value)
       }
     }
 

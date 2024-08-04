@@ -14,10 +14,11 @@ expect.extend({
       }
     }
 
-    const hasLink = received.getLinkFor(expected)
+    const hasLink = received.getLinkFor(expected) !== undefined
 
     return {
       pass: hasLink,
+      actual: received,
       message: () => `Arbor store does not have a link for the given value`,
     }
   },

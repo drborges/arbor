@@ -1,8 +1,21 @@
-import { NodeHandler } from "./NodeHandler"
-import { Node } from "./types"
+import { Arbor } from "arbor"
+import { Node } from "../types"
+import { pathFor } from "../utilities"
+import { DefaultHandler } from "./default"
 
-export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
-  T[]
+function refreshChildrenLinks(
+  tree: Arbor,
+  nodeValue: object[],
+  { from = 0 } = {}
+) {
+  const node = tree.getNodeFor<unknown[]>(nodeValue) as Node<Node[]>
+  for (let i = from; i < node.length; i++) {
+    tree.attachNode(node[i], i.toString())
+  }
+}
+
+export class ArrayHandler<T extends object = object> extends DefaultHandler<
+  Node<T>[]
 > {
   static accepts(value: unknown) {
     return Array.isArray(value)
@@ -20,7 +33,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.refreshChildrenLinks({ from: parseInt(prop) })
+    refreshChildrenLinks(this.$tree, this.$value, { from: parseInt(prop) })
 
     return true
   }
@@ -50,9 +63,9 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
-    return this.$tree.getNodeAt<Node<T>[]>(this.$path)
+    return this.$tree.getNodeAt<Node<T>[]>(pathFor(this))
   }
 
   pop(): T {
@@ -86,7 +99,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
     })
 
     this.$tree.detachNodeFor(shifted)
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
     return shifted
   }
@@ -101,9 +114,9 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
-    return this.$tree.getNodeAt(this.$path)
+    return this.$tree.getNodeAt(pathFor(this))
   }
 
   splice(start: number, deleteCount: number, ...items: T[]): T[] {
@@ -121,7 +134,7 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
     })
 
     deleted.forEach(this.$tree.detachNodeFor.bind(this.$tree))
-    this.refreshChildrenLinks({ from: start })
+    refreshChildrenLinks(this.$tree, this.$value, { from: start })
     return deleted
   }
 
@@ -137,15 +150,8 @@ export class ArrayNodeHandler<T extends object = object> extends NodeHandler<
       }
     })
 
-    this.refreshChildrenLinks()
+    refreshChildrenLinks(this.$tree, this.$value)
 
     return size
-  }
-
-  private refreshChildrenLinks({ from = 0 } = {}) {
-    const node = this.$tree.getNodeAt<Node<T>[]>(this.$path)
-    for (let i = from; i < node.length; i++) {
-      this.$tree.attachNode(node[i], i.toString())
-    }
   }
 }

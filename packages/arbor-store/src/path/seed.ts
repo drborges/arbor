@@ -1,4 +1,4 @@
-import { isNode } from "./guards"
+import { isNode } from "../guards"
 
 export const ArborSeed = Symbol.for("ArborSeed")
 
@@ -36,9 +36,9 @@ export class Seed {
     }
 
     if (isNode(value)) {
-      return value.$seed
+      return value.$value[ArborSeed]
     }
 
-    return value[ArborSeed]
+    return value?.[ArborSeed]
   }
 }
