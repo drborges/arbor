@@ -7,7 +7,6 @@ import { Path } from "../src/path/path"
 import { detach, pathFor, unwrap } from "../src/utilities"
 
 import { isNode } from "../src/guards"
-import { ScopedStore } from "../src/scoping/store"
 
 describe("Arbor", () => {
   describe("state tree", () => {
