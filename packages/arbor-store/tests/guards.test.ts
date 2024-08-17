@@ -2,7 +2,7 @@
 /* eslint-disable no-new-wrappers */
 import { describe, expect, it } from "vitest"
 
-import { Arbor } from "../src/Arbor"
+import { Arbor } from "../src/arbor"
 import { ArborProxiable, proxiable } from "../src/decorators"
 import { isNode, isProxiable } from "../src/guards"
 

@@ -1,4 +1,4 @@
-import { Arbor, ArborError, MutationEvent } from "@arborjs/store"
+import { Arbor, ArborError, MutationEvent, pathFor } from "@arborjs/store"
 import { filter } from "rxjs/operators"
 import { describe, expect, it } from "vitest"
 import { from } from "../src/from"
@@ -27,9 +27,7 @@ describe("from", () => {
 
     expect(mutationEvents.length).toBe(1)
     expect(mutationEvents[0].metadata.props).toContain("name")
-    expect(mutationEvents[0].mutationPath.matches(store.state.users[0])).toBe(
-      true
-    )
+    expect(mutationEvents[0].mutationPath).toBe(pathFor(store.state.users[0]))
   })
 
   it("cancels a subscription", () => {

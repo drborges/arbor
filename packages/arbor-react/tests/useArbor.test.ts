@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { Arbor, isArborNodeTracked, proxiable, unwrap } from "@arborjs/store"
+import { Arbor, proxiable, unwrap } from "@arborjs/store"
 import { act, renderHook } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
@@ -16,10 +16,10 @@ describe("useArbor", () => {
 
     const { result } = renderHook(() => useArbor(store))
 
-    expect(isArborNodeTracked(result.current)).toBe(true)
-    expect(isArborNodeTracked(result.current[0])).toBe(true)
-    expect(isArborNodeTracked(result.current[1])).toBe(true)
-    expect(isArborNodeTracked(result.current[2])).toBe(true)
+    expect(result.current).toBeTrackedNode()
+    expect(result.current[0]).toBeTrackedNode()
+    expect(result.current[1]).toBeTrackedNode()
+    expect(result.current[2]).toBeTrackedNode()
   })
 
   it("returns the current state of the store", () => {

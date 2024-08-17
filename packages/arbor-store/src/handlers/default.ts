@@ -1,11 +1,10 @@
-import { Arbor } from "./Arbor"
-import { Path } from "./Path"
-import { Seed } from "./Seed"
-import { Subscribers } from "./Subscribers"
-import { isDetachedProperty } from "./decorators"
-import { isNode, isProxiable } from "./guards"
-import type { Link, Node } from "./types"
-import { isGetter, recursivelyUnwrap } from "./utilities"
+import { Arbor } from "../arbor"
+import { isDetachedProperty } from "../decorators"
+import { isNode, isProxiable } from "../guards"
+import { Seed } from "../path"
+import { Subscriptions } from "../subscriptions"
+import type { Link, Node } from "../types"
+import { isGetter, pathFor, recursivelyUnwrap } from "../utilities"
 
 const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 
@@ -16,12 +15,13 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
  * objects witihin the state tree as well as mutations to them, enabling subscribers
  * to be notified of events they are interested in.
  */
-export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
+export class DefaultHandler<T extends object = object>
+  implements ProxyHandler<T>
+{
   constructor(
     readonly $tree: Arbor,
-    readonly $path: Path,
     readonly $value: T,
-    readonly $subscribers = new Subscribers<T>()
+    readonly $subscriptions = new Subscriptions<T>()
   ) {}
 
   /**
@@ -38,26 +38,17 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     return true
   }
 
-  get $seed() {
-    return Seed.from(this.$value)
-  }
-
-  $traverse<C extends object>(link: Link): Node<C> {
+  $getChildNode<C extends object>(link: Link): Node<C> {
     return this[link]
   }
 
-  $attachValue<C extends object>(value: C, link: Link) {
+  $setChildValue<C extends object>(link: Link, value: C) {
     this.$value[link] = value
   }
 
   get(target: T, prop: string, proxy: Node<T>) {
-    // Access $unwrap, $clone, $children, etc...
+    // Access Node properties, e.g. $tree, $value, etc...
     const handlerApiAccess = Reflect.get(this, prop, proxy)
-
-    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
-      return Reflect.get(target, prop, proxy)
-    }
-
     // Allow proxied values to defined properties named 'get', 'set', 'deleteProperty'
     // without conflicting with the ProxyHandler API.
     if (handlerApiAccess && !PROXY_HANDLER_API.includes(prop)) {
@@ -65,6 +56,10 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     }
 
     let childValue = Reflect.get(target, prop, proxy) as unknown
+
+    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
+      return childValue
+    }
 
     // Automatically unwrap proxied values that may have been used to initialize the store
     // either via new Arbor(...) or store.setState(...).
@@ -86,7 +81,7 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
       return childValue
     }
 
-    return this.$getOrCreateChild(prop, childValue)
+    return this.$tree.traverse(proxy, prop, childValue)
   }
 
   set(target: T, prop: string, newValue: unknown, proxy: Node<T>): boolean {
@@ -98,6 +93,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     // Ignores the mutation if new value is already the current value
     if (target[prop] === value) return true
 
+    // Detached properties do not trigger mutation events
+    // they are mutated in place.
     if (isDetachedProperty(target, prop)) {
       target[prop] = value
       return true
@@ -111,7 +108,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
 
       // In case the new value happens to be an existing node, we preemptively add it back to the
       // state tree so that stale references to this node can continue to trigger mutations.
-      this.$createChildNode(prop, newValue.$value)
+      const path = pathFor(this).child(Seed.plant(value))
+      this.$tree.createNode(path, value, prop)
     }
 
     const previouslyUndefined = target[prop] === undefined
@@ -133,6 +131,8 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     if (prop in target) {
       const childValue = Reflect.get(target, prop)
 
+      // Detached properties do not trigger mutation events
+      // they are mutated in place.
       if (isDetachedProperty(target, prop)) {
         delete target[prop]
         return true
@@ -151,18 +151,5 @@ export class NodeHandler<T extends object = object> implements ProxyHandler<T> {
     }
 
     return true
-  }
-
-  protected $getOrCreateChild<V extends object>(link: Link, value: V): Node<V> {
-    if (!this.$tree.getNodeFor(value)) {
-      this.$createChildNode(link, value)
-    }
-
-    return this.$tree.getNodeFor(value)
-  }
-
-  private $createChildNode<V extends object>(link: Link, value: V): Node<V> {
-    const childPath = this.$path.child(Seed.plant(value))
-    return this.$tree.createNode<V>(childPath, value, link)
   }
 }
