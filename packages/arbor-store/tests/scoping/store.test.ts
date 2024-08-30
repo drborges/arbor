@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { Arbor } from "../../src/arbor"
-import { proxiable, detached } from "../../src/decorators"
+import { detached, proxiable } from "../../src/decorators"
 import { ScopedStore } from "../../src/scoping/store"
 import { unwrap } from "../../src/utilities"
 
@@ -618,5 +618,36 @@ describe("path tracking", () => {
 
     expect(node1).toHaveLink(undefined)
     expect(node2).toHaveLink("0")
+  })
+
+  it("does not call subscribers on untracked props due to short-circuit logic", () => {
+    @proxiable
+    class App {
+      flag1 = true
+      flag2 = true
+
+      get check() {
+        return this.flag1 || this.flag2
+      }
+    }
+
+    const subscriber = vi.fn()
+    const store = new Arbor(new App())
+    const scoped = new ScopedStore(store)
+    scoped.subscribe(subscriber)
+
+    // warps up the cache
+    // causes "scoped" to track "flag1" but not "flag2"
+    scoped.state.check
+
+    store.state.flag2 = false
+
+    expect(scoped).toBeTracking(scoped.state, "flag1")
+    expect(scoped).not.toBeTracking(scoped.state, "flag2")
+    expect(subscriber).not.toHaveBeenCalled()
+
+    store.state.flag1 = false
+
+    expect(subscriber).toHaveBeenCalled()
   })
 })

@@ -39,9 +39,11 @@ export class Scope<T extends object> {
 
   affected(event: MutationEvent<T>) {
     // Notify all listeners if the root of the store is replaced
-    // TODO: at the moment I'm assuming this is a desirable behavior, though
-    // user feedback will likely influence this behavior moving forward.
-    if (event.mutationPath.isRoot() && event.metadata.operation === "set") {
+    if (
+      event.mutationPath.isRoot() &&
+      event.metadata.operation === "set" &&
+      event.metadata.props.length === 0
+    ) {
       return true
     }
 
