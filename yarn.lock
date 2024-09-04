@@ -27,7 +27,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@arborjs/plugins@workspace:packages/arbor-plugins"
   dependencies:
-    "@arborjs/store": 0.0.1-alpha.92
+    "@arborjs/store": 0.0.1-alpha.93
     esbuild: ^0.17.19
     eslint: ^8.40.0
     jsdom: ^24.1.0
@@ -35,7 +35,7 @@ __metadata:
     typescript: ^5.0.4
     vitest: ^1.6.0
   peerDependencies:
-    "@arborjs/store": 0.0.1-alpha.92
+    "@arborjs/store": 0.0.1-alpha.93
   languageName: unknown
   linkType: soft
 
@@ -43,7 +43,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@arborjs/react@workspace:packages/arbor-react"
   dependencies:
-    "@arborjs/store": 0.0.1-alpha.92
+    "@arborjs/store": 0.0.1-alpha.93
     "@testing-library/react": 14.0.0
     "@types/react": 18.2.31
     "@types/react-dom": 18.2.14
@@ -58,7 +58,7 @@ __metadata:
     typescript: ^5.0.4
     vitest: ^1.6.0
   peerDependencies:
-    "@arborjs/store": 0.0.1-alpha.92
+    "@arborjs/store": 0.0.1-alpha.93
     react: 18.2.0
     react-dom: 18.2.14
   languageName: unknown
@@ -74,7 +74,7 @@ __metadata:
     typescript: ^5.0.4
     vitest: ^1.6.0
   peerDependencies:
-    "@arborjs/store": 0.0.1-alpha.92
+    "@arborjs/store": 0.0.1-alpha.93
     rxjs: "*"
   languageName: unknown
   linkType: soft
@@ -88,7 +88,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@arborjs/store@0.0.1-alpha.92, @arborjs/store@workspace:*, @arborjs/store@workspace:^, @arborjs/store@workspace:packages/arbor-store":
+"@arborjs/store@0.0.1-alpha.93, @arborjs/store@workspace:*, @arborjs/store@workspace:^, @arborjs/store@workspace:packages/arbor-store":
   version: 0.0.0-use.local
   resolution: "@arborjs/store@workspace:packages/arbor-store"
   dependencies:
