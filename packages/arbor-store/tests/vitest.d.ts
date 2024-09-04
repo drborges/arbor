@@ -1,5 +1,5 @@
 import "vitest"
-import { ArborNode } from "../src"
+import { ArborNode, Link } from "../src"
 
 declare module "vitest" {
   interface Assertion<T> {
@@ -12,5 +12,6 @@ declare module "vitest" {
     toBeNodeOf: (expected: unknown) => T
     toHaveNodeFor: (expected: unknown) => T
     toHaveLinkFor: (expected: unknown) => T
+    toHaveLink: (link?: Link) => T
   }
 }

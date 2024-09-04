@@ -600,4 +600,23 @@ describe("path tracking", () => {
     expect(scoped).toBeTracking(node, "flag1")
     expect(scoped).toBeTracking(node, "flag2")
   })
+
+  it("refreshes array node links successfully", () => {
+    const store = new Arbor({
+      list: [{ id: 1 }, { id: 2 }],
+    })
+
+    const node1 = store.state.list[0]
+    const node2 = store.state.list[1]
+
+    expect(node1).toHaveLink("0")
+    expect(node2).toHaveLink("1")
+
+    const scoped = new ScopedStore(store)
+
+    scoped.state.list.splice(0, 1)
+
+    expect(node1).toHaveLink(undefined)
+    expect(node2).toHaveLink("0")
+  })
 })
