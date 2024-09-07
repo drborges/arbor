@@ -2,7 +2,7 @@ import { Arbor } from "../arbor"
 import { isDetachedProperty } from "../decorators"
 import { isNode } from "../guards"
 import { Seed } from "../path"
-import { ArborNode, MutationEvent } from "../types"
+import { ArborNode, Link, MutationEvent } from "../types"
 import { isGetter, recursivelyUnwrap } from "../utilities"
 
 export type Tracked<T extends object = object> = T & {
@@ -123,6 +123,29 @@ export class Scope<T extends object> {
 
         if (prop === "$value") {
           return target
+        }
+
+        if (prop === "get") {
+          return (link: Link) => {
+            const child = target.get(link)
+
+            if (
+              child == null ||
+              // There's no point in tracking access to Arbor stores being referenced
+              // without other stores since they are not connected to each other.
+              // Also, we cannot proxy Arbor instance since itself relies on #private
+              // fields to hide internal concerns which gets in the way of the proxying
+              // mechanism.
+              //
+              // See "Private Properties" section of the Caveats.md for more details.
+              child instanceof Arbor ||
+              typeof child !== "object"
+            ) {
+              return child
+            }
+
+            return getOrCache(child)
+          }
         }
 
         // TODO: handlers/map.ts must intercept child access so it can proxy them
