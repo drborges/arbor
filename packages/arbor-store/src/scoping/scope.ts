@@ -37,6 +37,31 @@ export class Scope<T extends object> {
     this.tracking = new WeakMap<Seed, Set<string>>()
   }
 
+  // NOTE: Something to consider in the future as new node handler types
+  // are introduced, is whether or not this method should be aware of the
+  // type of node handler targeted by the event so it can better determine
+  // when a mutation affects that node or not.
+  //
+  // For instance, currently we assume that any operation other than "set"
+  // should affect the node, e.g. subscribers need to be notified, this is
+  // to deal with scenarios where a subscriber may not be tracking any fields
+  // of an array, but yet needs to know when it changes.
+  //
+  // Imagine in a React app a component that renders the length of an array
+  // but does not access any items in the array, it needs to re-render whenever
+  // an item is removed or added to the array.This implementation is not 100%
+  // ideal at the moment since for instance, that same component would re-render
+  // should we use Array#reverse or Array#sort, these won't change the array's
+  // length and yet will cause the component to re-render.
+  //
+  // One idea to explore is to provide extra metadata information in the mutation
+  // event that would allow this logic to tap into in order to determine whether
+  // subscribers should be notified regardless of which fields on the node they
+  // are tracking, similar to how we use `MutationMetadata#previouslyUndefined`.
+  //
+  // We can try replacing that with `MutationMetadata#structureChanged` to indicate
+  // when a mutation event alters the structure of the node by either adding new fields
+  // or removing.
   affected(event: MutationEvent<T>) {
     if (event.metadata.operation !== "set") {
       return true
