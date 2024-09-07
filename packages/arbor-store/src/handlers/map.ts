@@ -11,10 +11,11 @@ export class MapHandler<T extends object = object> extends DefaultHandler<
   }
 
   *[Symbol.iterator]() {
-    if (!isNode<Map<unknown, T>>(this)) throw new NotAnArborNodeError()
+    const mapProxy = this.$tree.getNodeFor(this) as unknown as Map<unknown, T>
 
-    for (const entry of this.entries()) {
-      yield entry
+    for (const entry of this.$value.entries()) {
+      const childProxy = mapProxy.get(entry[0])
+      yield [entry[0], childProxy]
     }
   }
 

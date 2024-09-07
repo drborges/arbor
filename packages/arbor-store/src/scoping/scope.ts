@@ -125,6 +125,10 @@ export class Scope<T extends object> {
           return target
         }
 
+        // TODO: handlers/map.ts must intercept child access so it can proxy them
+        // otherwise, accessing a child from a scoped map will not yield a scoped
+        // child but the actual underlying value.
+
         const child = Reflect.get(target, prop, proxy)
         const descriptor = Object.getOwnPropertyDescriptor(target, prop)
 
