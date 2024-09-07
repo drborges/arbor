@@ -38,18 +38,16 @@ export class Scope<T extends object> {
   }
 
   affected(event: MutationEvent<T>) {
+    if (event.metadata.operation !== "set") {
+      return true
+    }
+
     // Notify all listeners if the root of the store is replaced
     if (
       event.mutationPath.isRoot() &&
       event.metadata.operation === "set" &&
       event.metadata.props.length === 0
     ) {
-      return true
-    }
-
-    // If there are no props affected by the mutation, then the operation
-    // is on the node itself (e.g. array#push, array#reverse, etc...)
-    if (event.metadata.props.length === 0) {
       return true
     }
 
