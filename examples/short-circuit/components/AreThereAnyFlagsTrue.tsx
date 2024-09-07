@@ -8,11 +8,11 @@ export function AreThereAnyFlagsTrue() {
   const app = useArbor(store)
   return (
     <Highlight label="<AreThereAnyFlagsTrue />" key={Math.random()}>
-      <h1>
-        Are there any flags <code>true</code>?
-      </h1>
       <div>
-        {app.flags.flag1 || app.flags.flag2 || app.flags.flag3 ? "Yes" : "No"}
+        <code>
+          app.flags.flag1 || app.flags.flag2 || app.flags.flag3 ={" "}
+          {(app.flags.flag1 || app.flags.flag2 || app.flags.flag3).toString()}
+        </code>
       </div>
     </Highlight>
   )
