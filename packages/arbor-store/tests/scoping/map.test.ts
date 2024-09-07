@@ -1,8 +1,32 @@
 import { describe, expect, it } from "vitest"
 import { Arbor } from "../../src/arbor"
 import { ScopedStore } from "../../src/scoping/store"
+import { unwrap } from "../../src/utilities"
 
 describe("map", () => {
+  describe("#get", () => {
+    it("access children nodes", () => {
+      const bob = { name: "Bob" }
+      const alice = { name: "Alice" }
+      const store = new Arbor(
+        new Map([
+          [1, alice],
+          [2, bob],
+        ])
+      )
+
+      const scope = new ScopedStore(store)
+
+      const scopedNode1 = scope.state.get(1)
+      const scopedNode2 = scope.state.get(2)
+
+      expect(unwrap(scopedNode1)).toBeNodeOf(alice)
+      expect(unwrap(scopedNode2)).toBeNodeOf(bob)
+      expect(scopedNode1).toBeTrackedNode()
+      expect(scopedNode2).toBeTrackedNode()
+    })
+  })
+
   describe("Symbol.iterator", () => {
     it("can convert a map node from a scoped store to array", () => {
       const store = new Arbor(
@@ -32,9 +56,6 @@ describe("map", () => {
       )
 
       const scope = new ScopedStore(store)
-
-      expect(scope.state.get(1)).toBeTrackedNode()
-      expect(scope.state.get(2)).toBeTrackedNode()
 
       // const list = Array.from(scope.state)
 
