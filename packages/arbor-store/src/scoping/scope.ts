@@ -2,7 +2,7 @@ import { Arbor } from "../arbor"
 import { isDetachedProperty } from "../decorators"
 import { isNode } from "../guards"
 import { Seed } from "../path"
-import { ArborNode, Link, MutationEvent } from "../types"
+import { ArborNode, Link, MutationEvent, Node } from "../types"
 import { isGetter, recursivelyUnwrap } from "../utilities"
 
 export type Tracked<T extends object = object> = T & {
@@ -116,7 +116,7 @@ export class Scope<T extends object> {
     const getOrCache = this.getOrCache.bind(this)
 
     return new Proxy(node, {
-      get(target, prop: string, proxy) {
+      get(target: Node, prop, proxy) {
         if (prop === "$tracked") {
           return true
         }
@@ -125,32 +125,36 @@ export class Scope<T extends object> {
           return target
         }
 
-        if (prop === "get") {
-          return (link: Link) => {
-            const child = target.get(link)
-
-            if (
-              child == null ||
-              // There's no point in tracking access to Arbor stores being referenced
-              // without other stores since they are not connected to each other.
-              // Also, we cannot proxy Arbor instance since itself relies on #private
-              // fields to hide internal concerns which gets in the way of the proxying
-              // mechanism.
-              //
-              // See "Private Properties" section of the Caveats.md for more details.
-              child instanceof Arbor ||
-              typeof child !== "object"
-            ) {
-              return child
+        // Scopes must be able to intercept iteration logic so that items being traversed
+        // can be wrapped within a scope proxy so that path tracking can happen.
+        //
+        // To achieve that, in Arbor, every NodeHandler that needs to support iterators,
+        // like arrays and maps, implement their own *[Symbol.iterator] method that accepts
+        // a proxy function as their argument, this function is provided by the scope and
+        // allows the iterator to wrap each item being iterated within a scope that provides
+        // path tracking behavior.
+        if (prop === Symbol.iterator && target[prop] != null) {
+          return function* iterator() {
+            const iterate = target[Symbol.iterator].bind(target)
+            for (const entry of iterate(getOrCache)) {
+              yield entry
             }
-
-            return getOrCache(child)
           }
         }
 
+        // TODO: find a solution that does not involve overriding a possible get method
+        // on the target...
+        //
         // TODO: handlers/map.ts must intercept child access so it can proxy them
         // otherwise, accessing a child from a scoped map will not yield a scoped
         // child but the actual underlying value.
+        if (target instanceof Map && prop === "get") {
+          return (link: Link) => {
+            const child = target.get(link)
+
+            return isNode(child) ? getOrCache(child) : child
+          }
+        }
 
         const child = Reflect.get(target, prop, proxy)
         const descriptor = Object.getOwnPropertyDescriptor(target, prop)
@@ -186,7 +190,7 @@ export class Scope<T extends object> {
         if (
           isNode(target) &&
           !isGetter(target, prop as string) &&
-          !isDetachedProperty(target, prop)
+          !isDetachedProperty(target, prop as string)
         ) {
           track(target, prop)
         }

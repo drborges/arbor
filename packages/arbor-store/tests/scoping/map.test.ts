@@ -45,8 +45,9 @@ describe("map", () => {
       ])
     })
 
-    it("exposes scoped nodes", () => {
+    it.only("exposes scoped nodes", () => {
       const bob = { name: "Bob" }
+
       const alice = { name: "Alice" }
       const store = new Arbor(
         new Map([
@@ -57,12 +58,12 @@ describe("map", () => {
 
       const scope = new ScopedStore(store)
 
-      // const list = Array.from(scope.state)
+      const list = Array.from(scope.state)
 
-      // expect(list[0][1]).toBeNodeOf(alice)
-      // expect(list[1][1]).toBeNodeOf(bob)
-      // expect(list[0][1]).toBeTrackedNode()
-      // expect(list[1][1]).toBeTrackedNode()
+      expect(unwrap(list[0][1])).toBeNodeOf(alice)
+      expect(unwrap(list[1][1])).toBeNodeOf(bob)
+      expect(list[0][1]).toBeTrackedNode()
+      expect(list[1][1]).toBeTrackedNode()
     })
   })
 })

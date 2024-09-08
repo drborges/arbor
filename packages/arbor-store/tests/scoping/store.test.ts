@@ -112,13 +112,13 @@ describe("path tracking", () => {
 
     const scopedStore1 = new ScopedStore(store)
 
-    expect(scopedStore1.state).toEqual(store.state)
+    expect(scopedStore1.state).toBeTrackedNode()
     expect(scopedStore1.state).not.toBe(store.state)
     expect(unwrap(scopedStore1.state)).toBe(store.state)
 
     const scopedStore2 = new ScopedStore(scopedStore1.state.todos[0])
 
-    expect(scopedStore2.state).toEqual(store.state.todos[0])
+    expect(scopedStore2.state).toBeTrackedNode()
     expect(scopedStore2.state).not.toBe(store.state.todos[0])
     expect(scopedStore2.state).not.toBe(scopedStore1.state.todos[0])
     expect(unwrap(scopedStore2.state)).toBe(store.state.todos[0])

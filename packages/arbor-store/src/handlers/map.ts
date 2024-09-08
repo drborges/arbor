@@ -1,6 +1,5 @@
-import { NotAnArborNodeError } from "../errors"
 import { isNode, isProxiable } from "../guards"
-import type { Link, Node } from "../types"
+import type { IteratorWrapper, Link, Node } from "../types"
 import { DefaultHandler } from "./default"
 
 export class MapHandler<T extends object = object> extends DefaultHandler<
@@ -10,12 +9,17 @@ export class MapHandler<T extends object = object> extends DefaultHandler<
     return value instanceof Map
   }
 
-  *[Symbol.iterator]() {
-    const mapProxy = this.$tree.getNodeFor(this) as unknown as Map<unknown, T>
-
-    for (const entry of this.$value.entries()) {
-      const childProxy = mapProxy.get(entry[0])
-      yield [entry[0], childProxy]
+  /**
+   * Provides an iterator that can be used to traverse the underlying Map data.
+   *
+   * @param wrap an optional wrapping function that can be used by scoped stores
+   * to wrap items with their own scope providing path tracking behavior.
+   */
+  *[Symbol.iterator](wrap: IteratorWrapper = (n) => n) {
+    const node = this as unknown as Map<unknown, T>
+    for (const link of this.$value.keys()) {
+      const child = node.get(link)
+      yield [link, isNode(child) ? wrap(child) : child]
     }
   }
 

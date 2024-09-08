@@ -3,6 +3,32 @@ import { Arbor } from "../../src/arbor"
 import { ScopedStore } from "../../src/scoping/store"
 
 describe("Array", () => {
+  describe("Symbol.iterator", () => {
+    it("exposes child nodes via iterator", () => {
+      const store = new Arbor([
+        { name: "Alice" },
+        { name: "Bob" },
+        { name: "Carol" },
+      ])
+
+      const scoped = new ScopedStore(store)
+
+      const alice = scoped.state[0]
+      const bob = scoped.state[1]
+      const carol = scoped.state[2]
+
+      const iterator = scoped.state[Symbol.iterator]()
+
+      const user1 = iterator.next().value
+      const user2 = iterator.next().value
+      const user3 = iterator.next().value
+
+      expect(user1).toBe(alice)
+      expect(user2).toBe(bob)
+      expect(user3).toBe(carol)
+    })
+  })
+
   describe("Array#splice", () => {
     it("splices multiple items in a row", () => {
       const store = new Arbor({
