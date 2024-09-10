@@ -1,4 +1,3 @@
-import { Arbor } from "../arbor"
 import { isDetachedProperty } from "../decorators"
 import { isNode } from "../guards"
 import { Seed } from "../path"
@@ -117,10 +116,12 @@ export class Scope<T extends object> {
 
     return new Proxy(node, {
       get(target: Node, prop, proxy) {
+        // TODO: Rename $tracked to Symbol.for("ArborScoped")
         if (prop === "$tracked") {
           return true
         }
 
+        // Exposes the node wrapped by the proxy
         if (prop === "$value") {
           return target
         }
@@ -142,12 +143,10 @@ export class Scope<T extends object> {
           }
         }
 
-        // TODO: find a solution that does not involve overriding a possible get method
-        // on the target...
-        //
-        // TODO: handlers/map.ts must intercept child access so it can proxy them
-        // otherwise, accessing a child from a scoped map will not yield a scoped
-        // child but the actual underlying value.
+        // TODO: Look into making this logic generic.
+        // We need a mechanism where node handlers can declare a few methods in the underlying
+        // object signaling that it returns a child node, allowing Arbor to intercept that access
+        // adding extra behavior such as scoping/path tracking capabilities like below.
         if (target instanceof Map && prop === "get") {
           return (link: Link) => {
             const child = target.get(link)
@@ -195,18 +194,7 @@ export class Scope<T extends object> {
           track(target, prop)
         }
 
-        if (
-          child == null ||
-          // There's no point in tracking access to Arbor stores being referenced
-          // without other stores since they are not connected to each other.
-          // Also, we cannot proxy Arbor instance since itself relies on #private
-          // fields to hide internal concerns which gets in the way of the proxying
-          // mechanism.
-          //
-          // See "Private Properties" section of the Caveats.md for more details.
-          child instanceof Arbor ||
-          typeof child !== "object"
-        ) {
+        if (!isNode(child)) {
           return child
         }
 

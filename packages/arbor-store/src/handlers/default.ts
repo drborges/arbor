@@ -18,6 +18,8 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 export class DefaultHandler<T extends object = object>
   implements ProxyHandler<T>
 {
+  // TODO: Move $ prefixed props to Symbol properties.
+  // This will mitigate potential naming clashes with user-defined data.
   constructor(
     readonly $tree: Arbor,
     readonly $value: T,
