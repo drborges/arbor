@@ -4,16 +4,16 @@ import { Seed } from "../path"
 import { ArborNode, Link, MutationEvent, Node } from "../types"
 import { isGetter, recursivelyUnwrap } from "../utilities"
 
-export type Tracked<T extends object = object> = T & {
-  $tracked?: boolean
+export type Scoped<T extends object = object> = T & {
+  $scoped?: boolean
 }
 
 export class Scope<T extends object> {
   private readonly bindings = new WeakMap<object, WeakMap<object, object>>()
-  private readonly cache = new WeakMap<ArborNode, Tracked>()
-  private tracking = new WeakMap<Seed, Set<string>>()
+  private readonly cache = new WeakMap<ArborNode, Scoped>()
+  private scopes = new WeakMap<Seed, Set<string>>()
 
-  getOrCache(node: ArborNode): Tracked {
+  getOrCache(node: ArborNode): Scoped {
     if (!this.cache.has(node)) {
       this.cache.set(node, this.wrap(node))
     }
@@ -21,19 +21,19 @@ export class Scope<T extends object> {
     return this.cache.get(node)
   }
 
-  isTracking(node: ArborNode, prop: string) {
+  toBeScoping(node: ArborNode, prop: string) {
     const seed = Seed.from(node)
-    const tracked = this.tracking.get(seed)
+    const scoped = this.scopes.get(seed)
 
-    if (!tracked) {
+    if (!scoped) {
       return false
     }
 
-    return tracked.has(prop)
+    return scoped.has(prop)
   }
 
   reset() {
-    this.tracking = new WeakMap<Seed, Set<string>>()
+    this.scopes = new WeakMap<Seed, Set<string>>()
   }
 
   // NOTE: Something to consider in the future as new node handler types
@@ -84,28 +84,28 @@ export class Scope<T extends object> {
 
     const rootSeed = Seed.from(event.state)
     const targetSeed = event.mutationPath.seeds.at(-1)
-    const tracked = this.tracking.get(targetSeed || rootSeed)
+    const scoped = this.scopes.get(targetSeed || rootSeed)
 
-    // If the affected node is not being tracked, then no need to notify
+    // If the affected node is not being scoped, then no need to notify
     // any subscribers.
-    if (!tracked) {
+    if (!scoped) {
       return false
     }
 
     // Lastly, subscribers will be notified if any of the mutated props are
-    // being tracked.
-    return event.metadata.props.some((prop) => tracked.has(prop as string))
+    // being scoped.
+    return event.metadata.props.some((prop) => scoped.has(prop as string))
   }
 
   track(value: object, prop?: string) {
     const seed = Seed.from(value)
 
-    if (!this.tracking.has(seed)) {
-      this.tracking.set(seed, new Set())
+    if (!this.scopes.has(seed)) {
+      this.scopes.set(seed, new Set())
     }
 
     if (prop != null) {
-      this.tracking.get(seed).add(prop)
+      this.scopes.get(seed).add(prop)
     }
   }
 
@@ -116,8 +116,8 @@ export class Scope<T extends object> {
 
     return new Proxy(node, {
       get(target: Node, prop, proxy) {
-        // TODO: Rename $tracked to Symbol.for("ArborScoped")
-        if (prop === "$tracked") {
+        // TODO: Rename $scoped to Symbol.for("ArborScoped")
+        if (prop === "$scoped") {
           return true
         }
 

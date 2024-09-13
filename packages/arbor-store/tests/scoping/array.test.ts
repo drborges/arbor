@@ -384,7 +384,7 @@ describe("Array", () => {
       delete scoped.state.todos[1]
       delete scoped.state.todos[1]
 
-      expect(scoped).not.toBeTracking(scoped.state.todos, 1)
+      expect(scoped).not.toBeScoping(scoped.state.todos, 1)
 
       expect(subscriber).toHaveBeenCalledTimes(2)
     })

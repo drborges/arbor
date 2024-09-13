@@ -22,8 +22,8 @@ describe("map", () => {
 
       expect(unwrap(scopedNode1)).toBeNodeOf(alice)
       expect(unwrap(scopedNode2)).toBeNodeOf(bob)
-      expect(scopedNode1).toBeTrackedNode()
-      expect(scopedNode2).toBeTrackedNode()
+      expect(scopedNode1).toBeScopedNode()
+      expect(scopedNode2).toBeScopedNode()
     })
   })
 
@@ -62,8 +62,8 @@ describe("map", () => {
 
       expect(unwrap(list[0][1])).toBeNodeOf(alice)
       expect(unwrap(list[1][1])).toBeNodeOf(bob)
-      expect(list[0][1]).toBeTrackedNode()
-      expect(list[1][1]).toBeTrackedNode()
+      expect(list[0][1]).toBeScopedNode()
+      expect(list[1][1]).toBeScopedNode()
     })
   })
 })

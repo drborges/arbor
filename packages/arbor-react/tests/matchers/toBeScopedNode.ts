@@ -2,13 +2,13 @@ import { expect } from "vitest"
 
 expect.extend({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toBeTrackedNode(received: any) {
-    const isTracked = received.$tracked === true
+  toBeScopedNode(received: any) {
+    const isScoped = received.$scoped === true
     return {
-      pass: isTracked,
+      pass: isScoped,
       actual: received,
       message: () =>
-        `Received value is ${isTracked ? "" : "not"} a tracked Arbor node`,
+        `Received value is ${isScoped ? "" : "not"} a tracked Arbor node`,
     }
   },
 })

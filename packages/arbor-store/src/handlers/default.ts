@@ -40,6 +40,17 @@ export class DefaultHandler<T extends object = object>
     return true
   }
 
+  // TODO: expose seed value via a getter so user-defined data can have access to it.
+  // Example:
+  // get $seed() { return Seed.from(this) }
+  //
+  // User-defined classes could then:
+  //
+  // @proxiable
+  // class MyNode {
+  //   $seed: number
+  // }
+
   $getChildNode<C extends object>(link: Link): Node<C> {
     return this[link]
   }
