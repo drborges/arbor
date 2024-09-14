@@ -45,7 +45,7 @@ describe("map", () => {
       ])
     })
 
-    it.only("exposes scoped nodes", () => {
+    it("exposes scoped nodes", () => {
       const bob = { name: "Bob" }
 
       const alice = { name: "Alice" }
