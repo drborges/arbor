@@ -6,22 +6,13 @@ import { store } from "../store"
 export function Actions() {
   return (
     <Highlight label="<Actions />" key={Math.random()}>
-      <button
-        data-testid="toggle-flag1"
-        onClick={store.state.flags.toggleFlag1}
-      >
+      <button data-testid="toggle-flag1" onClick={store.state.toggleFlag1}>
         Toggle <code>store.state.flag1</code>
       </button>
-      <button
-        data-testid="toggle-flag2"
-        onClick={store.state.flags.toggleFlag2}
-      >
+      <button data-testid="toggle-flag2" onClick={store.state.toggleFlag2}>
         Toggle <code>store.state.flag2</code>
       </button>
-      <button
-        data-testid="toggle-flag3"
-        onClick={store.state.flags.toggleFlag3}
-      >
+      <button data-testid="toggle-flag3" onClick={store.state.toggleFlag3}>
         Toggle <code>store.state.flag3</code>
       </button>
     </Highlight>

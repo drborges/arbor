@@ -10,13 +10,13 @@ export function StoreState() {
   return (
     <Highlight label="<StoreState />" key={Math.random()}>
       <div>
-        <code>state.flags.flag1: {state.flags.flag1.toString()}</code>
+        <code>store.state.flag1: {state.flag1.toString()}</code>
       </div>
       <div>
-        <code>state.flags.flag2: {state.flags.flag2.toString()}</code>
+        <code>store.state.flag2: {state.flag2.toString()}</code>
       </div>
       <div>
-        <code>state.flags.flag3: {state.flags.flag3.toString()}</code>
+        <code>store.state.flag3: {state.flag3.toString()}</code>
       </div>
     </Highlight>
   )
