@@ -1,5 +1,6 @@
 import { LocalStorage, Logger } from "@arborjs/plugins"
-import { Arbor, useArbor } from "@arborjs/react"
+import { useArbor } from "@arborjs/react"
+import { Arbor } from "@arborjs/store"
 
 import { TodoList } from "./useTodos"
 

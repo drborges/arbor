@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { Arbor } from "../../src/arbor"
-import { proxiable, detached } from "../../src/decorators"
+import { detached, proxiable } from "../../src/decorators"
 import { ScopedStore } from "../../src/scoping/store"
 import { unwrap } from "../../src/utilities"
 
@@ -96,10 +96,10 @@ describe("path tracking", () => {
 
     const scopedStore1 = new ScopedStore(store)
 
-    expect(scopedStore1.state).toBeTrackedNode()
-    expect(scopedStore1.state.todos).toBeTrackedNode()
-    expect(scopedStore1.state.todos[0]).toBeTrackedNode()
-    expect(scopedStore1.state.todos[1]).toBeTrackedNode()
+    expect(scopedStore1.state).toBeScopedNode()
+    expect(scopedStore1.state.todos).toBeScopedNode()
+    expect(scopedStore1.state.todos[0]).toBeScopedNode()
+    expect(scopedStore1.state.todos[1]).toBeScopedNode()
   })
 
   it("automatically unwraps tracked node when creating a derived tracking scope", () => {
@@ -112,13 +112,13 @@ describe("path tracking", () => {
 
     const scopedStore1 = new ScopedStore(store)
 
-    expect(scopedStore1.state).toEqual(store.state)
+    expect(scopedStore1.state).toBeScopedNode()
     expect(scopedStore1.state).not.toBe(store.state)
     expect(unwrap(scopedStore1.state)).toBe(store.state)
 
     const scopedStore2 = new ScopedStore(scopedStore1.state.todos[0])
 
-    expect(scopedStore2.state).toEqual(store.state.todos[0])
+    expect(scopedStore2.state).toBeScopedNode()
     expect(scopedStore2.state).not.toBe(store.state.todos[0])
     expect(scopedStore2.state).not.toBe(scopedStore1.state.todos[0])
     expect(unwrap(scopedStore2.state)).toBe(store.state.todos[0])
@@ -176,7 +176,7 @@ describe("path tracking", () => {
 
     const activeTodo = scopedStore.state.todos.find((t) => t.active)
 
-    expect(activeTodo).toBeTrackedNode()
+    expect(activeTodo).toBeScopedNode()
     expect(activeTodo).toBe(scopedStore.state.todos[1])
   })
 
@@ -265,10 +265,10 @@ describe("path tracking", () => {
     const tracked = new ScopedStore(store.state)
 
     store.state.filter // binds filter to the original store
-    const filterBoundToTrackedStore = tracked.state.filter
-    const activeUsers = filterBoundToTrackedStore((u) => u.active)
+    const filterBoundToScopedStore = tracked.state.filter
+    const activeUsers = filterBoundToScopedStore((u) => u.active)
 
-    expect(activeUsers[0]).toBeTrackedNode()
+    expect(activeUsers[0]).toBeScopedNode()
   })
 
   it("preserves path tracking on nodes 'plucked' from the state tree", () => {
@@ -285,7 +285,7 @@ describe("path tracking", () => {
 
     carol.active = false
 
-    expect(carol).toBeTrackedNode()
+    expect(carol).toBeScopedNode()
     expect(subscriber).toHaveBeenCalledTimes(1)
   })
 
@@ -299,7 +299,7 @@ describe("path tracking", () => {
     const tracked = new ScopedStore(store)
 
     const carol = tracked.state.users[0]
-    expect(carol).toBeTrackedNode()
+    expect(carol).toBeScopedNode()
   })
 
   it("ensure node methods have stable memory reference across updates", () => {
@@ -370,8 +370,8 @@ describe("path tracking", () => {
     store.state.untrackedProp
     store.state.trackedProp
 
-    expect(store.scope.isTracking(store.state, "trackedProp")).toBe(true)
-    expect(store.scope.isTracking(store.state, "untrackedProp")).toBe(false)
+    expect(store.scope.toBeScoping(store.state, "trackedProp")).toBe(true)
+    expect(store.scope.toBeScoping(store.state, "untrackedProp")).toBe(false)
   })
 
   it("binds methods to the path tracking proxy", () => {
@@ -501,14 +501,14 @@ describe("path tracking", () => {
     const scoped = new ScopedStore(new Arbor(new TodoApp()))
     const todo = scoped.state.activeTodos[0]
 
-    expect(scoped).toBeTracking(todo, "done")
-    expect(scoped).not.toBeTracking(todo, "text")
+    expect(scoped).toBeScoping(todo, "done")
+    expect(scoped).not.toBeScoping(todo, "text")
 
     // access the first todo in the result so the scoped store
     // start tracking changes to the todo's "text" prop.
     todo.text
 
-    expect(scoped).toBeTracking(todo, "text")
+    expect(scoped).toBeScoping(todo, "text")
   })
 
   it("tracks changes to boolean fields accessed via a getter on a node", () => {
@@ -533,11 +533,11 @@ describe("path tracking", () => {
 
     const node = scoped.state.node // warms up the cache
 
-    expect(scoped).not.toBeTracking(node, "flag")
+    expect(scoped).not.toBeScoping(node, "flag")
 
     node.flag // warms up the cache
 
-    expect(scoped).toBeTracking(node, "flag")
+    expect(scoped).toBeScoping(node, "flag")
 
     node.flag = true
 
@@ -561,15 +561,15 @@ describe("path tracking", () => {
     const scoped = new ScopedStore(new Arbor(new App()))
     const node = scoped.state
 
-    expect(scoped).not.toBeTracking(node, "flag1")
-    expect(scoped).not.toBeTracking(node, "flag2")
+    expect(scoped).not.toBeScoping(node, "flag1")
+    expect(scoped).not.toBeScoping(node, "flag2")
 
     // warms up the cache
     // causes "scoped" to track "flag1" but not "flag2"
     scoped.state.check
 
-    expect(scoped).toBeTracking(node, "flag1")
-    expect(scoped).not.toBeTracking(node, "flag2")
+    expect(scoped).toBeScoping(node, "flag1")
+    expect(scoped).not.toBeScoping(node, "flag2")
   })
 
   it("tracks eagarly accessed fields prior to short-circuit logic", () => {
@@ -590,15 +590,15 @@ describe("path tracking", () => {
     const scoped = new ScopedStore(new Arbor(new App()))
     const node = scoped.state
 
-    expect(scoped).not.toBeTracking(node, "flag1")
-    expect(scoped).not.toBeTracking(node, "flag2")
+    expect(scoped).not.toBeScoping(node, "flag1")
+    expect(scoped).not.toBeScoping(node, "flag2")
 
     // warms up the cache
     // causes "scoped" to track "flag1" but not "flag2"
     scoped.state.check
 
-    expect(scoped).toBeTracking(node, "flag1")
-    expect(scoped).toBeTracking(node, "flag2")
+    expect(scoped).toBeScoping(node, "flag1")
+    expect(scoped).toBeScoping(node, "flag2")
   })
 
   it("refreshes array node links successfully", () => {
@@ -618,5 +618,36 @@ describe("path tracking", () => {
 
     expect(node1).toHaveLink(undefined)
     expect(node2).toHaveLink("0")
+  })
+
+  it("does not call subscribers on untracked props due to short-circuit logic", () => {
+    @proxiable
+    class App {
+      flag1 = true
+      flag2 = true
+
+      get check() {
+        return this.flag1 || this.flag2
+      }
+    }
+
+    const subscriber = vi.fn()
+    const store = new Arbor(new App())
+    const scoped = new ScopedStore(store)
+    scoped.subscribe(subscriber)
+
+    // warps up the cache
+    // causes "scoped" to track "flag1" but not "flag2"
+    scoped.state.check
+
+    store.state.flag2 = false
+
+    expect(scoped).toBeScoping(scoped.state, "flag1")
+    expect(scoped).not.toBeScoping(scoped.state, "flag2")
+    expect(subscriber).not.toHaveBeenCalled()
+
+    store.state.flag1 = false
+
+    expect(subscriber).toHaveBeenCalled()
   })
 })

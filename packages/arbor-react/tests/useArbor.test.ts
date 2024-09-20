@@ -16,10 +16,10 @@ describe("useArbor", () => {
 
     const { result } = renderHook(() => useArbor(store))
 
-    expect(result.current).toBeTrackedNode()
-    expect(result.current[0]).toBeTrackedNode()
-    expect(result.current[1]).toBeTrackedNode()
-    expect(result.current[2]).toBeTrackedNode()
+    expect(result.current).toBeScopedNode()
+    expect(result.current[0]).toBeScopedNode()
+    expect(result.current[1]).toBeScopedNode()
+    expect(result.current[2]).toBeScopedNode()
   })
 
   it("returns the current state of the store", () => {

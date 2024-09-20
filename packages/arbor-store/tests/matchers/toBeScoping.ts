@@ -1,10 +1,10 @@
 import { expect } from "vitest"
 
 import { ArborError, isNode, NotAnArborNodeError, ScopedStore } from "../../src"
-import { Tracked } from "../../src/scoping/scope"
+import { Scoped } from "../../src/scoping/scope"
 
 expect.extend({
-  toBeTracking(scopedStore, node, prop) {
+  toBeScoping(scopedStore, node, prop) {
     if (!(scopedStore instanceof ScopedStore)) {
       throw new ArborError("received value is not an instance of ScopedStore")
     }
@@ -13,17 +13,17 @@ expect.extend({
       throw new NotAnArborNodeError()
     }
 
-    const isTrackedNode = (node as Tracked)?.$tracked === true
-    const isTrackingNodeProp =
-      isTrackedNode && scopedStore.scope.isTracking(node, prop)
+    const isScopedNode = (node as Scoped)?.$scoped === true
+    const toBeScopingNodeProp =
+      isScopedNode && scopedStore.scope.toBeScoping(node, prop)
 
     return {
-      pass: isTrackingNodeProp,
+      pass: toBeScopingNodeProp,
       actual: scopedStore,
       message: () =>
         `ScopedStore is ${
-          isTrackingNodeProp ? "" : "not"
-        } tracking prop ${prop} for node ${node}`,
+          toBeScopingNodeProp ? "" : "not"
+        } scoping updates to ${prop}`,
     }
   },
 })

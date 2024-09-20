@@ -10,6 +10,13 @@ export function isNode<T extends object>(value: unknown): value is Node<T> {
 export function isProxiable(value: unknown): value is object {
   if (value == null) return false
 
+  // TODO: Look into decoupling this logic from Array and Map classes.
+  // If we can make this decision based on which node handlers are supported
+  // e.g. ArrayHandler, MapHandler, SetHandler (coming soon):
+  //
+  // PoC:
+  // supportedNodeHandlers.some(handler => handler.accept(value))
+  //
   return (
     Array.isArray(value) ||
     value instanceof Map ||

@@ -1,6 +1,6 @@
 import { Json, SerializedBy, serializable } from "@arborjs/json"
 import { LocalStorage, Logger } from "@arborjs/plugins"
-import { Arbor, ArborNode, detach, proxiable } from "@arborjs/react"
+import { Arbor, ArborNode, detach, proxiable } from "@arborjs/store"
 import { v4 as uuid } from "uuid"
 
 export type Status = "completed" | "active"

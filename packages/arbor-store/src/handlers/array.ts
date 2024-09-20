@@ -1,5 +1,6 @@
 import { Arbor } from "arbor"
-import { Node } from "../types"
+import { isNode } from "../guards"
+import { Node, IteratorWrapper } from "../types"
 import { pathFor } from "../utilities"
 import { DefaultHandler } from "./default"
 
@@ -19,6 +20,19 @@ export class ArrayHandler<T extends object = object> extends DefaultHandler<
 > {
   static accepts(value: unknown) {
     return Array.isArray(value)
+  }
+
+  /**
+   * Provides an iterator that can be used to traverse the underlying Map data.
+   *
+   * @param wrap an optional wrapping function that can be used by scoped stores
+   * to wrap items with their own scope providing path tracking behavior.
+   */
+  *[Symbol.iterator](wrap: IteratorWrapper = (n) => n) {
+    for (const link of this.$value.keys()) {
+      const child = this[link]
+      yield isNode(child) ? wrap(child) : child
+    }
   }
 
   deleteProperty(target: T[], prop: string): boolean {

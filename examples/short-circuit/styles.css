@@ -1,0 +1,39 @@
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate {
+  animation: fadeOut 1s ease-in;
+}
+
+button {
+  padding: 5px 10px;
+  margin: 5px 10px;
+}
+
+.highlight {
+  position: relative;
+  border: 2px solid black;
+  padding: 15px;
+  padding-top: 25px;
+  margin: 10px;
+}
+
+.highlight > span {
+  top: 0;
+  left: 0;
+  border-radius: 0 0 5px 0;
+  background-color: black;
+  color: white;
+  font-size: 10px;
+  padding: 5px;
+  position: absolute;
+}

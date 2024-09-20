@@ -1,7 +1,7 @@
 import React, { memo, SyntheticEvent } from "react"
 
 import useNewTodo from "../store/useNewTodo"
-import { store, Todo } from "../store/useTodos"
+import { store } from "../store/useTodos"
 import { activate, store as filterStore } from "../store/useTodosFilter"
 
 export default memo(function NewTodoForm() {

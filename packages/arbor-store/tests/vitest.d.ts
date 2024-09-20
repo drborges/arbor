@@ -6,8 +6,8 @@ declare module "vitest" {
     toBeSeeded: () => T
     toBeDetached: () => T
     toBeArborNode: () => T
-    toBeTrackedNode: () => T
-    toBeTracking: <D extends object>(node: ArborNode<D>, prop: keyof D) => T
+    toBeScopedNode: () => T
+    toBeScoping: <D extends object>(node: ArborNode<D>, prop: keyof D) => T
     toBeProxiedExactlyOnce: () => T
     toBeNodeOf: (expected: unknown) => T
     toHaveNodeFor: (expected: unknown) => T
