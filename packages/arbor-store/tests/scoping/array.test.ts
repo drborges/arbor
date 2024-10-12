@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { Arbor } from "../../src/arbor"
 import { ScopedStore } from "../../src/scoping/store"
+import { detach } from "../../src/utilities"
 
 describe("Array", () => {
   describe("Symbol.iterator", () => {
@@ -388,5 +389,19 @@ describe("Array", () => {
 
       expect(subscriber).toHaveBeenCalledTimes(2)
     })
+  })
+
+  it("preserves tree links when deleting items via detach", () => {
+    const state = [{ id: 1 }, { id: 2 }]
+
+    const store = new Arbor(state)
+    const scoped = new ScopedStore(store)
+    const item1 = scoped.state[0]
+    const item2 = scoped.state[1]
+
+    detach(item1)
+    detach(item2)
+
+    expect(store.state).toEqual([])
   })
 })

@@ -79,4 +79,29 @@ describe("TodoList", () => {
         cy.findByText("0 of 1 completed").should("exist")
       })
   })
+
+  it("preserves list items references within store upon removal", () => {
+    cy.mount(<TodoListApp />)
+
+    cy.findByTestId("add-todo-input").type("Clean the house")
+    cy.findByText("Add").click()
+
+    cy.findByTestId("add-todo-input").type("Walk the dogs")
+    cy.findByText("Add").click()
+
+    cy.findByText("All")
+      .click()
+      .then(() => {
+        const todo1 = store.state[0]
+        const todo2 = store.state[1]
+
+        cy.findByTestId(`todo-${todo1.id}`).within(() => {
+          cy.findByText("Delete").click()
+        })
+
+        cy.findByTestId(`todo-${todo2.id}`).within(() => {
+          cy.findByText("Delete").click()
+        })
+      })
+  })
 })
