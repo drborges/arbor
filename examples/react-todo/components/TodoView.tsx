@@ -10,7 +10,7 @@ export interface TodoProps {
 
 export default memo(function TodoView({ id }: TodoProps) {
   const [editing, setEditing] = useState(false)
-  const todo = useArbor(store.state.find(t => t.uuid === id)!)
+  const todo = useArbor(store.state.find((t) => t.uuid === id)!)
 
   return (
     <div

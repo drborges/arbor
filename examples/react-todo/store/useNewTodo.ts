@@ -1,5 +1,6 @@
+import { Arbor } from "@arborjs/store"
+import { useArbor } from "@arborjs/react"
 import { LocalStorage, Logger } from "@arborjs/plugins"
-import { Arbor, useArbor } from "@arborjs/react"
 
 export interface Input {
   value: string

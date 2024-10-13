@@ -35,6 +35,7 @@ export type ArborNode<T extends object = object> = {
 
 export type Link = string | number
 export type Unsubscribe = () => void
+export type IteratorWrapper = (child: Node) => Node
 export type Node<T extends object = object> = T & {
   readonly $value: T
   readonly $tree: Arbor

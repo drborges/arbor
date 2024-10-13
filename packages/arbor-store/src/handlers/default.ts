@@ -18,6 +18,8 @@ const PROXY_HANDLER_API = ["apply", "get", "set", "deleteProperty"]
 export class DefaultHandler<T extends object = object>
   implements ProxyHandler<T>
 {
+  // TODO: Move $ prefixed props to Symbol properties.
+  // This will mitigate potential naming clashes with user-defined data.
   constructor(
     readonly $tree: Arbor,
     readonly $value: T,
@@ -37,6 +39,17 @@ export class DefaultHandler<T extends object = object>
   static accepts(_value: unknown) {
     return true
   }
+
+  // TODO: expose seed value via a getter so user-defined data can have access to it.
+  // Example:
+  // get $seed() { return Seed.from(this) }
+  //
+  // User-defined classes could then:
+  //
+  // @proxiable
+  // class MyNode {
+  //   $seed: number
+  // }
 
   $getChildNode<C extends object>(link: Link): Node<C> {
     return this[link]
