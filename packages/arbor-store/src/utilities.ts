@@ -1,6 +1,6 @@
-import { Path } from "./Path"
 import { ArborError, DetachedNodeError, NotAnArborNodeError } from "./errors"
 import { isNode } from "./guards"
+import { Path, Seed } from "./path"
 import type { ArborNode, Node } from "./types"
 
 /**
@@ -20,12 +20,14 @@ export function detach<T extends object>(node: ArborNode<T>): T {
     throw new DetachedNodeError()
   }
 
-  if (node.$path.isRoot()) {
+  const path = pathFor(node)
+
+  if (path.isRoot()) {
     throw new ArborError("Cannot detach store's root node")
   }
 
   const link = node.$tree.getLinkFor(node)
-  const parentNode = node.$tree.getNodeAt<Node>(node.$path.parent)
+  const parentNode = node.$tree.getNodeAt<Node>(path.parent)
   delete parentNode[link]
 
   return node.$value
@@ -60,7 +62,7 @@ export function merge<T extends object>(
     }
   })
 
-  return node.$tree.getNodeAt(node.$path)
+  return node.$tree.getNodeAt(pathFor(node))
 }
 
 /**
@@ -69,19 +71,17 @@ export function merge<T extends object>(
  * @param node the node to determine the path for.
  * @returns the path of the node within the state tree.
  */
-export function path<T extends object>(node: ArborNode<T>): Path {
-  if (!isNode<T>(node)) {
+export function pathFor<T extends object>(value: unknown): Path {
+  if (!isNode<T>(value)) {
     throw new NotAnArborNodeError()
   }
 
-  if (isDetached(node)) {
+  if (isDetached(value)) {
     throw new DetachedNodeError()
   }
 
-  return node.$path
+  return value.$tree.getPathFor(value)
 }
-
-// TODO: implement a readablePath(node: Path | ArborNode<T>): string that returns a dot notation version of the given path or node
 
 /**
  * Checks if node is no longer in the state tree.
@@ -90,6 +90,9 @@ export function path<T extends object>(node: ArborNode<T>): Path {
  * @returns true if node is no longer in the state tree, false otherwise.
  */
 export function isDetached<T extends object>(node: T): boolean {
+  // TODO: we need to walk the node's path and check if any intermediary node is detached
+  // this would cover cases where one may have a stale reference to a node deep in the OST
+  // but an ancestor has been detached.'
   if (!isNode(node)) return true
 
   return !node.$tree.getLinkFor(node) && !node.$tree.getNodeFor<Node>(node)
@@ -144,4 +147,15 @@ export function isGetter(target: object, prop: string) {
   }
 
   return isGetter(Object.getPrototypeOf(target), prop)
+}
+
+export function parentOf(node: Node) {
+  const nodePath = pathFor(node)
+
+  if (nodePath.isRoot()) {
+    return null
+  }
+
+  const parentSeed = nodePath.seeds.at(-2) || Seed.from(node.$tree.state)
+  return node.$tree.getNodeFor(parentSeed)
 }

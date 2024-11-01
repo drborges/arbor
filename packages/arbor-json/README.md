@@ -1,6 +1,8 @@
 # @arborjs/json
 
-Provides a mechanism to easily serialize/deserialize custom user-defined types via an API similar to `JSON.stringify` and `JSON.parse` + some decorator "magic".
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/drborges)
+
+Type-preserving serialization/deserialization for user-defined types via an API similar to `JSON.stringify` and `JSON.parse` + some decorator "magic".
 
 ## Installation
 
@@ -18,7 +20,7 @@ yarn add @arborjs/json
 
 ## Usage
 
-For most use-cases, the usage is extreamelly simple, with very little boilerplate:
+For most use cases, the usage is extremely simple, with very little boilerplate:
 
 1. Decorate your class with the `serializable` decorator;
 2. Use the `stringify` function to serialize instances of the decorated class;
@@ -39,6 +41,7 @@ const serialized = stringify(todo)
 
 const deserialized = parse(serialized)
 expect(deserialized).toEqual(todo)
+expect(deserialized).toBeInstanceOf(Todo)
 => true
 ```
 
@@ -157,7 +160,7 @@ const serializedProjectSettings = json.stringify(projectSettings)
 
 ### Reducing boilerplate
 
-You may choose to move the `Json` serializer setup into different modules in order to make its usage a little more friendly and with less boilerplate to the final user:
+You may choose to move the `Json` serializer setup into different modules to make its usage a little more friendly and with less boilerplate to the final user:
 
 ```ts
 // src/json1.ts
@@ -181,4 +184,4 @@ export const serializableAs = json.serializableAs.bind(json)
 
 ## License
 
-All packages in this monorepo ar [MIT licensed](../../LICENSE.md).
+All packages in this monorepo are [MIT licensed](../../LICENSE.md).

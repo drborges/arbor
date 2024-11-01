@@ -1,12 +1,7 @@
-import { Arbor } from "./Arbor"
-import { NodeHandler } from "./NodeHandler"
-import { Path } from "./Path"
-import { Seed } from "./Seed"
-import { Subscribers } from "./Subscribers"
-
-export type Unwrappable<T extends object> = {
-  $value: T
-}
+import { Arbor } from "./arbor"
+import { DefaultHandler } from "./handlers/default"
+import { Path } from "./path"
+import { Subscriptions } from "./subscriptions"
 
 /**
  * Describes a Node Hnalder constructor capable of determining which
@@ -18,10 +13,9 @@ export interface Handler {
    */
   new (
     tree: Arbor,
-    path: Path,
     value: unknown,
-    subscribers?: Subscribers
-  ): NodeHandler
+    subscriptions?: Subscriptions
+  ): DefaultHandler
 
   /**
    * Checks if the strategy can handle the given value.
@@ -39,28 +33,16 @@ export type ArborNode<T extends object = object> = {
     : T[K]
 }
 
-export type Unsubscribe = () => void
-export type MutationEvent<T extends object> = {
-  state: ArborNode<T>
-  mutationPath: Path
-  metadata: MutationMetadata
-}
-
-export type Subscriber<T extends object = object> = (
-  event: MutationEvent<T>
-) => void
-
 export type Link = string | number
-
+export type Unsubscribe = () => void
+export type IteratorWrapper = (child: Node) => Node
 export type Node<T extends object = object> = T & {
   readonly $value: T
-  readonly $seed: Seed
-  readonly $path: Path
   readonly $tree: Arbor
-  readonly $subscribers: Subscribers<T>
+  readonly $subscriptions: Subscriptions<T>
 
-  $traverse<C extends object>(link: Link): C
-  $attachValue<C extends object>(value: C, link: Link): void
+  $getChildNode<C extends object>(link: Link): Node<C>
+  $setChildValue<C extends object>(link: Link, value: C): void
 }
 
 export type Plugin<T extends object> = {
@@ -77,8 +59,6 @@ export type Store<T extends object> = {
   ): Unsubscribe
 }
 
-export type Visitor = (child: Node, parent: Node) => Node
-
 export type MutationMetadata = {
   readonly operation: string
   readonly previouslyUndefined?: boolean
@@ -94,3 +74,13 @@ export type MutationResult<T extends object> = {
   root: Node<T>
   metadata: MutationMetadata
 }
+
+export type MutationEvent<T extends object> = {
+  state: ArborNode<T>
+  mutationPath: Path
+  metadata: MutationMetadata
+}
+
+export type Subscriber<T extends object = object> = (
+  event: MutationEvent<T>
+) => void

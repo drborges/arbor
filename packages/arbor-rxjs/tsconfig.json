@@ -4,6 +4,5 @@
     "baseUrl": "./src",
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.helpers.ts"]
+  "include": ["src/**/*"]
 }
