@@ -110,6 +110,15 @@ describe("Json", () => {
       expect(deserialized).toBeInstanceOf(TodoList)
       expect(deserialized).toEqual(todoList)
     })
+
+    it("throws exception when custom type is not found", () => {
+      const serialized =
+        '{"$value":{"uuid":"a","text":"Clean the house"},"$type":"Task"}'
+
+      expect(() => parse(serialized)).toThrow(
+        "Unknown type: Task. Can't deserialize."
+      )
+    })
   })
 
   describe("custom type with custom $type key", () => {

@@ -126,6 +126,8 @@ export class Json {
       } else if (Type) {
         const instance = new Type()
         return Object.assign(instance, value.$value)
+      } else {
+        throw new Error(`Unknown type: ${value.$type}. Can't deserialize.`)
       }
     }
 
