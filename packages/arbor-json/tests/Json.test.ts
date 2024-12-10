@@ -4,7 +4,7 @@ import {
   Serialized,
   SerializedBy,
   parse,
-  serializable,
+  serializableAs,
   stringify,
 } from "../src"
 
@@ -39,7 +39,7 @@ describe("Json", () => {
   })
 
   describe("custom type", () => {
-    @serializable
+    @serializableAs("Todo")
     class Todo {
       constructor(readonly uuid: string, public text: string) {}
 
@@ -48,7 +48,7 @@ describe("Json", () => {
       }
     }
 
-    @serializable
+    @serializableAs("TodoList")
     class TodoList extends Map<string, Todo> {
       constructor(...todos: Todo[]) {
         super(todos.map((todo) => [todo.uuid, todo]))
@@ -133,7 +133,7 @@ describe("Json", () => {
       }
     }
 
-    it("serializes a custom type decorated with @serializable and a custom $type key", () => {
+    it("serializes a custom type to a custom $type key", () => {
       const todo = new Todo("a", "Clean the house")
       const serialized = json.stringify(todo)
 
@@ -142,7 +142,7 @@ describe("Json", () => {
       )
     })
 
-    it("deserializes a custom type decorated with @serializable and a custom $type key", () => {
+    it("deserializes a custom type from a custom $type key", () => {
       const todo = new Todo("a", "Clean the house")
 
       const serialized = json.stringify(todo)
@@ -156,7 +156,7 @@ describe("Json", () => {
   describe("custom type with default deserializer", () => {
     const json = new Json()
 
-    @json.serializable
+    @json.serializableAs("Todo")
     class Todo {
       constructor(readonly uuid: string, public text: string) {}
     }

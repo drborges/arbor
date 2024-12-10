@@ -1,4 +1,4 @@
-import { Json, SerializedBy, serializable } from "@arborjs/json"
+import { Json, SerializedBy, serializableAs } from "@arborjs/json"
 import { LocalStorage, Logger } from "@arborjs/plugins"
 import { Arbor, ArborNode, detach, proxiable } from "@arborjs/store"
 import { v4 as uuid } from "uuid"
@@ -6,7 +6,7 @@ import { v4 as uuid } from "uuid"
 export type Status = "completed" | "active"
 
 @proxiable
-@serializable
+@serializableAs("Todo")
 export class Todo {
   uuid = uuid()
   likes = 0
@@ -39,7 +39,7 @@ export class Todo {
 }
 
 @proxiable
-@serializable
+@serializableAs("TodoList")
 export class TodoList extends Array<Todo> {
   static fromJSON(value: SerializedBy<TodoList>) {
     return new TodoList(...value)

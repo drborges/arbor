@@ -39,18 +39,6 @@ export class Json {
   #types = new Map<string, Type>()
 
   /**
-   * Decorator used to mark classes as serializable by @arborjs/json.
-   *
-   * Classes annotated will get a default toJSON implementation compatible with
-   * the serialization algorithm implemented by the lib.
-   */
-  // NOTE: This must be an arrow function so "this" can be bound to the class instance when
-  // called on the decorated class.
-  serializable = <T extends Type>(target: T, _context: unknown = null) => {
-    return this.serializableAs(target.name)(target, _context)
-  }
-
-  /**
    * Decorator used to make a class serializable by @arborjs/json with a custom
    * type serialization key.
    *
