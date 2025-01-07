@@ -81,6 +81,10 @@ store.use(
 
 Using `@arborjs/json` to handle serialization/deserialization means that your application state will be serialized and save into local storage with type information preserved so when deserialized, what you get back are instances of the types composing the state, rather than raw literal objects and arrays.
 
+Sometimes, when there are changes in the data schema, the persisted data on the clients can't be deserialized anymore. To avoid parsing exceptions, you can use the `schemaVersion` config; when it's different from the schema persisted, it will silently not load anything from LocalStorage.
+
+```ts
+
 ## Custom Plugins
 
 > [!WARNING]
