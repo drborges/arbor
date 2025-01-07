@@ -1,14 +1,38 @@
 // @vitest-environment jsdom
 
 import { Arbor } from "@arborjs/store"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, afterEach } from "vitest"
 
-import LocalStorage from "../src/LocalStorage"
+import LocalStorage, { VersionedSchema } from "../src/LocalStorage"
 
 const timeout = (period = 0) =>
   new Promise((resolve) => {
     setTimeout(resolve, period)
   })
+
+afterEach(() => {
+  window.localStorage.clear()
+})
+
+describe("VersionedSchema", () => {
+  it("should load when schemaVersion is not defined", () => {
+    const versionedSchema = new VersionedSchema({ key: "the-key" })
+
+    expect(versionedSchema.shouldLoad).toBe(true)
+  })
+
+  describe("when schemaVersion is defined", () => {
+    it("loads when is the same as persisted version", () => {
+      const versionedSchema = new VersionedSchema({
+        key: "the-key",
+        schemaVersion: "1",
+      })
+      window.localStorage.setItem(versionedSchema.schemaKey, "1")
+
+      expect(versionedSchema.shouldLoad).toBe(true)
+    })
+  })
+})
 
 describe("LocalStorage", () => {
   beforeEach(() => {
@@ -118,5 +142,78 @@ describe("LocalStorage", () => {
     expect(window.localStorage.getItem("the-key")).toEqual(
       JSON.stringify({ text: "some initial state" })
     )
+  })
+
+  describe("schemaVersion", () => {
+    it("always loads when schemaVersion config is not defined", async () => {
+      const store = new Arbor({ text: "" })
+      const plugin = new LocalStorage<{ text: string }>({ key: "the-key" })
+
+      window.localStorage.setItem(
+        "the-key",
+        JSON.stringify({ text: "the app state" })
+      )
+      window.localStorage.setItem("the-key.schemaVersion", "1")
+
+      await store.use(plugin)
+
+      expect(store.state.text).toEqual("the app state")
+    })
+
+    it("loads when persisted schemaVersion is the same as the configuration", async () => {
+      const store = new Arbor({ text: "" })
+      const plugin = new LocalStorage<{ text: string }>({
+        key: "the-key",
+        schemaVersion: "1",
+      })
+
+      window.localStorage.setItem(
+        "the-key",
+        JSON.stringify({ text: "the app state" })
+      )
+      window.localStorage.setItem("the-key.schemaVersion", "1")
+
+      await store.use(plugin)
+
+      expect(store.state.text).toEqual("the app state")
+    })
+
+    it("doesn't load when persisted schemaVersion is different from the configuration", async () => {
+      const store = new Arbor({ text: "" })
+      const plugin = new LocalStorage<{ text: string }>({
+        key: "the-key",
+        schemaVersion: "2",
+      })
+
+      window.localStorage.setItem(
+        "the-key",
+        JSON.stringify({ text: "the app state" })
+      )
+      window.localStorage.setItem("the-key.schemaVersion", "1")
+
+      await store.use(plugin)
+
+      expect(store.state.text).toEqual("")
+    })
+
+    it("persists schemaVersion when its defined", async () => {
+      const store = new Arbor({ text: "" })
+      const plugin = new LocalStorage<{ text: string }>({
+        key: "the-key",
+        schemaVersion: "2",
+      })
+
+      window.localStorage.setItem(
+        "the-key",
+        JSON.stringify({ text: "the app state" })
+      )
+
+      await store.use(plugin)
+
+      store.state.text = "Hello World!"
+      await timeout()
+
+      expect(window.localStorage.getItem("the-key.schemaVersion")).toEqual("2")
+    })
   })
 })

@@ -33,6 +33,46 @@ export interface Config<T extends object> {
    * @returns the deserialized version of the data.
    */
   deserialize?: (serialized: string) => T
+  /**
+   * If schemaVersion persisted in localStorage is different then the defined by this property.
+   * It will ignore persisted data. Change this value when there's a breaking change in the schema.
+   *
+   * The plugin will not compare schemaVersions if this value is not defined.
+   */
+  schemaVersion?: string
+  /**
+   * Overrides default key  name for persisted schemaVersion
+   */
+  schemaVersionKey?: string
+}
+
+export class VersionedSchema {
+  config: Config<object>
+
+  constructor(config: Config<object>) {
+    this.config = config
+  }
+
+  get schemaKey() {
+    return this.config.schemaVersionKey || `${this.config.key}.schemaVersion`
+  }
+
+  get shouldLoad() {
+    const { schemaVersion } = this.config
+    return !schemaVersion || this.persistedSchemaVersion === schemaVersion
+  }
+
+  get persistedSchemaVersion() {
+    return window.localStorage.getItem(this.schemaKey)
+  }
+
+  persist() {
+    if (!this.config.schemaVersion) {
+      return
+    }
+
+    window.localStorage.setItem(this.schemaKey, this.config.schemaVersion)
+  }
 }
 
 /**
@@ -51,8 +91,11 @@ export interface Config<T extends object> {
  * ```
  */
 export default class LocalStorage<T extends object> extends Storage<T> {
+  versionedSchema: VersionedSchema
+
   constructor(readonly config: Config<T>) {
     super(config)
+    this.versionedSchema = new VersionedSchema(config)
   }
 
   load() {
@@ -63,7 +106,7 @@ export default class LocalStorage<T extends object> extends Storage<T> {
           this.config.deserialize ||
           (JSON.parse as typeof this.config.deserialize)
 
-        resolve(deserialize(data))
+        resolve(this.versionedSchema.shouldLoad ? deserialize(data) : null)
       } catch (e) {
         reject(e)
       }
@@ -75,6 +118,9 @@ export default class LocalStorage<T extends object> extends Storage<T> {
       try {
         const serialize = this.config.serialize || JSON.stringify
         window.localStorage.setItem(this.config.key, serialize(event.state))
+
+        this.versionedSchema.persist()
+
         resolve()
       } catch (e) {
         reject(e)
