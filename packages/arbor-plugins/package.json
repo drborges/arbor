@@ -53,7 +53,7 @@
     "jsdom": "^24.1.0",
     "prettier": "^2.8.8",
     "typescript": "^5.0.4",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.1"
   },
   "peerDependencies": {
     "@arborjs/store": "0.0.1-alpha.93"
