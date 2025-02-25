@@ -352,9 +352,8 @@ describe("Arbor", () => {
 
       delete store.state.todos[0]
 
-      // todos[0] should still exist in the previous snapshot
-      expect(todos[0]).toBeDefined()
-      expect(unwrap(todos[0])).toBe(state.todos[0])
+      expect(todos).toEqual([{ text: "Walk the dogs" }])
+      expect(todos[0]).toEqual({ text: "Walk the dogs" })
 
       expect(store.state).toEqual({ todos: [{ text: "Walk the dogs" }] })
       expect(store.state.todos).toEqual([{ text: "Walk the dogs" }])
@@ -818,6 +817,31 @@ describe("Arbor", () => {
       store.subscribeTo(user0, subscriber2)
 
       expect(() => user0.age++).toThrow(DetachedNodeError)
+      expect(subscriber1).not.toHaveBeenCalled()
+      expect(subscriber2).not.toHaveBeenCalled()
+    })
+
+    it("does not trigger notifications when mutations are performed on nodes belonging to detached paths", () => {
+      const store = new Arbor({
+        todos: [
+          { id: 1, done: false, author: { name: "Alice", age: 29 } },
+          { id: 2, done: false, author: { name: "Bob", age: 30 } },
+        ],
+      })
+
+      const todo0 = store.state.todos[0]
+      const alice = store.state.todos[0].author
+      const subscriber1 = vi.fn()
+      const subscriber2 = vi.fn()
+
+      delete store.state.todos[0]
+
+      store.subscribe(subscriber1)
+      store.subscribeTo(alice, subscriber2)
+      store.subscribeTo(todo0, subscriber2)
+
+      expect(() => (todo0.done = true)).toThrow(DetachedNodeError)
+      expect(() => alice.age++).toThrow(DetachedNodeError)
       expect(subscriber1).not.toHaveBeenCalled()
       expect(subscriber2).not.toHaveBeenCalled()
     })

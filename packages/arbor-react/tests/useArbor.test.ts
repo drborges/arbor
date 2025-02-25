@@ -67,14 +67,14 @@ describe("useArbor", () => {
 
     const { result, unmount } = renderHook(() => useArbor(store))
 
-    const initialSstate = result.current
+    const initialState = result.current
 
     act(() => {
       result.current.count++
     })
 
     const nextState = result.current
-    expect(initialSstate).not.toBe(nextState)
+    expect(initialState).not.toBe(nextState)
 
     unmount()
 

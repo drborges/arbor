@@ -25,4 +25,18 @@ describe("isDetached", () => {
 
     expect(isDetached(node)).toBe(true)
   })
+
+  it("returns true if the node belongs to a detached path", () => {
+    const store = new Arbor({
+      todos: [
+        { id: 1, text: "Do the dishes", author: { name: "Alice" } },
+        { id: 2, text: "Walk the dogs", author: { name: "Bob" } },
+      ],
+    })
+
+    const alice = store.state.todos[0].author
+    delete store.state.todos[0]
+
+    expect(isDetached(alice)).toBe(true)
+  })
 })

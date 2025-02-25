@@ -1,6 +1,7 @@
 import {
   Arbor,
   ArborNode,
+  isDetached,
   isNode,
   isProxiable,
   ScopedStore,
@@ -76,7 +77,9 @@ function useArborDeprecated<T extends object>(store: Store<T>): ArborNode<T> {
     }
 
     return store.subscribe(() => {
-      setState(store.state)
+      if (!isDetached(store.state)) {
+        setState(store.state)
+      }
     })
   }, [state, store])
 

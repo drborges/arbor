@@ -95,7 +95,15 @@ export function isDetached<T extends object>(node: T): boolean {
   // but an ancestor has been detached.'
   if (!isNode(node)) return true
 
-  return !node.$tree.getLinkFor(node) && !node.$tree.getNodeFor<Node>(node)
+  const path = node.$tree.getPathFor(node)
+
+  if (!path) {
+    return true
+  }
+
+  return path.seeds.some(
+    (seed) => !node.$tree.getLinkFor(seed) && !node.$tree.getNodeFor<Node>(seed)
+  )
 }
 
 /**
