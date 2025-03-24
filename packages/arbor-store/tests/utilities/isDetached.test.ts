@@ -25,4 +25,37 @@ describe("isDetached", () => {
 
     expect(isDetached(node)).toBe(true)
   })
+<<<<<<< Updated upstream
+=======
+
+  it("returns true if the node belongs to a detached path", () => {
+    const store = new Arbor({
+      todos: [
+        { id: 1, text: "Do the dishes", author: { name: "Alice" } },
+        { id: 2, text: "Walk the dogs", author: { name: "Bob" } },
+      ],
+    })
+
+    const alice = store.state.todos[0].author
+    delete store.state.todos[0]
+
+    expect(isDetached(alice)).toBe(true)
+  })
+
+  it("returns false for array items that moved positions but still exist in the observable state tree", () => {
+    const store = new Arbor({
+      todos: [
+        { id: 1, text: "Do the dishes" },
+        { id: 2, text: "Walk the dogs" },
+      ],
+    })
+
+    const todo1 = store.state.todos[0]
+    const todo2 = store.state.todos[1]
+    delete store.state.todos[0]
+
+    expect(isDetached(todo1)).toBe(true)
+    expect(isDetached(todo2)).toBe(false)
+  })
+>>>>>>> Stashed changes
 })

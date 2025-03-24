@@ -1,0 +1,64 @@
+{
+  "name": "@arborjs/ost",
+  "sideEffects": false,
+  "version": "0.0.1-alpha.1",
+  "description": "An observable state tree data structure used to power @arborjs/store.",
+  "keywords": [
+    "arbor",
+    "react",
+    "state",
+    "store",
+    "typescript",
+    "tree"
+  ],
+  "repository": {
+    "url": "https://github.com/drborges/arbor",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/drborges/arbor/issues",
+    "email": "drborges.cic@gmail.com"
+  },
+  "author": {
+    "email": "drborges.cic@gmail.com",
+    "name": "Diego Borges",
+    "url": "https://github.com/drborges"
+  },
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs.js",
+      "import": "./dist/index.esm.js",
+      "default": "./dist/index.esm.js"
+    }
+  },
+  "license": "MIT",
+  "prettier": "@arborjs/config-prettier",
+  "files": [
+    "./dist",
+    "./README",
+    "../../LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "^0.17.19",
+    "eslint": "^8.40.0",
+    "prettier": "^2.8.8",
+    "typescript": "^5.0.4",
+    "vitest": "^1.6.0"
+  },
+  "scripts": {
+    "prettier": "prettier -w . ",
+    "clean": "rm -rf dist",
+    "lint": "yarn eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "vitest run",
+    "dev": "vitest -w",
+    "build": "yarn clean && NODE_ENV=production node ../../tools/build.js && yarn tsc",
+    "build:dev": "yarn clean && NODE_ENV=development node ../../tools/build.js && yarn tsc"
+  }
+}

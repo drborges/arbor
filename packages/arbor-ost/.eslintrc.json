@@ -1,0 +1,7 @@
+{
+  "extends": ["../../.eslintrc.json"],
+  "ignorePatterns": ["perf"],
+  "parserOptions": {
+    "project": ["./tsconfig.eslint.json"]
+  }
+}

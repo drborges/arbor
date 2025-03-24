@@ -23,6 +23,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@arborjs/ost@workspace:packages/arbor-ost":
+  version: 0.0.0-use.local
+  resolution: "@arborjs/ost@workspace:packages/arbor-ost"
+  dependencies:
+    esbuild: ^0.17.19
+    eslint: ^8.40.0
+    prettier: ^2.8.8
+    typescript: ^5.0.4
+    vitest: ^1.6.0
+  languageName: unknown
+  linkType: soft
+
 "@arborjs/plugins@workspace:^, @arborjs/plugins@workspace:packages/arbor-plugins":
   version: 0.0.0-use.local
   resolution: "@arborjs/plugins@workspace:packages/arbor-plugins"
@@ -6781,7 +6793,7 @@ fsevents@~2.3.2:
   languageName: node
   linkType: hard
 
-"vitest@npm:^1.6.1":
+"vitest@npm:^1.6.0, vitest@npm:^1.6.1":
   version: 1.6.1
   resolution: "vitest@npm:1.6.1"
   dependencies:

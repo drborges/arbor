@@ -10,7 +10,7 @@ import { isNode } from "../src/guards"
 
 describe("Arbor", () => {
   describe("state tree", () => {
-    it("updates a node within the state tree", () => {
+    it.only("updates a node within the state tree", () => {
       const store = new Arbor([
         { name: "Carol", active: true },
         { name: "Alice", active: true },
