@@ -21,7 +21,7 @@ export type ArborNode<T extends object = object> = {
  */
 export type Value = object
 
-export type Node<V extends Value = Value> = {
+export type Node<V extends Value = Value> = V & {
   readonly $value: V
   readonly $path: Path
   readonly $seed: Seed

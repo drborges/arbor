@@ -2,6 +2,12 @@ import { OST } from ".."
 import { DetachedPathError } from "../errors"
 import { Node, Value } from "../types"
 
+export function isProxiable(value: unknown): value is object {
+  if (value == null) return false
+
+  return value.constructor === Object || value.constructor === Array
+}
+
 export class $object<V extends Value = Value> implements ProxyHandler<V> {
   constructor(readonly $ost: OST) {}
 
@@ -9,7 +15,7 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     return true
   }
 
-  get(target: V, prop: string, node: Node<V>) {
+  get(target: V, prop: string, $node: Node<V>) {
     if (prop === "$value") {
       return target
     }
@@ -41,19 +47,25 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
 
     if (prop === "$createChild") {
       return (value: Value) => {
-        return this.$ost.createNode(value, node.$path.child())
+        return this.$ost.createNode(value, $node.$path.child())
       }
     }
 
-    return Reflect.get(target, prop, node)
-  }
+    const childValue = Reflect.get(target, prop, $node) as unknown
 
-  set(target: V, prop: string, newValue: unknown, node: Node<V>): boolean {
-    if (this.$ost.isDetached(target)) {
-      throw new DetachedPathError(this.$ost.humanizePath(node.$path))
+    if (!isProxiable(childValue)) {
+      return childValue
     }
 
-    Reflect.set(target, prop, newValue, node)
+    return this.$ost.nodeOf(childValue) || $node.$createChild(childValue)
+  }
+
+  set(target: V, prop: string, newValue: unknown, $node: Node<V>): boolean {
+    if (this.$ost.isDetached(target)) {
+      throw new DetachedPathError(this.$ost.humanizePath($node.$path))
+    }
+
+    Reflect.set(target, prop, newValue, $node)
     return true
   }
 
