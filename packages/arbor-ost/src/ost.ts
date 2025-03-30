@@ -4,12 +4,17 @@ import { Path } from "./path"
 import { Seed } from "./seed"
 import { Subscriptions } from "./subscriptions"
 import {
+  $,
   Mutation,
   Node,
   ProxyHandlerConstructor,
   Subscriber,
   Value,
 } from "./types"
+
+export function isNode(value: any): value is Node {
+  return value?.$ost instanceof OST
+}
 
 export class OST<V extends Value = Value> {
   /**
@@ -135,7 +140,7 @@ export class OST<V extends Value = Value> {
   }
 
   get root() {
-    return this.#nodes.get(this.#rootSeed) as Node<V>
+    return this.#nodes.get(this.#rootSeed) as $<V>
   }
 
   private refreshNodesInPath(path: Path) {
