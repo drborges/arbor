@@ -1,4 +1,5 @@
 import "./toBeRootNode"
+import "./toHaveNodeFor"
 import "./toHaveParentNode"
 import "./toBeDetachedFrom"
 import "./toHaveNodeValuePair"

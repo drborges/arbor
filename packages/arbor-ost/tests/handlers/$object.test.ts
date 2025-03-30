@@ -14,30 +14,66 @@ describe("$object", () => {
 
       const ost = new OST()
 
-      expect(ost.seedOf(state)).toBeUndefined()
-      expect(ost.seedOf(state.todos)).toBeUndefined()
-      expect(ost.seedOf(state.todos[0])).toBeUndefined()
-      expect(ost.seedOf(state.todos[0].author)).toBeUndefined()
-      expect(ost.seedOf(state.todos[1])).toBeUndefined()
-      expect(ost.seedOf(state.todos[1].author)).toBeUndefined()
+      expect(ost).not.toHaveNodeFor(state)
+      expect(ost).not.toHaveNodeFor(state.todos)
+      expect(ost).not.toHaveNodeFor(state.todos[0])
+      expect(ost).not.toHaveNodeFor(state.todos[0].author)
+      expect(ost).not.toHaveNodeFor(state.todos[1])
+      expect(ost).not.toHaveNodeFor(state.todos[1].author)
 
       const $root = ost.createNode(state)
 
-      expect(ost.seedOf(state)).toBeDefined()
-      expect(ost.seedOf(state.todos)).toBeUndefined()
-      expect(ost.seedOf(state.todos[0])).toBeUndefined()
-      expect(ost.seedOf(state.todos[0].author)).toBeUndefined()
-      expect(ost.seedOf(state.todos[1])).toBeUndefined()
-      expect(ost.seedOf(state.todos[1].author)).toBeUndefined()
+      expect(ost).toHaveNodeFor(state)
+      expect(ost).not.toHaveNodeFor(state.todos)
+      expect(ost).not.toHaveNodeFor(state.todos[0])
+      expect(ost).not.toHaveNodeFor(state.todos[0].author)
+      expect(ost).not.toHaveNodeFor(state.todos[1])
+      expect(ost).not.toHaveNodeFor(state.todos[1].author)
 
       $root.todos
 
-      expect(ost.seedOf(state)).toBeDefined()
-      expect(ost.seedOf(state.todos)).toBeDefined()
-      expect(ost.seedOf(state.todos[0])).toBeUndefined()
-      expect(ost.seedOf(state.todos[0].author)).toBeUndefined()
-      expect(ost.seedOf(state.todos[1])).toBeUndefined()
-      expect(ost.seedOf(state.todos[1].author)).toBeUndefined()
+      expect(ost).toHaveNodeFor(state)
+      expect(ost).toHaveNodeFor(state.todos)
+      expect(ost).not.toHaveNodeFor(state.todos[0])
+      expect(ost).not.toHaveNodeFor(state.todos[0].author)
+      expect(ost).not.toHaveNodeFor(state.todos[1])
+      expect(ost).not.toHaveNodeFor(state.todos[1].author)
+
+      $root.todos[0]
+
+      expect(ost).toHaveNodeFor(state)
+      expect(ost).toHaveNodeFor(state.todos)
+      expect(ost).toHaveNodeFor(state.todos[0])
+      expect(ost).not.toHaveNodeFor(state.todos[0].author)
+      expect(ost).not.toHaveNodeFor(state.todos[1])
+      expect(ost).not.toHaveNodeFor(state.todos[1].author)
+
+      $root.todos[0].author
+
+      expect(ost).toHaveNodeFor(state)
+      expect(ost).toHaveNodeFor(state.todos)
+      expect(ost).toHaveNodeFor(state.todos[0])
+      expect(ost).toHaveNodeFor(state.todos[0].author)
+      expect(ost).not.toHaveNodeFor(state.todos[1])
+      expect(ost).not.toHaveNodeFor(state.todos[1].author)
+
+      $root.todos[1]
+
+      expect(ost).toHaveNodeFor(state)
+      expect(ost).toHaveNodeFor(state.todos)
+      expect(ost).toHaveNodeFor(state.todos[0])
+      expect(ost).toHaveNodeFor(state.todos[0].author)
+      expect(ost).toHaveNodeFor(state.todos[1])
+      expect(ost).not.toHaveNodeFor(state.todos[1].author)
+
+      $root.todos[1].author
+
+      expect(ost).toHaveNodeFor(state)
+      expect(ost).toHaveNodeFor(state.todos)
+      expect(ost).toHaveNodeFor(state.todos[0])
+      expect(ost).toHaveNodeFor(state.todos[0].author)
+      expect(ost).toHaveNodeFor(state.todos[1])
+      expect(ost).toHaveNodeFor(state.todos[1].author)
     })
 
     it("caches nodes when accessing the same path more than once", () => {
