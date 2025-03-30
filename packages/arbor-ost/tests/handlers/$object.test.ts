@@ -124,17 +124,17 @@ describe("$object", () => {
       expect(completedTodos.length).toBe(1)
       expect(completedTodos[0]).toBe($firstTodo)
     })
+  })
 
+  describe("#$children", () => {
     it("creates children nodes when iterating over them", () => {
-      const state = {
+      const ost = new OST({
         todos: [
           { id: 1, content: "Learn Arbor" },
           { id: 2, content: "Implement OST" },
         ],
-      }
+      })
 
-      const ost = new OST<typeof state>()
-      ost.createNode(state)
       for (const child of ost.root.todos.$children()) {
         expect(child).toBe(ost.nodeOf(child.$value))
       }
@@ -227,11 +227,10 @@ describe("$object", () => {
         ],
       }
 
-      const ost = new OST<typeof state>()
-      const $root = ost.createNode(state)
+      const ost = new OST<typeof state>(state)
 
       return new Promise((resolve) => {
-        $root.$subscriptions.subscribe((event) => {
+        ost.root.$subscriptions.subscribe((event) => {
           expect(event.mutationPath).toBe(ost.pathOf(state.todos[0]))
           expect(event.state).toBe(state)
           expect(event.metadata.operation).toEqual("set")
@@ -240,7 +239,7 @@ describe("$object", () => {
           resolve(true)
         })
 
-        $root.todos[0].complete()
+        ost.root.todos[0].complete()
       })
     })
   })

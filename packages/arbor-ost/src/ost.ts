@@ -52,6 +52,12 @@ export class OST<V extends Value = Value> {
     $object,
   ]
 
+  constructor(root?: V) {
+    if (root) {
+      this.createNode(root)
+    }
+  }
+
   createNode<V extends Value = Value>(
     value: V,
     path = Path.root(),
