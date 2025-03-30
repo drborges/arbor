@@ -54,36 +54,36 @@ export class OST<V extends Value = Value> {
   ): Node<V> {
     const seed = path.target
     const handler = this.#nodeHandlers.find((h) => h.accepts(value))
-    const node = new Proxy(value, new handler(this)) as Node<V>
+    const $node = new Proxy(value, new handler(this)) as Node<V>
 
     if (path.isRoot()) {
       this.#rootSeed = seed
     }
 
     this.#seeds.set(value, seed)
-    this.#nodes.set(seed, node)
+    this.#nodes.set(seed, $node)
     this.#paths.set(seed, path)
     this.#subscriptions.set(seed, subscriptions)
 
-    return node
+    return $node
   }
 
-  mutate<T extends Value = Value>(node: Node<T>, mutation: Mutation<T>): void {
-    if (this.isDetached(node.$value)) {
-      throw new DetachedPathError(this.humanizePath(node.$path))
+  mutate<T extends Value = Value>($node: Node<T>, mutation: Mutation<T>): void {
+    if (this.isDetached($node.$value)) {
+      throw new DetachedPathError(this.humanizePath($node.$path))
     }
 
-    const refreshedNodesInMutationPath = this.refreshNodesInPath(node.$path)
+    const refreshedNodesInMutationPath = this.refreshNodesInPath($node.$path)
     const newRootNode = refreshedNodesInMutationPath[0] as Node<V>
     const newTargetNode = refreshedNodesInMutationPath.at(-1) as Node<T>
     const metadata = mutation(newTargetNode.$value)
 
     this.#rootSeed = newRootNode.$seed
 
-    for (const node of refreshedNodesInMutationPath) {
-      this.subscriptionsOf(node.$value).notify({
-        state: node.$value,
-        mutationPath: node.$path,
+    for (const $refreshedNode of refreshedNodesInMutationPath) {
+      this.subscriptionsOf($refreshedNode.$value).notify({
+        state: $refreshedNode.$value,
+        mutationPath: $refreshedNode.$path,
         metadata,
       })
     }
@@ -93,8 +93,8 @@ export class OST<V extends Value = Value> {
     return this.subscriptionsOf(this.root.$value).subscribe(s)
   }
 
-  subscribeTo<T extends Value = Value>(node: Node<T>, s: Subscriber<T>) {
-    return this.subscriptionsOf(node.$value).subscribe(s)
+  subscribeTo<T extends Value = Value>($node: Node<T>, s: Subscriber<T>) {
+    return this.subscriptionsOf($node.$value).subscribe(s)
   }
 
   nodeOf(value: Value): Node {
@@ -143,23 +143,23 @@ export class OST<V extends Value = Value> {
   }
 
   private refreshNodeBySeed(seed: Seed) {
-    const affectedNode = this.#nodes.get(seed)
+    const $affectedNode = this.#nodes.get(seed)
     return this.createNode(
-      affectedNode.$value,
-      affectedNode.$path,
-      affectedNode.$subscriptions
+      $affectedNode.$value,
+      $affectedNode.$path,
+      $affectedNode.$subscriptions
     )
   }
 
   private isDetachedSeed(seed: Seed) {
-    const node = this.#nodes.get(seed)
+    const $node = this.#nodes.get(seed)
 
-    if (node.$parent == null) {
-      return node !== this.root
+    if ($node.$parent == null) {
+      return $node !== this.root
     }
 
-    for (const child of node.$parent.$children()) {
-      if (node.$value === child.$value) {
+    for (const child of $node.$parent.$children()) {
+      if ($node.$value === child.$value) {
         return false
       }
     }

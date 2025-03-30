@@ -13,20 +13,20 @@ describe("OST", () => {
       }
 
       const ost = new OST()
-      const rootNode = ost.createNode(state)
-      const todosNode = rootNode.$createChild(state.todos)
-      const todo1Node = todosNode.$createChild(state.todos[0])
-      const todo2Node = todosNode.$createChild(state.todos[1])
+      const $rootNode = ost.createNode(state)
+      const $todosNode = $rootNode.$createChild(state.todos)
+      const $todo1Node = $todosNode.$createChild(state.todos[0])
+      const $todo2Node = $todosNode.$createChild(state.todos[1])
 
-      expect(ost).toHaveNodeValuePair([rootNode, state])
-      expect(ost).toHaveNodeValuePair([todosNode, state.todos])
-      expect(ost).toHaveNodeValuePair([todo1Node, state.todos[0]])
-      expect(ost).toHaveNodeValuePair([todo2Node, state.todos[1]])
+      expect(ost).toHaveNodeValuePair([$rootNode, state])
+      expect(ost).toHaveNodeValuePair([$todosNode, state.todos])
+      expect(ost).toHaveNodeValuePair([$todo1Node, state.todos[0]])
+      expect(ost).toHaveNodeValuePair([$todo2Node, state.todos[1]])
 
-      expect(rootNode).toHaveParentNode(undefined)
-      expect(todosNode).toHaveParentNode(rootNode)
-      expect(todo1Node).toHaveParentNode(todosNode)
-      expect(todo2Node).toHaveParentNode(todosNode)
+      expect($rootNode).toHaveParentNode(undefined)
+      expect($todosNode).toHaveParentNode($rootNode)
+      expect($todo1Node).toHaveParentNode($todosNode)
+      expect($todo2Node).toHaveParentNode($todosNode)
     })
   })
 
@@ -40,22 +40,22 @@ describe("OST", () => {
       }
 
       const ost = new OST()
-      const rootNode = ost.createNode(state)
-      const todosNode = rootNode.$createChild(state.todos)
-      const todo1Node = todosNode.$createChild(state.todos[0])
-      const todo2Node = todosNode.$createChild(state.todos[1])
+      const $rootNode = ost.createNode(state)
+      const $todosNode = $rootNode.$createChild(state.todos)
+      const $todo1Node = $todosNode.$createChild(state.todos[0])
+      const $todo2Node = $todosNode.$createChild(state.todos[1])
 
-      expect(ost.humanizePath(rootNode.$path)).toEqual(
-        `${rootNode.$seed.value}`
+      expect(ost.humanizePath($rootNode.$path)).toEqual(
+        `${$rootNode.$seed.value}`
       )
-      expect(ost.humanizePath(todosNode.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value}`
+      expect(ost.humanizePath($todosNode.$path)).toEqual(
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value}`
       )
-      expect(ost.humanizePath(todo1Node.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value} -> ${todo1Node.$seed.value}`
+      expect(ost.humanizePath($todo1Node.$path)).toEqual(
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value} -> ${$todo1Node.$seed.value}`
       )
-      expect(ost.humanizePath(todo2Node.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value} -> ${todo2Node.$seed.value}`
+      expect(ost.humanizePath($todo2Node.$path)).toEqual(
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value} -> ${$todo2Node.$seed.value}`
       )
     })
 
@@ -68,32 +68,32 @@ describe("OST", () => {
       }
 
       const ost = new OST()
-      const rootNode = ost.createNode(state)
-      const todosNode = rootNode.$createChild(state.todos)
-      const todo1Node = todosNode.$createChild(state.todos[0])
-      const todo2Node = todosNode.$createChild(state.todos[1])
-      const todo1AuthorNode = todo1Node.$createChild(state.todos[0].author)
+      const $rootNode = ost.createNode(state)
+      const $todosNode = $rootNode.$createChild(state.todos)
+      const $todo1Node = $todosNode.$createChild(state.todos[0])
+      const todo2Node = $todosNode.$createChild(state.todos[1])
+      const todo1AuthorNode = $todo1Node.$createChild(state.todos[0].author)
       const todo2AuthorNode = todo2Node.$createChild(state.todos[1].author)
 
       state.todos.shift()
 
-      expect(ost.humanizePath(rootNode.$path)).toEqual(
-        `${rootNode.$seed.value}`
+      expect(ost.humanizePath($rootNode.$path)).toEqual(
+        `${$rootNode.$seed.value}`
       )
-      expect(ost.humanizePath(todosNode.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value}`
+      expect(ost.humanizePath($todosNode.$path)).toEqual(
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value}`
       )
-      expect(ost.humanizePath(todo1Node.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value} -> ${todo1Node.$seed.value}*`
+      expect(ost.humanizePath($todo1Node.$path)).toEqual(
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value} -> ${$todo1Node.$seed.value}*`
       )
       expect(ost.humanizePath(todo1AuthorNode.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value} -> ${todo1Node.$seed.value}* -> ${todo1AuthorNode.$seed.value}`
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value} -> ${$todo1Node.$seed.value}* -> ${todo1AuthorNode.$seed.value}`
       )
       expect(ost.humanizePath(todo2Node.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value} -> ${todo2Node.$seed.value}`
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value} -> ${todo2Node.$seed.value}`
       )
       expect(ost.humanizePath(todo2AuthorNode.$path)).toEqual(
-        `${rootNode.$seed.value} -> ${todosNode.$seed.value} -> ${todo2Node.$seed.value} -> ${todo2AuthorNode.$seed.value}`
+        `${$rootNode.$seed.value} -> ${$todosNode.$seed.value} -> ${todo2Node.$seed.value} -> ${todo2AuthorNode.$seed.value}`
       )
     })
   })
@@ -115,21 +115,21 @@ describe("OST", () => {
       }
 
       const ost = new OST()
-      const rootNode = ost.createNode(state)
-      const todosNode = rootNode.$createChild(state.todos)
-      const todo1Node = todosNode.$createChild(state.todos[0])
-      const todo2Node = todosNode.$createChild(state.todos[1])
-      const todo1AuthorNode = todo1Node.$createChild(state.todos[0].author)
-      const todo2AuthorNode = todo2Node.$createChild(state.todos[1].author)
+      const $rootNode = ost.createNode(state)
+      const $todosNode = $rootNode.$createChild(state.todos)
+      const $todo1Node = $todosNode.$createChild(state.todos[0])
+      const $todo2Node = $todosNode.$createChild(state.todos[1])
+      const $todo1AuthorNode = $todo1Node.$createChild(state.todos[0].author)
+      const $todo2AuthorNode = $todo2Node.$createChild(state.todos[1].author)
 
       state.todos.shift()
 
-      expect(rootNode).not.toBeDetachedFrom(ost)
-      expect(todosNode).not.toBeDetachedFrom(ost)
-      expect(todo1Node).toBeDetachedFrom(ost)
-      expect(todo1AuthorNode).toBeDetachedFrom(ost)
-      expect(todo2Node).not.toBeDetachedFrom(ost)
-      expect(todo2AuthorNode).not.toBeDetachedFrom(ost)
+      expect($rootNode).not.toBeDetachedFrom(ost)
+      expect($todosNode).not.toBeDetachedFrom(ost)
+      expect($todo1Node).toBeDetachedFrom(ost)
+      expect($todo1AuthorNode).toBeDetachedFrom(ost)
+      expect($todo2Node).not.toBeDetachedFrom(ost)
+      expect($todo2AuthorNode).not.toBeDetachedFrom(ost)
     })
   })
 
@@ -143,14 +143,14 @@ describe("OST", () => {
       }
 
       const ost = new OST()
-      const rootNode = ost.createNode(state)
-      const todosNode = rootNode.$createChild(state.todos)
-      const todo1Node = todosNode.$createChild(state.todos[0])
-      const todo2Node = todosNode.$createChild(state.todos[1])
-      const todo1AuthorNode = todo1Node.$createChild(state.todos[0].author)
-      const todo2AuthorNode = todo2Node.$createChild(state.todos[1].author)
+      const $rootNode = ost.createNode(state)
+      const $todosNode = $rootNode.$createChild(state.todos)
+      const $todo1Node = $todosNode.$createChild(state.todos[0])
+      const $todo2Node = $todosNode.$createChild(state.todos[1])
+      const $todo1AuthorNode = $todo1Node.$createChild(state.todos[0].author)
+      const $todo2AuthorNode = $todo2Node.$createChild(state.todos[1].author)
 
-      ost.mutate(todo1Node, (todo1) => {
+      ost.mutate($todo1Node, (todo1) => {
         todo1.content = "Learn Arbor OST"
 
         return {
@@ -160,24 +160,24 @@ describe("OST", () => {
       })
 
       expect(state.todos[0].content).toEqual("Learn Arbor OST")
-      expect(todo1Node.$value.content).toEqual("Learn Arbor OST")
+      expect($todo1Node.$value.content).toEqual("Learn Arbor OST")
 
-      const newRootNode = ost.root
-      const newTodosNode = ost.nodeOf(state.todos)
-      const newTodo1Node = ost.nodeOf(state.todos[0])
-      const newTodo2Node = ost.nodeOf(state.todos[1])
-      const newTodo1AuthorNode = ost.nodeOf(state.todos[0].author)
-      const newTodo2AuthorNode = ost.nodeOf(state.todos[1].author)
+      const $newRootNode = ost.root
+      const $newTodosNode = ost.nodeOf(state.todos)
+      const $newTodo1Node = ost.nodeOf(state.todos[0])
+      const $newTodo2Node = ost.nodeOf(state.todos[1])
+      const $newTodo1AuthorNode = ost.nodeOf(state.todos[0].author)
+      const $newTodo2AuthorNode = ost.nodeOf(state.todos[1].author)
 
-      expect(newRootNode).not.toBe(rootNode)
-      expect(newRootNode.$value).toBe(state)
-      expect(newTodosNode).not.toBe(todosNode)
-      expect(newTodosNode.$value).toBe(todosNode.$value)
-      expect(newTodo1Node).not.toBe(todo1Node)
-      expect(newTodo1Node.$value).toBe(todo1Node.$value)
-      expect(newTodo1AuthorNode).toBe(todo1AuthorNode)
-      expect(newTodo2Node).toBe(todo2Node)
-      expect(newTodo2AuthorNode).toBe(todo2AuthorNode)
+      expect($newRootNode).not.toBe($rootNode)
+      expect($newRootNode.$value).toBe(state)
+      expect($newTodosNode).not.toBe($todosNode)
+      expect($newTodosNode.$value).toBe($todosNode.$value)
+      expect($newTodo1Node).not.toBe($todo1Node)
+      expect($newTodo1Node.$value).toBe($todo1Node.$value)
+      expect($newTodo1AuthorNode).toBe($todo1AuthorNode)
+      expect($newTodo2Node).toBe($todo2Node)
+      expect($newTodo2AuthorNode).toBe($todo2AuthorNode)
     })
 
     it("notifies all subscribers affected by the mutation path", () => {
@@ -189,12 +189,12 @@ describe("OST", () => {
       }
 
       const ost = new OST()
-      const rootNode = ost.createNode(state)
-      const todosNode = rootNode.$createChild(state.todos)
-      const todo1Node = todosNode.$createChild(state.todos[0])
-      const todo2Node = todosNode.$createChild(state.todos[1])
-      const todo1AuthorNode = todo1Node.$createChild(state.todos[0].author)
-      const todo2AuthorNode = todo2Node.$createChild(state.todos[1].author)
+      const $rootNode = ost.createNode(state)
+      const $todosNode = $rootNode.$createChild(state.todos)
+      const $todo1Node = $todosNode.$createChild(state.todos[0])
+      const $todo2Node = $todosNode.$createChild(state.todos[1])
+      const $todo1AuthorNode = $todo1Node.$createChild(state.todos[0].author)
+      const $todo2AuthorNode = $todo2Node.$createChild(state.todos[1].author)
 
       const subscriberOfAllMutations = vi.fn()
       const rootNodeSubscriber = vi.fn()
@@ -205,14 +205,14 @@ describe("OST", () => {
       const todo2AuthorNodeSubscriber = vi.fn()
 
       ost.subscribe(subscriberOfAllMutations)
-      ost.subscribeTo(rootNode, rootNodeSubscriber)
-      ost.subscribeTo(todosNode, todosNodeSubscriber)
-      ost.subscribeTo(todo1Node, todo1NodeSubscriber)
-      ost.subscribeTo(todo1AuthorNode, todo1AuthorNodeSubscriber)
-      ost.subscribeTo(todo2Node, todo2NodeSubscriber)
-      ost.subscribeTo(todo2AuthorNode, todo2AuthorNodeSubscriber)
+      ost.subscribeTo($rootNode, rootNodeSubscriber)
+      ost.subscribeTo($todosNode, todosNodeSubscriber)
+      ost.subscribeTo($todo1Node, todo1NodeSubscriber)
+      ost.subscribeTo($todo1AuthorNode, todo1AuthorNodeSubscriber)
+      ost.subscribeTo($todo2Node, todo2NodeSubscriber)
+      ost.subscribeTo($todo2AuthorNode, todo2AuthorNodeSubscriber)
 
-      ost.mutate(todo1Node, (todo1) => {
+      ost.mutate($todo1Node, (todo1) => {
         todo1.content = "Learn Arbor OST"
 
         return {
