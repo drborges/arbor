@@ -69,7 +69,17 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
       throw new DetachedPathError(this.$ost.humanizePath($node.$path))
     }
 
-    Reflect.set(target, prop, newValue, $node)
+    this.$ost.mutate($node, (value) => {
+      const previouslyUndefined = value[prop] === undefined
+      Reflect.set(value, prop, newValue, $node)
+
+      return {
+        previouslyUndefined,
+        operation: "set",
+        props: [prop],
+      }
+    })
+
     return true
   }
 

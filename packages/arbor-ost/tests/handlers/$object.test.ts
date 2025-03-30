@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { OST } from "../../src/ost"
 
@@ -123,6 +123,110 @@ describe("$object", () => {
 
       expect(completedTodos.length).toBe(1)
       expect(completedTodos[0]).toBe($firstTodo)
+    })
+  })
+
+  describe("mutations", () => {
+    it("mutates values correctly", () => {
+      const state = {
+        todos: [
+          {
+            id: 1,
+            content: "Learn Arbor",
+            done: false,
+            complete() {
+              this.done = true
+            },
+          },
+          {
+            id: 2,
+            content: "Implement OST",
+            done: false,
+            complete() {
+              this.done = true
+            },
+          },
+        ],
+      }
+
+      const ost = new OST<typeof state>()
+      const $root = ost.createNode(state)
+
+      $root.todos[0].complete()
+
+      expect(state.todos[0].done).toBe(true)
+      expect(state.todos[1].done).toBe(false)
+    })
+
+    it("notifies subscribers when a node is mutated", () => {
+      const state = {
+        todos: [
+          {
+            id: 1,
+            content: "Learn Arbor",
+            done: false,
+            complete() {
+              this.done = true
+            },
+          },
+          {
+            id: 2,
+            content: "Implement OST",
+            done: false,
+            complete() {
+              this.done = true
+            },
+          },
+        ],
+      }
+
+      const subscriber = vi.fn()
+      const ost = new OST<typeof state>()
+      const $root = ost.createNode(state)
+      $root.$subscriptions.subscribe(subscriber)
+
+      $root.todos[0].complete()
+
+      expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("exposes mutation event metadata to subscribers", async () => {
+      const state = {
+        todos: [
+          {
+            id: 1,
+            content: "Learn Arbor",
+            done: false,
+            complete() {
+              this.done = true
+            },
+          },
+          {
+            id: 2,
+            content: "Implement OST",
+            done: false,
+            complete() {
+              this.done = true
+            },
+          },
+        ],
+      }
+
+      const ost = new OST<typeof state>()
+      const $root = ost.createNode(state)
+
+      return new Promise((resolve) => {
+        $root.$subscriptions.subscribe((event) => {
+          expect(event.mutationPath).toBe(ost.pathOf(state.todos[0]))
+          expect(event.state).toBe(state)
+          expect(event.metadata.operation).toEqual("set")
+          expect(event.metadata.previouslyUndefined).toBe(false)
+          expect(event.metadata.props).toEqual(["done"])
+          resolve(true)
+        })
+
+        $root.todos[0].complete()
+      })
     })
   })
 })
