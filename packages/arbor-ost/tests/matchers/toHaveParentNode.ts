@@ -1,6 +1,6 @@
 import { expect } from "vitest"
 
-import { Node } from "../../src/ost/types"
+import { Node } from "../../src/types"
 
 expect.extend({
   toHaveParentNode(node: Node, parent?: Node) {
@@ -12,11 +12,9 @@ expect.extend({
       actual: node,
       expected: parent,
       message: () =>
-        `Node ${node.$path.humanized} ${
+        `Node ${node.$path.humanize()} ${
           pass ? "has" : "does not have"
-        } parent node equals to ${
-          parent ? parent.$path.humanized : parent
-        }. Instead, got ${node.$parent.$path.humanized}`,
+        } parent node equals to ${parent ? parent.$path.humanize() : parent}`,
     }
   },
 })

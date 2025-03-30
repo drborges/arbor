@@ -1,8 +1,8 @@
 import { expect } from "vitest"
 
-import { Node } from "../../src/ost/types"
-import { Path } from "../../src/ost/path"
-import { Seed } from "../../src/ost/seed"
+import { Node } from "../../src/types"
+import { Path } from "../../src/path"
+import { Seed } from "../../src/seed"
 
 expect.extend({
   toBeRootNode(node: Node, expected) {

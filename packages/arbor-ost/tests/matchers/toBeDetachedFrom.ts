@@ -1,6 +1,6 @@
 import { expect } from "vitest"
 
-import { Node } from "../../src/ost/types"
+import { Node } from "../../src/types"
 import { OST } from "../../src/ost"
 
 expect.extend({

@@ -1,4 +1,4 @@
-import { OST } from ".."
+import { OST } from "../ost"
 import { DetachedPathError } from "../errors"
 import { Node, Value } from "../types"
 

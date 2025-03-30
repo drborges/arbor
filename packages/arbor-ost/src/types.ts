@@ -1,4 +1,4 @@
-import { OST } from "."
+import { OST } from "./ost"
 import { Path } from "./path"
 import { Seed } from "./seed"
 import { Subscriptions } from "./subscriptions"
