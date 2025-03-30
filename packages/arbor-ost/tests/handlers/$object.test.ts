@@ -124,6 +124,21 @@ describe("$object", () => {
       expect(completedTodos.length).toBe(1)
       expect(completedTodos[0]).toBe($firstTodo)
     })
+
+    it("creates children nodes when iterating over them", () => {
+      const state = {
+        todos: [
+          { id: 1, content: "Learn Arbor" },
+          { id: 2, content: "Implement OST" },
+        ],
+      }
+
+      const ost = new OST<typeof state>()
+      ost.createNode(state)
+      for (const child of ost.root.todos.$children()) {
+        expect(child).toBe(ost.nodeOf(child.$value))
+      }
+    })
   })
 
   describe("mutations", () => {
