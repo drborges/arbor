@@ -53,6 +53,10 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
 
     const childValue = Reflect.get(target, prop, $node) as unknown
 
+    if (typeof childValue === "function") {
+      return childValue.bind($node)
+    }
+
     if (!isProxiable(childValue)) {
       return childValue
     }

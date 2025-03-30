@@ -95,5 +95,34 @@ describe("$object", () => {
       expect($todo1).toBe(ost.root.todos[0])
       expect($todo2).toBe(ost.root.todos[1])
     })
+
+    it("binds this in methods to the corresponding OST node", () => {
+      const state = {
+        completed() {
+          return this.todos.filter((t) => t.done)
+        },
+        todos: [
+          {
+            id: 1,
+            content: "Learn Arbor",
+            done: true,
+          },
+          {
+            id: 2,
+            content: "Implement OST",
+            done: false,
+          },
+        ],
+      }
+
+      const ost = new OST<typeof state>()
+      const $root = ost.createNode(state)
+      const $firstTodo = $root.todos[0]
+
+      const completedTodos = $root.completed()
+
+      expect(completedTodos.length).toBe(1)
+      expect(completedTodos[0]).toBe($firstTodo)
+    })
   })
 })
