@@ -70,11 +70,13 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     }
 
     this.$ost.mutate($node, (value) => {
-      const previouslyUndefined = value[prop] === undefined
+      const oldValue = value[prop]
+
       Reflect.set(value, prop, newValue, $node)
 
       return {
-        previouslyUndefined,
+        oldValue,
+        newValue,
         operation: "set",
         props: [prop],
       }

@@ -45,20 +45,15 @@ export type Node<V extends Value = Value> = V & {
 
 export type MutationMetadata = {
   readonly operation: string
-  readonly previouslyUndefined?: boolean
+  readonly newValue?: unknown
+  readonly oldValue?: unknown
   readonly props: (string | number | Symbol)[]
 }
 
 export type Mutation<T extends Value> = (target: T) => MutationMetadata
 
-export type MutationResult<T extends object> = {
-  root: Node<T>
-  metadata: MutationMetadata
-}
-
-export type MutationEvent<T extends object> = {
-  state: ArborNode<T>
-  mutationPath: Path
+export type MutationEvent<V extends Value> = {
+  target: Node<V>
   metadata: MutationMetadata
 }
 

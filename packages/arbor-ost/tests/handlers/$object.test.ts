@@ -231,10 +231,10 @@ describe("$object", () => {
 
       return new Promise((resolve) => {
         ost.root.$subscriptions.subscribe((event) => {
-          expect(event.mutationPath).toBe(ost.pathOf(state.todos[0]))
-          expect(event.state).toBe(state)
+          expect(event.target).toBe(ost.root.todos[0])
           expect(event.metadata.operation).toEqual("set")
-          expect(event.metadata.previouslyUndefined).toBe(false)
+          expect(event.metadata.oldValue).toBe(false)
+          expect(event.metadata.newValue).toBe(true)
           expect(event.metadata.props).toEqual(["done"])
           resolve(true)
         })

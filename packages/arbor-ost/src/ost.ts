@@ -85,16 +85,15 @@ export class OST<V extends Value = Value> {
     }
 
     const refreshedNodesInMutationPath = this.refreshNodesInPath($node.$path)
-    const $newRootNode = refreshedNodesInMutationPath[0] as Node<V>
-    const $newTargetNode = refreshedNodesInMutationPath.at(-1) as Node<T>
-    const metadata = mutation($newTargetNode.$value)
+    const $newRootNode = refreshedNodesInMutationPath[0]
+    const $newTargetNode = refreshedNodesInMutationPath.at(-1)
+    const metadata = mutation($newTargetNode.$value as Node<T>)
 
     this.#rootSeed = $newRootNode.$seed
 
     for (const $refreshedNode of refreshedNodesInMutationPath) {
       this.subscriptionsOf($refreshedNode.$value).notify({
-        state: $refreshedNode.$value,
-        mutationPath: $newTargetNode.$path,
+        target: $newTargetNode,
         metadata,
       })
     }
