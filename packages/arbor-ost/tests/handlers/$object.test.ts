@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { OST } from "../../src/ost"
+import { DetachedPathError } from "../../src/errors"
 
 describe("$object", () => {
-  describe("lazy OST initialization", () => {
-    it("gradually creates nodes in the OST as parts of the state gets accessed", () => {
+  describe("get trap", () => {
+    it("lazily creates nodes in the OST as parts of the state are accessed", () => {
       const state = {
         todos: [
           { id: 1, content: "Learn Arbor", author: { name: "Alice" } },
@@ -126,22 +127,7 @@ describe("$object", () => {
     })
   })
 
-  describe("#$children", () => {
-    it("creates children nodes when iterating over them", () => {
-      const ost = new OST({
-        todos: [
-          { id: 1, content: "Learn Arbor" },
-          { id: 2, content: "Implement OST" },
-        ],
-      })
-
-      for (const child of ost.root.todos.$children()) {
-        expect(child).toBe(ost.nodeOf(child.$value))
-      }
-    })
-  })
-
-  describe("mutations", () => {
+  describe("set trap", () => {
     it("mutates values correctly", () => {
       const state = {
         todos: [
@@ -164,10 +150,9 @@ describe("$object", () => {
         ],
       }
 
-      const ost = new OST<typeof state>()
-      const $root = ost.createNode(state)
+      const ost = new OST(state)
 
-      $root.todos[0].complete()
+      ost.root.todos[0].complete()
 
       expect(state.todos[0].done).toBe(true)
       expect(state.todos[1].done).toBe(false)
@@ -241,6 +226,118 @@ describe("$object", () => {
 
         ost.root.todos[0].complete()
       })
+    })
+
+    it("throws DetachedPathError when operating on a detached node", () => {
+      const ost = new OST({
+        todos: [
+          { id: 1, content: "Learn Arbor" },
+          { id: 2, content: "Implement OST" },
+        ],
+      })
+
+      const $todo1 = ost.root.todos[0]
+
+      delete ost.root.todos[0]
+
+      expect(() => {
+        $todo1.content = "Learn Arbor OST"
+      }).toThrow(DetachedPathError)
+    })
+  })
+
+  describe("delete trap", () => {
+    it("deletes properties of node correctly", () => {
+      const state: { content: string; authorName?: string }[] = [
+        { content: "Learn Arbor", authorName: "Alice" },
+        { content: "Implement OST", authorName: "Bob" },
+      ]
+
+      const ost = new OST(state)
+
+      delete ost.root[0].authorName
+
+      expect(state).toEqual([
+        { content: "Learn Arbor" },
+        { content: "Implement OST", authorName: "Bob" },
+      ])
+    })
+
+    it("notifies subscribers about the deletion", () => {
+      const state: { content: string; authorName?: string }[] = [
+        { content: "Learn Arbor", authorName: "Alice" },
+        { content: "Implement OST", authorName: "Bob" },
+      ]
+
+      const ost = new OST(state)
+
+      const subscriber1 = vi.fn()
+      const subscriber2 = vi.fn()
+      const subscriber3 = vi.fn()
+
+      ost.root.$subscriptions.subscribe(subscriber1)
+      ost.root[0].$subscriptions.subscribe(subscriber2)
+      ost.root[1].$subscriptions.subscribe(subscriber3)
+
+      delete ost.root[0].authorName
+
+      expect(subscriber1).toHaveBeenCalledOnce()
+      expect(subscriber2).toHaveBeenCalledOnce()
+      expect(subscriber3).not.toHaveBeenCalled()
+    })
+
+    it("exposes mutation event metadata to subscribers", async () => {
+      const state: { content: string; authorName?: string }[] = [
+        { content: "Learn Arbor", authorName: "Alice" },
+        { content: "Implement OST", authorName: "Bob" },
+      ]
+
+      const ost = new OST(state)
+
+      return new Promise((resolve) => {
+        ost.root.$subscriptions.subscribe((event) => {
+          expect(event.target).toBe(ost.root[0])
+          expect(event.metadata.operation).toEqual("delete")
+          expect(event.metadata.oldValue).toBe("Alice")
+          expect(event.metadata.newValue).toBeUndefined()
+          expect(event.metadata.props).toEqual(["authorName"])
+          resolve(true)
+        })
+
+        delete ost.root[0].authorName
+      })
+    })
+
+    it("throws a DetachedPathError when mutating a detached node", () => {
+      const state: { content: string; authorName?: string }[] = [
+        { content: "Learn Arbor", authorName: "Alice" },
+        { content: "Implement OST", authorName: "Bob" },
+      ]
+
+      const ost = new OST(state)
+
+      const $todo1 = ost.root[0]
+
+      delete ost.root[0]
+
+      expect(() => {
+        delete $todo1.authorName
+      }).toThrow(DetachedPathError)
+    })
+  })
+
+  describe("#$children", () => {
+    it("creates children nodes when iterating over them", () => {
+      const ost = new OST({
+        todos: [
+          { id: 1, content: "Learn Arbor" },
+          { id: 2, content: "Implement OST" },
+        ],
+      })
+
+      for (const child of ost.root.todos.$children()) {
+        expect(child).toBe(ost.nodeOf(child.$value))
+      }
     })
   })
 })

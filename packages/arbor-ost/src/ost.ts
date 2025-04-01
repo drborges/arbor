@@ -1,7 +1,7 @@
-import { DetachedPathError } from "./errors"
-import { $object } from "./handlers/$object"
 import { Path } from "./path"
 import { Seed } from "./seed"
+import { DetachedPathError } from "./errors"
+import { $object } from "./handlers/$object"
 import { Subscriptions } from "./subscriptions"
 import {
   $,
@@ -92,7 +92,7 @@ export class OST<V extends Value = Value> {
     this.#rootSeed = $newRootNode.$seed
 
     for (const $refreshedNode of refreshedNodesInMutationPath) {
-      this.subscriptionsOf($refreshedNode.$value).notify({
+      $refreshedNode.$subscriptions.notify({
         target: $newTargetNode,
         metadata,
       })
@@ -100,7 +100,7 @@ export class OST<V extends Value = Value> {
   }
 
   subscribe(s: Subscriber<V>) {
-    return this.subscriptionsOf(this.root.$value).subscribe(s)
+    return this.subscribeTo(this.root, s)
   }
 
   subscribeTo<T extends Value = Value>($node: Node<T>, s: Subscriber<T>) {
@@ -133,7 +133,7 @@ export class OST<V extends Value = Value> {
     return this.#subscriptions.get(this.#seeds.get(value))
   }
 
-  isDetached(value: Value) {
+  isDetached(value?: Value) {
     const path = this.pathOf(value)
     return !path || path.seeds.some(this.isDetachedSeed.bind(this))
   }

@@ -1,5 +1,4 @@
 import { OST } from "../ost"
-import { DetachedPathError } from "../errors"
 import { Node, Value } from "../types"
 
 export function isProxiable(value: unknown): value is object {
@@ -51,7 +50,7 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
       }
     }
 
-    const childValue = Reflect.get(target, prop, $node) as unknown
+    const childValue = Reflect.get(target, prop, $node)
 
     if (typeof childValue === "function") {
       return childValue.bind($node)
@@ -65,10 +64,6 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
   }
 
   set(target: V, prop: string, newValue: unknown, $node: Node<V>): boolean {
-    if (this.$ost.isDetached(target)) {
-      throw new DetachedPathError(this.$ost.humanizePath($node.$path))
-    }
-
     this.$ost.mutate($node, (value) => {
       const oldValue = value[prop]
 
@@ -86,12 +81,21 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
   }
 
   deleteProperty(target: V, prop: string): boolean {
-    if (this.$ost.isDetached(target)) {
-      const path = this.$ost.pathOf(target)
-      throw new DetachedPathError(this.$ost.humanizePath(path))
-    }
+    const $node = this.$ost.nodeOf(target)
 
-    Reflect.deleteProperty(target, prop)
+    this.$ost.mutate($node, (value) => {
+      const oldValue = value[prop]
+
+      Reflect.deleteProperty(target, prop)
+
+      return {
+        oldValue,
+        newValue: undefined,
+        operation: "delete",
+        props: [prop],
+      }
+    })
+
     return true
   }
 }
