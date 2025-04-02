@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest"
 import { Arbor } from "../../src/arbor"
 import { ScopedStore } from "../../src/scoping/store"
 import { detach } from "../../src/utilities"
+import { Todo } from "../fixtures/Todo"
+import { Todos } from "../fixtures/Todos"
+import { Task } from "../fixtures/Task"
+import { Tasks } from "../fixtures/Tasks"
 
 describe("Array", () => {
   describe("Symbol.iterator", () => {
@@ -403,5 +407,35 @@ describe("Array", () => {
     detach(item2)
 
     expect(store.state).toEqual([])
+  })
+
+  describe("method memoization", () => {
+    it("binds methods to the correct context in the inheritance hiearchy", () => {
+      const todo1 = new Todo("Do the dishes")
+      const todo2 = new Todo("Walk the dogs")
+      const task = new Task("Learn Arbor")
+      const todos = new Todos(todo1, todo2)
+      const tasks = new Tasks(task)
+
+      const store = new Arbor({ todos, tasks })
+      const scoped = new ScopedStore(store)
+
+      scoped.state.todos.addTodo("Clean the house")
+      scoped.state.tasks.addTask("Write tests")
+
+      expect(scoped.state.todos.addTodo).toBe(scoped.state.todos.addTodo)
+      expect(scoped.state.tasks.addTask).toBe(scoped.state.tasks.addTask)
+      expect(store.state.todos.length).toBe(3)
+      expect(store.state.tasks.length).toBe(2)
+
+      expect(store.state.todos[0]).toEqual(new Todo("Do the dishes"))
+      expect(store.state.todos[1]).toEqual(new Todo("Walk the dogs"))
+      expect(store.state.todos[2]).toEqual(new Todo("Clean the house"))
+      expect(store.state.todos[3]).toBeUndefined()
+
+      expect(store.state.tasks[0]).toEqual(new Task("Learn Arbor"))
+      expect(store.state.tasks[1]).toEqual(new Task("Write tests"))
+      expect(store.state.tasks[2]).toBeUndefined()
+    })
   })
 })
