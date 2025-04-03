@@ -1,6 +1,11 @@
 import { OST } from "../ost"
 import { Node, Value } from "../types"
 import { ArborProxiable } from "../decorators/node"
+import { ArborDetached } from "../decorators/detached"
+
+function isDetachedProperty(target: unknown, prop: string) {
+  return target?.[ArborDetached]?.[prop]
+}
 
 function isProxiable(value: unknown): value is object {
   if (value == null) return false
@@ -71,7 +76,7 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
 
     const childValue = Reflect.get(target, prop, $node)
 
-    if (isGetter(target, prop)) {
+    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
       return childValue
     }
 
@@ -87,10 +92,14 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
   }
 
   set(target: V, prop: string, newValue: unknown, $node: Node<V>): boolean {
-    this.$ost.mutate($node, (value) => {
-      const oldValue = value[prop]
+    if (isDetachedProperty(target, prop)) {
+      return Reflect.set(target, prop, newValue, $node)
+    }
 
-      Reflect.set(value, prop, newValue, $node)
+    this.$ost.mutate($node, () => {
+      const oldValue = target[prop]
+
+      Reflect.set(target, prop, newValue, $node)
 
       return {
         oldValue,
@@ -104,6 +113,10 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
   }
 
   deleteProperty(target: V, prop: string): boolean {
+    if (isDetachedProperty(target, prop)) {
+      return Reflect.deleteProperty(target, prop)
+    }
+
     const $node = this.$ost.nodeOf(target)
 
     this.$ost.mutate($node, (value) => {

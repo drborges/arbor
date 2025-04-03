@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest"
 import { OST } from "../../src/ost"
 import { node } from "../../src/decorators/node"
 import { DetachedPathError } from "../../src/errors"
+import { detached } from "../../src/decorators/detached"
+import { $ } from "../../src/types"
 
 describe("$object", () => {
   describe("get trap", () => {
@@ -199,6 +201,25 @@ describe("$object", () => {
 
       expect(ost.root.todos.getLast()).toBe(ost.nodeOf(todo2))
     })
+
+    it("does not create nodes for detached object props", () => {
+      @node
+      class Todo {
+        constructor(public id: number, public content: string) {}
+      }
+
+      @node
+      class TodosApp {
+        @detached todo: Todo
+      }
+
+      const todo = new Todo(1, "Learn Arbor")
+      const ost = new OST(new TodosApp())
+      ost.root.todo = todo as $<Todo>
+
+      expect(ost.root.todo).toBe(todo)
+      expect(ost.root.todo).not.toBe(ost.nodeOf(todo))
+    })
   })
 
   describe("set trap", () => {
@@ -262,6 +283,21 @@ describe("$object", () => {
       $root.todos[0].complete()
 
       expect(subscriber).toHaveBeenCalledTimes(1)
+    })
+
+    it("does not notify subscribers when updating a detached property", () => {
+      @node
+      class Counter {
+        @detached count = 0
+      }
+
+      const subscriber = vi.fn()
+      const ost = new OST(new Counter())
+      ost.subscribe(subscriber)
+
+      ost.root.count++
+
+      expect(subscriber).not.toHaveBeenCalled()
     })
 
     it("exposes mutation event metadata to subscribers", async () => {
@@ -380,6 +416,22 @@ describe("$object", () => {
 
         delete ost.root[0].authorName
       })
+    })
+
+    it("does not notify subscribers when deleting a detached property", () => {
+      @node
+      class Counter {
+        @detached count?: number = 0
+      }
+
+      const subscriber = vi.fn()
+      const ost = new OST(new Counter())
+      ost.subscribe(subscriber)
+
+      delete ost.root.count
+
+      expect(subscriber).not.toHaveBeenCalled()
+      expect(ost.root.count).toBeUndefined()
     })
 
     it("throws a DetachedPathError when mutating a detached node", () => {

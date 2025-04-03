@@ -12,10 +12,6 @@ import {
   Value,
 } from "./types"
 
-export function isNode(value: any): value is Node {
-  return value?.$ost instanceof OST
-}
-
 export class OST<V extends Value = Value> {
   /**
    * Represents the root of the tree
