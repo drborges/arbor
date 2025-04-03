@@ -1,10 +1,29 @@
 import { OST } from "../ost"
 import { Node, Value } from "../types"
+import { ArborProxiable } from "../decorators/node"
 
-export function isProxiable(value: unknown): value is object {
+function isProxiable(value: unknown): value is object {
   if (value == null) return false
 
-  return value.constructor === Object || value.constructor === Array
+  return (
+    value.constructor === Object ||
+    value.constructor === Array ||
+    value[ArborProxiable]
+  )
+}
+
+function isGetter(target: object, prop: string) {
+  if (!target) {
+    return false
+  }
+
+  const descriptor = Object.getOwnPropertyDescriptor(target, prop)
+
+  if (descriptor && descriptor.get !== undefined) {
+    return true
+  }
+
+  return isGetter(Object.getPrototypeOf(target), prop)
 }
 
 export class $object<V extends Value = Value> implements ProxyHandler<V> {
@@ -51,6 +70,10 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     }
 
     const childValue = Reflect.get(target, prop, $node)
+
+    if (isGetter(target, prop)) {
+      return childValue
+    }
 
     if (typeof childValue === "function") {
       return childValue.bind($node)

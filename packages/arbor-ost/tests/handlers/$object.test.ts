@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { OST } from "../../src/ost"
+import { node } from "../../src/decorators/node"
 import { DetachedPathError } from "../../src/errors"
 
 describe("$object", () => {
@@ -124,6 +125,79 @@ describe("$object", () => {
 
       expect(completedTodos.length).toBe(1)
       expect(completedTodos[0]).toBe($firstTodo)
+    })
+
+    it("executes getters within the context of the proxy", () => {
+      const state = {
+        get lastTodo() {
+          return this.todos.at(-1)
+        },
+        todos: [
+          {
+            id: 1,
+            content: "Learn Arbor",
+            done: true,
+          },
+          {
+            id: 2,
+            content: "Implement OST",
+            done: false,
+          },
+        ],
+      }
+
+      const todo2 = state.todos[1]
+      const ost = new OST(state)
+
+      expect(ost.root.lastTodo).toBe(ost.nodeOf(todo2))
+    })
+
+    it("allows using classes decorated with @node as nodes in the OST", () => {
+      @node
+      class Todo {
+        constructor(public id: number, public content: string) {}
+      }
+
+      @node
+      class Todos extends Array<Todo> {}
+
+      const todo1 = new Todo(1, "Learn Arbor")
+      const todo2 = new Todo(2, "Implement OST")
+      const todos = new Todos(todo1, todo2)
+
+      const ost = new OST({
+        todos,
+      })
+
+      expect(ost.root.todos).toBeInstanceOf(Todos)
+      expect(ost.root.todos).toBe(ost.nodeOf(todos))
+      expect(ost.root.todos[0]).toBeInstanceOf(Todo)
+      expect(ost.root.todos[0]).toBe(ost.nodeOf(todo1))
+      expect(ost.root.todos[1]).toBeInstanceOf(Todo)
+      expect(ost.root.todos[1]).toBe(ost.nodeOf(todo2))
+    })
+
+    it("binds class methods to the proxy itself", () => {
+      @node
+      class Todo {
+        constructor(public id: number, public content: string) {}
+      }
+
+      @node
+      class Todos extends Array<Todo> {
+        getLast() {
+          return this.at(-1)
+        }
+      }
+
+      const todo1 = new Todo(1, "Learn Arbor")
+      const todo2 = new Todo(2, "Implement OST")
+
+      const ost = new OST({
+        todos: new Todos(todo1, todo2),
+      })
+
+      expect(ost.root.todos.getLast()).toBe(ost.nodeOf(todo2))
     })
   })
 
