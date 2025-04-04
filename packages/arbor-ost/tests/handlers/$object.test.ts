@@ -5,6 +5,7 @@ import { node } from "../../src/decorators/node"
 import { DetachedPathError } from "../../src/errors"
 import { detached } from "../../src/decorators/detached"
 import { $ } from "../../src/types"
+import { ok } from "assert"
 
 describe("$object", () => {
   describe("get trap", () => {
@@ -464,6 +465,32 @@ describe("$object", () => {
       for (const child of ost.root.todos.$children()) {
         expect(child).toBe(ost.nodeOf(child.$value))
       }
+    })
+  })
+
+  describe("Symbol.toStringTag", () => {
+    it("returns the string representation of the object node", () => {
+      const ost = new OST([
+        { content: "Learn Arbor", authorName: "Alice" },
+      ])
+
+      expect(ost.root[Symbol.toStringTag]).toBe("ArborNode<Array>")
+      expect(ost.root[0][Symbol.toStringTag]).toBe("ArborNode<Object>")
+    })
+
+    it("handle custom types", () => {
+      @node
+      class Todo {
+        constructor(public content: string) {}
+      }
+
+      @node
+      class Todos extends Array<Todo> {}
+
+      const ost = new OST(new Todos(new Todo("Learn Arbor")))
+
+      expect(ost.root[Symbol.toStringTag]).toBe("ArborNode<Todos>")
+      expect(ost.root[0][Symbol.toStringTag]).toBe("ArborNode<Todo>")
     })
   })
 })

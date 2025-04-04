@@ -3,7 +3,9 @@ import { Node, Value } from "../types"
 import { ArborProxiable } from "../decorators/node"
 import { ArborDetached } from "../decorators/detached"
 
-function isDetachedProperty(target: unknown, prop: string) {
+export type Prop = string | symbol
+
+function isDetachedProperty(target: unknown, prop: Prop) {
   return target?.[ArborDetached]?.[prop]
 }
 
@@ -17,7 +19,7 @@ function isProxiable(value: unknown): value is object {
   )
 }
 
-function isGetter(target: object, prop: string) {
+function isGetter(target: object, prop: Prop) {
   if (!target) {
     return false
   }
@@ -38,7 +40,11 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     return true
   }
 
-  get(target: V, prop: string, $node: Node<V>) {
+  get(target: V, prop: Prop, $node: Node<V>) {
+    if (prop === Symbol.toStringTag) {
+      return `ArborNode<${target.constructor.name}>`
+    }
+
     if (prop === "$value") {
       return target
     }
@@ -91,7 +97,7 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     return this.$ost.nodeOf(childValue) || $node.$createChild(childValue)
   }
 
-  set(target: V, prop: string, newValue: unknown, $node: Node<V>): boolean {
+  set(target: V, prop: Prop, newValue: unknown, $node: Node<V>): boolean {
     if (isDetachedProperty(target, prop)) {
       return Reflect.set(target, prop, newValue, $node)
     }
@@ -112,7 +118,7 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     return true
   }
 
-  deleteProperty(target: V, prop: string): boolean {
+  deleteProperty(target: V, prop: Prop): boolean {
     if (isDetachedProperty(target, prop)) {
       return Reflect.deleteProperty(target, prop)
     }
