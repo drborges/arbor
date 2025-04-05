@@ -8,16 +8,6 @@ export interface ProxyHandlerConstructor {
   accepts(value: unknown): boolean
 }
 
-export type ArborNode<T extends object = object> = {
-  [K in keyof T]: T[K] extends Function
-    ? T[K]
-    : T[K] extends Array<infer I extends object>
-    ? ArborNode<I[]>
-    : T[K] extends object
-    ? ArborNode<T[K]>
-    : T[K]
-}
-
 export type $<T extends object = object> = Node<T> & {
   [K in keyof T]: T[K] extends Function
     ? T[K]

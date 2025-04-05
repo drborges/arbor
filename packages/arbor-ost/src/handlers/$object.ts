@@ -42,7 +42,8 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
 
   get(target: V, prop: Prop, $node: Node<V>) {
     if (prop === Symbol.toStringTag) {
-      return `ArborNode<${target.constructor.name}>`
+      const detachedIndicator = this.$ost.isDetached(target) ? "*" : ""
+      return `ArborNode<${target.constructor.name}(${detachedIndicator}${$node.$seed.value})>`
     }
 
     if (prop === "$value") {

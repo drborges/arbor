@@ -180,6 +180,30 @@ describe("OST", () => {
       expect($newTodo2AuthorNode).toBe($todo2AuthorNode)
     })
 
+    it("returns the new reference of the mutated node", () => {
+      const state = {
+        todos: [
+          { id: 1, content: "Learn Arbor", author: { name: "Alice" } },
+          { id: 2, content: "Implement OST", author: { name: "Bob" } },
+        ],
+      }
+
+      const ost = new OST(state)
+      const nodeToMutate = ost.root.todos[0].author
+
+      const mutatedNode = ost.mutate(nodeToMutate, (author) => {
+        author.name = "Alice Doe"
+
+        return {
+          operation: "set",
+          props: ["name"]
+        }
+      })
+
+      expect(mutatedNode).not.toBe(nodeToMutate)
+      expect(mutatedNode.$seed).toBe(nodeToMutate.$seed)
+    })
+
     it("notifies all subscribers affected by the mutation path", () => {
       const state = {
         todos: [

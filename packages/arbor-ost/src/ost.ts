@@ -58,10 +58,10 @@ export class OST<V extends Value = Value> {
     value: V,
     path = Path.root(),
     subscriptions = new Subscriptions()
-  ): Node<V> {
+  ): $<V> {
     const seed = path.target
     const handler = this.#nodeHandlers.find((h) => h.accepts(value))
-    const $node = new Proxy(value, new handler(this)) as Node<V>
+    const $node = new Proxy(value, new handler(this)) as $<V>
 
     if (path.isRoot()) {
       this.#rootSeed = seed
@@ -75,14 +75,14 @@ export class OST<V extends Value = Value> {
     return $node
   }
 
-  mutate<T extends Value = Value>($node: Node<T>, mutation: Mutation<T>): void {
+  mutate<T extends Value = Value>($node: Node<T>, mutation: Mutation<T>) {
     if (this.isDetached($node.$value)) {
       throw new DetachedPathError(this.humanizePath($node.$path))
     }
 
     const refreshedNodesInMutationPath = this.refreshNodesInPath($node.$path)
     const $newRootNode = refreshedNodesInMutationPath[0]
-    const $newTargetNode = refreshedNodesInMutationPath.at(-1)
+    const $newTargetNode = refreshedNodesInMutationPath.at(-1) as $<T>
     const metadata = mutation($newTargetNode.$value as Node<T>)
 
     this.#rootSeed = $newRootNode.$seed
@@ -93,6 +93,8 @@ export class OST<V extends Value = Value> {
         metadata,
       })
     }
+
+    return $newTargetNode
   }
 
   subscribe(s: Subscriber<V>) {

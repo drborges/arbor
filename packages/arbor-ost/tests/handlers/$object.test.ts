@@ -5,7 +5,6 @@ import { node } from "../../src/decorators/node"
 import { DetachedPathError } from "../../src/errors"
 import { detached } from "../../src/decorators/detached"
 import { $ } from "../../src/types"
-import { ok } from "assert"
 
 describe("$object", () => {
   describe("get trap", () => {
@@ -224,7 +223,7 @@ describe("$object", () => {
   })
 
   describe("set trap", () => {
-    it("mutates values correctly", () => {
+    it("mutates underlying values correctly", () => {
       const state = {
         todos: [
           {
@@ -474,8 +473,11 @@ describe("$object", () => {
         { content: "Learn Arbor", authorName: "Alice" },
       ])
 
-      expect(ost.root[Symbol.toStringTag]).toBe("ArborNode<Array>")
-      expect(ost.root[0][Symbol.toStringTag]).toBe("ArborNode<Object>")
+      const $node1 = ost.root
+      const $node2 = ost.root[0]
+
+      expect($node1[Symbol.toStringTag]).toBe(`ArborNode<Array(${$node1.$seed.value})>`)
+      expect($node2[Symbol.toStringTag]).toBe(`ArborNode<Object(${$node2.$seed.value})>`)
     })
 
     it("handle custom types", () => {
@@ -489,8 +491,11 @@ describe("$object", () => {
 
       const ost = new OST(new Todos(new Todo("Learn Arbor")))
 
-      expect(ost.root[Symbol.toStringTag]).toBe("ArborNode<Todos>")
-      expect(ost.root[0][Symbol.toStringTag]).toBe("ArborNode<Todo>")
+      const $node1 = ost.root
+      const $node2 = ost.root[0]
+
+      expect($node1[Symbol.toStringTag]).toBe(`ArborNode<Todos(${$node1.$seed.value})>`)
+      expect($node2[Symbol.toStringTag]).toBe(`ArborNode<Todo(${$node2.$seed.value})>`)
     })
   })
 })
