@@ -1,7 +1,8 @@
 import { Path } from "./path"
 import { Seed } from "./seed"
-import { DetachedPathError } from "./errors"
+import { $array } from "./handlers/$array"
 import { $object } from "./handlers/$object"
+import { DetachedPathError } from "./errors"
 import { Subscriptions } from "./subscriptions"
 import {
   $,
@@ -42,7 +43,7 @@ export class OST<V extends Value = Value> {
    * They are responsible for providing the behavior of the Node, e.g. behaves like a regular object vs array vs map vs set, etc...
    */
   #nodeHandlers: ProxyHandlerConstructor[] = [
-    // $array,
+    $array,
     // $set,
     // $map,
     $object,

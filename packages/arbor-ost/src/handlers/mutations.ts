@@ -29,3 +29,18 @@ export function $delete<V extends Value>(prop: keyof V): Mutation<V> {
     }
   }
 }
+
+export function $push(items: unknown[]): Mutation<unknown[]> {
+  return (target: unknown[]) => () => {
+    const previousSize = target.length
+    const affectedProps = items.map((_, i) => previousSize + i)
+    target.push(...items)
+
+    return {
+      oldValue: undefined,
+      newValue: items,
+      operation: "push",
+      props: affectedProps,
+    }
+  }
+}
