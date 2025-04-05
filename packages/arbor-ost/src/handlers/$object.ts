@@ -2,6 +2,7 @@ import { OST } from "../ost"
 import { Node, Value } from "../types"
 import { ArborProxiable } from "../decorators/node"
 import { ArborDetached } from "../decorators/detached"
+import { $delete, $set } from "./mutations"
 
 export type Prop = string | symbol
 
@@ -103,18 +104,7 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
       return Reflect.set(target, prop, newValue, $node)
     }
 
-    this.$ost.mutate($node, () => {
-      const oldValue = target[prop]
-
-      Reflect.set(target, prop, newValue, $node)
-
-      return {
-        oldValue,
-        newValue,
-        operation: "set",
-        props: [prop],
-      }
-    })
+    this.$ost.mutate($node, $set(prop as keyof V, newValue))
 
     return true
   }
@@ -125,19 +115,7 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     }
 
     const $node = this.$ost.nodeOf(target)
-
-    this.$ost.mutate($node, (value) => {
-      const oldValue = value[prop]
-
-      Reflect.deleteProperty(target, prop)
-
-      return {
-        oldValue,
-        newValue: undefined,
-        operation: "delete",
-        props: [prop],
-      }
-    })
+    this.$ost.mutate($node, $delete(prop as keyof V))
 
     return true
   }

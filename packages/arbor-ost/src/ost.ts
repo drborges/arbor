@@ -83,7 +83,7 @@ export class OST<V extends Value = Value> {
     const refreshedNodesInMutationPath = this.refreshNodesInPath($node.$path)
     const $newRootNode = refreshedNodesInMutationPath[0]
     const $newTargetNode = refreshedNodesInMutationPath.at(-1) as $<T>
-    const metadata = mutation($newTargetNode.$value as Node<T>)
+    const metadata = mutation($newTargetNode.$value as Node<T>, $newTargetNode)()
 
     this.#rootSeed = $newRootNode.$seed
 
