@@ -1,10 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { $ } from "../../src/types"
 import { OST } from "../../src/ost"
-import { node } from "../../src/decorators/node"
-import { DetachedPathError } from "../../src/errors"
-import { detached } from "../../src/decorators/detached"
 
 describe("$array", () => {
   describe("#push", () => {

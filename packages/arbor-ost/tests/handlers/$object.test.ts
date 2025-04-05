@@ -202,6 +202,44 @@ describe("$object", () => {
       expect(ost.root.todos.getLast()).toBe(ost.nodeOf(todo2))
     })
 
+    it("runs mutations triggered by methods within the context of an OST node", () => {
+      @node
+      class Todo {
+        done = false
+
+        constructor(public content: string) {}
+
+        complete() {
+          this.done = true
+        }
+      }
+
+      @node
+      class Todos extends Array<Todo> {
+        get incomplete() {
+          return this.filter(t => !t.done)
+        }
+      }
+
+      const ost = new OST({
+        todos: new Todos(new Todo("Learn Arbor"), new Todo("Implement OST")),
+      })
+
+      const subscriber = vi.fn()
+      ost.subscribe(subscriber)
+
+      const incomplete = ost.root.todos.incomplete
+
+      expect(incomplete[0]).toBe(ost.root.todos[0])
+      expect(incomplete[1]).toBe(ost.root.todos[1])
+
+      incomplete[0].complete()
+      incomplete[1].complete()
+
+      expect(ost).not.toHaveNodeFor(incomplete)
+      expect(subscriber).toHaveBeenCalledTimes(2)
+    })
+
     it("does not create nodes for detached object props", () => {
       @node
       class Todo {

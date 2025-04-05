@@ -1,102 +1,54 @@
 import { OST } from "../ost"
-import { Node, Value } from "../types"
-import { ArborProxiable } from "../decorators/node"
-import { ArborDetached } from "../decorators/detached"
+import { Visitors } from "../visitors"
 import { $delete, $set } from "./mutations"
+import { Node, Prop, Value } from "../types"
 
-export type Prop = string | symbol
+import { Visitor } from "../visitors/visitor"
+import { SeedVisitor } from "../visitors/$object/$seed"
+import { PathVisitor } from "../visitors/$object/$path"
+import { ValueVisitor } from "../visitors/$object/$value"
+import { GetterVisitor } from "../visitors/$object/getter"
+import { ParentVisitor } from "../visitors/$object/$parent"
+import { ChildrenVisitor } from "../visitors/$object/$children"
+import { ProxiableVisitor } from "../visitors/$object/$proxiable"
+import { ToStringTagVisitor } from "../visitors/$object/toStringTag"
+import { CreateChildVisitor } from "../visitors/$object/$createChild"
+import { SubscriptionsVisitor } from "../visitors/$object/$subscriptions"
+import { DetachedVisitor, isDetachedProperty } from "../visitors/$object/detached"
 
-function isDetachedProperty(target: unknown, prop: Prop) {
-  return target?.[ArborDetached]?.[prop]
-}
-
-function isProxiable(value: unknown): value is object {
-  if (value == null) return false
-
-  return (
-    value.constructor === Object ||
-    value.constructor === Array ||
-    value[ArborProxiable]
+function createDefaultVisitors(ost: OST, extra: Visitor[]) {
+  return new Visitors(
+    new SeedVisitor(ost),
+    new PathVisitor(ost),
+    new ValueVisitor(ost),
+    new ParentVisitor(ost),
+    new ChildrenVisitor(ost),
+    new CreateChildVisitor(ost),
+    new SubscriptionsVisitor(ost),
+    new DetachedVisitor(ost),
+    new GetterVisitor(ost),
+    new ProxiableVisitor(ost),
+    ...extra,
+    // Any visitor below this point can be overriden by subclasses via the extra visitors provided
+    new ToStringTagVisitor(ost),
+    new Visitor(ost),
   )
 }
 
-function isGetter(target: object, prop: Prop) {
-  if (!target) {
-    return false
-  }
-
-  const descriptor = Object.getOwnPropertyDescriptor(target, prop)
-
-  if (descriptor && descriptor.get !== undefined) {
-    return true
-  }
-
-  return isGetter(Object.getPrototypeOf(target), prop)
-}
-
 export class $object<V extends Value = Value> implements ProxyHandler<V> {
-  constructor(readonly $ost: OST) {}
+  #visitors: Visitors
+
+  constructor(readonly $ost: OST, visitors: Visitor[] = []) {
+    this.#visitors = createDefaultVisitors($ost, visitors)
+  }
 
   static accepts(_value: unknown) {
     return true
   }
 
   get(target: V, prop: Prop, $node: Node<V>) {
-    if (prop === Symbol.toStringTag) {
-      const detachedIndicator = this.$ost.isDetached(target) ? "*" : ""
-      return `ArborNode<${target.constructor.name}(${detachedIndicator}${$node.$seed.value})>`
-    }
-
-    if (prop === "$value") {
-      return target
-    }
-
-    if (prop === "$path") {
-      return this.$ost.pathOf(target)
-    }
-
-    if (prop === "$seed") {
-      return this.$ost.seedOf(target)
-    }
-
-    if (prop === "$parent") {
-      return this.$ost.parentOf(target)
-    }
-
-    if (prop === "$subscriptions") {
-      return this.$ost.subscriptionsOf(target)
-    }
-
-    if (prop === "$children") {
-      return function* () {
-        for (const value of Object.values(target)) {
-          const childNode = this.$ost.nodeOf(value)
-          if (childNode) yield childNode
-        }
-      }.bind(this)
-    }
-
-    if (prop === "$createChild") {
-      return (value: Value) => {
-        return this.$ost.createNode(value, $node.$path.child())
-      }
-    }
-
     const childValue = Reflect.get(target, prop, $node)
-
-    if (isGetter(target, prop) || isDetachedProperty(target, prop)) {
-      return childValue
-    }
-
-    if (typeof childValue === "function") {
-      return childValue.bind($node)
-    }
-
-    if (!isProxiable(childValue)) {
-      return childValue
-    }
-
-    return this.$ost.nodeOf(childValue) || $node.$createChild(childValue)
+    return this.#visitors.visit({ target, prop, $node, childValue })
   }
 
   set(target: V, prop: Prop, newValue: unknown, $node: Node<V>): boolean {

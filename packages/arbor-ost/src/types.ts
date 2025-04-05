@@ -3,6 +3,8 @@ import { Path } from "./path"
 import { Seed } from "./seed"
 import { Subscriptions } from "./subscriptions"
 
+export type Prop = string | symbol
+
 export interface ProxyHandlerConstructor {
   new (ost: OST): ProxyHandler<Value>
   accepts(value: unknown): boolean
