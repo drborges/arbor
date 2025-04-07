@@ -57,3 +57,16 @@ export function $pop(): Mutation<unknown[]> {
     }
   }
 }
+
+export function $shift(): Mutation<unknown[]> {
+  return (target: unknown[]) => () => {
+    const shifted = target.shift()
+
+    return {
+      oldValue: shifted,
+      newValue: target[0],
+      operation: "shift",
+      props: [0],
+    }
+  }
+}
