@@ -44,3 +44,16 @@ export function $push(items: unknown[]): Mutation<unknown[]> {
     }
   }
 }
+
+export function $pop(): Mutation<unknown[]> {
+  return (target: unknown[]) => () => {
+    const popped = target.pop()
+
+    return {
+      oldValue: popped,
+      newValue: undefined,
+      operation: "pop",
+      props: [target.length],
+    }
+  }
+}

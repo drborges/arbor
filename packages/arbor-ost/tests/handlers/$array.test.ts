@@ -65,4 +65,67 @@ describe("$array", () => {
       })
     })
   })
+
+  describe("#pop", () => {
+    it("mutates the underlying value", () => {
+      const todo1 = { id: 1, content: "Learn Arbor" }
+      const todo2 = { id: 2, content: "Implement OST" }
+      const state = {
+        todos: [
+          todo1,
+          todo2,
+        ],
+      }
+
+      const ost = new OST(state)
+      const $todo2 = ost.root.todos[1]
+      const removed = ost.root.todos.pop()
+
+      expect(state.todos.length).toEqual(1)
+      expect(removed).toBe(todo2)
+      expect($todo2).toBeDetachedFrom(ost)
+    })
+
+    it("notifies subscribers of a new item in the array", () => {
+      const state = {
+        todos: [
+          { id: 1, content: "Learn Arbor" },
+          { id: 2, content: "Implement OST" },
+        ],
+      }
+
+      const subscriber = vi.fn()
+      const ost = new OST(state)
+      ost.subscribe(subscriber)
+      ost.root.todos.pop()
+
+      expect(subscriber).toHaveBeenCalledOnce()
+    })
+
+    it("exposes mutation event metadata to subscribers", async () => {
+      const todo1 = { id: 1, content: "Learn Arbor" }
+      const todo2 = { id: 2, content: "Implement OST" }
+      const state = {
+        todos: [
+          todo1,
+          todo2,
+        ],
+      }
+
+      const ost = new OST(state)
+
+      return new Promise(resolve => {
+        ost.subscribe(event => {
+          expect(event.target).toBe(ost.root.todos)
+          expect(event.metadata.props).toEqual([1])
+          expect(event.metadata.operation).toEqual("pop")
+          expect(event.metadata.oldValue).toBe(todo2)
+          expect(event.metadata.newValue).toBeUndefined()
+          resolve(true)
+        })
+
+        ost.root.todos.pop()
+      })
+    })
+  })
 })
