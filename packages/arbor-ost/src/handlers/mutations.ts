@@ -7,8 +7,8 @@ export function $set<V extends Value>(prop: keyof V, newValue: unknown): Mutatio
     Reflect.set(target, prop, newValue, $node)
 
     return {
-      oldValue,
-      newValue,
+      oldValue: [oldValue],
+      newValue: [newValue],
       operation: "set",
       props: [prop],
     }
@@ -22,8 +22,8 @@ export function $delete<V extends Value>(prop: keyof V): Mutation<V> {
     Reflect.deleteProperty(target, prop)
 
     return {
-      oldValue,
-      newValue: undefined,
+      oldValue: [oldValue],
+      newValue: [undefined],
       operation: "delete",
       props: [prop],
     }
@@ -37,7 +37,7 @@ export function $push(items: unknown[]): Mutation<unknown[]> {
     target.push(...items)
 
     return {
-      oldValue: undefined,
+      oldValue: [undefined],
       newValue: items,
       operation: "push",
       props: affectedProps,
@@ -50,8 +50,8 @@ export function $pop(): Mutation<unknown[]> {
     const popped = target.pop()
 
     return {
-      oldValue: popped,
-      newValue: undefined,
+      oldValue: [popped],
+      newValue: [undefined],
       operation: "pop",
       props: [target.length],
     }
@@ -63,8 +63,8 @@ export function $shift(): Mutation<unknown[]> {
     const shifted = target.shift()
 
     return {
-      oldValue: shifted,
-      newValue: target[0],
+      oldValue: [shifted],
+      newValue: [target[0]],
       operation: "shift",
       props: [0],
     }

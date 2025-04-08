@@ -38,8 +38,8 @@ export type Node<V extends Value = Value> = V & {
 
 export type MutationMetadata = {
   readonly operation: string
-  readonly newValue?: unknown
-  readonly oldValue?: unknown
+  readonly newValue: unknown[]
+  readonly oldValue: unknown[]
   readonly props: (string | number | Symbol)[]
 }
 

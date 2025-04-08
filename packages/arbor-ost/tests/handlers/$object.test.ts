@@ -366,8 +366,8 @@ describe("$object", () => {
         ost.root.$subscriptions.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos[0])
           expect(event.metadata.operation).toEqual("set")
-          expect(event.metadata.oldValue).toBe(false)
-          expect(event.metadata.newValue).toBe(true)
+          expect(event.metadata.oldValue).toEqual([false])
+          expect(event.metadata.newValue).toEqual([true])
           expect(event.metadata.props).toEqual(["done"])
           resolve(true)
         })
@@ -446,8 +446,8 @@ describe("$object", () => {
         ost.root.$subscriptions.subscribe((event) => {
           expect(event.target).toBe(ost.root[0])
           expect(event.metadata.operation).toEqual("delete")
-          expect(event.metadata.oldValue).toBe("Alice")
-          expect(event.metadata.newValue).toBeUndefined()
+          expect(event.metadata.oldValue).toEqual(["Alice"])
+          expect(event.metadata.newValue).toEqual([undefined])
           expect(event.metadata.props).toEqual(["authorName"])
           resolve(true)
         })
