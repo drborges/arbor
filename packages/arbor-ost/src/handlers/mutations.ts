@@ -70,3 +70,18 @@ export function $shift(): Mutation<unknown[]> {
     }
   }
 }
+
+export function $unshift(...items: unknown[]): Mutation<unknown[]> {
+  return (target: unknown[]) => () => {
+    const oldValues = target.slice(0, items.length)
+    const affectedProps = items.map((_, i) => i)
+    target.unshift(...items)
+
+    return {
+      oldValue: oldValues,
+      newValue: items,
+      operation: "unshift",
+      props: affectedProps,
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import "./toBeNodeOf"
 import "./toBeRootNode"
 import "./toHaveNodeFor"
 import "./toHaveParentNode"

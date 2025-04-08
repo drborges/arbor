@@ -26,6 +26,7 @@ export type $<T extends object = object> = Node<T> & {
 export type Value = object
 
 export type Node<V extends Value = Value> = V & {
+  readonly $ost: OST
   readonly $value: V
   readonly $path: Path
   readonly $seed: Seed

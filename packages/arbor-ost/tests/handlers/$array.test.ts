@@ -191,4 +191,82 @@ describe("$array", () => {
       })
     })
   })
+
+  describe("unshift", () => {
+    it("mutates the underlying value", () => {
+      const todo1 = { id: 1, content: "Learn Arbor" }
+      const todo2 = { id: 2, content: "Implement OST" }
+      const todo3 = { id: 3, content: "Write tests" }
+      const todo4 = { id: 4, content: "Refactor code" }
+      const state = {
+        todos: [
+          todo1,
+          todo2,
+        ],
+      }
+
+      const ost = new OST(state)
+      const length = ost.root.todos.unshift(todo3, todo4)
+
+      expect(length).toEqual(4)
+      expect(state.todos.length).toEqual(4)
+      expect(ost).not.toHaveNodeFor(todo1)
+      expect(ost).not.toHaveNodeFor(todo2)
+      expect(ost).not.toHaveNodeFor(todo3)
+      expect(ost).not.toHaveNodeFor(todo4)
+      expect(ost).toHaveNodeValuePair([ost.root.todos[0], todo3])
+      expect(ost).toHaveNodeValuePair([ost.root.todos[1], todo4])
+      expect(ost).toHaveNodeValuePair([ost.root.todos[2], todo1])
+      expect(ost).toHaveNodeValuePair([ost.root.todos[3], todo2])
+    })
+
+    it("notifies subscribers of a new item in the array", () => {
+      const state = {
+        todos: [
+          { id: 1, content: "Learn Arbor" },
+          { id: 2, content: "Implement OST" },
+        ],
+      }
+
+      const subscriber = vi.fn()
+      const ost = new OST(state)
+      ost.subscribe(subscriber)
+      ost.root.todos.unshift({ id: 3, content: "Write tests" })
+
+      expect(subscriber).toHaveBeenCalledOnce()
+    })
+
+    it("exposes mutation event metadata to subscribers", async () => {
+      const todo1 = { id: 1, content: "Learn Arbor" }
+      const todo2 = { id: 2, content: "Implement OST" }
+      const todo3 = { id: 3, content: "Write tests" }
+      const todo4 = { id: 4, content: "Refactor code" }
+      const state = {
+        todos: [
+          todo1,
+          todo2,
+        ],
+      }
+
+      const ost = new OST(state)
+
+      return new Promise(resolve => {
+        ost.subscribe(event => {
+          expect(event.target).toBe(ost.root.todos)
+          expect(event.metadata.props).toEqual([0, 1])
+          expect(event.metadata.operation).toEqual("unshift")
+          expect(event.metadata.oldValue).toEqual([todo1, todo2])
+          expect(event.metadata.oldValue[0]).toEqual(todo1)
+          expect(event.metadata.oldValue[1]).toEqual(todo2)
+
+          expect(event.metadata.newValue).toEqual([todo3, todo4])
+          expect(event.metadata.newValue[0]).toEqual(todo3)
+          expect(event.metadata.newValue[1]).toEqual(todo4)
+          resolve(true)
+        })
+
+        ost.root.todos.unshift(todo3, todo4)
+      })
+    })
+  })
 })
