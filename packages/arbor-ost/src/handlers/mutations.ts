@@ -85,3 +85,16 @@ export function $unshift(...items: unknown[]): Mutation<unknown[]> {
     }
   }
 }
+
+export function $reverse(): Mutation<unknown[]> {
+  return (target: unknown[]) => () => {
+    const reversed = target.reverse()
+
+    return {
+      oldValue: target,
+      newValue: reversed,
+      operation: "reverse",
+      props: [],
+    }
+  }
+}
