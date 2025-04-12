@@ -1,16 +1,25 @@
 import { Visitor } from "../visitor"
 import { Value } from "../../types"
-import { $push } from "../../handlers/mutations"
 
 export class PushVisitor extends Visitor {
   accepts({ prop }) {
     return prop === "push"
   }
 
-  visit({ $node }) {
+  visit({ target, $node }) {
     return (...items: Value[]) => {
-      const arr = this.ost.mutate($node, $push(items))
-      return arr.length
+      let length: number
+
+      this.ost.mutate($node, () => {
+        length = target.push(...items)
+
+        return {
+          args: [items],
+          operation: "push",
+        }
+      })
+
+      return length
     }
   }
 }

@@ -1,4 +1,3 @@
-import { $reverse } from "../../handlers/mutations"
 import { Visitor } from "../visitor"
 
 export class ReverseVisitor extends Visitor {
@@ -6,9 +5,16 @@ export class ReverseVisitor extends Visitor {
     return prop === "reverse"
   }
 
-  visit({ $node }) {
+  visit({ target, $node }) {
     return () => {
-      return this.ost.mutate($node, $reverse())
+      return this.ost.mutate($node, () => {
+        target.reverse()
+
+        return {
+          args: [],
+          operation: "reverse",
+        }
+      })
     }
   }
 }

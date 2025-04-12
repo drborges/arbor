@@ -5,6 +5,7 @@ import { PopVisitor } from "../visitors/$array/pop"
 import { ShiftVisitor } from "../visitors/$array/shift"
 import { UnshiftVisitor } from "../visitors/$array/unshift"
 import { ReverseVisitor } from "../visitors/$array/reverse"
+import { SpliceVisitor } from "../visitors/$array/splice"
 
 
 export class $array<V> extends $object<V[]> {
@@ -15,6 +16,7 @@ export class $array<V> extends $object<V[]> {
       new ShiftVisitor(ost),
       new UnshiftVisitor(ost),
       new ReverseVisitor(ost),
+      new SpliceVisitor(ost),
     ])
   }
 

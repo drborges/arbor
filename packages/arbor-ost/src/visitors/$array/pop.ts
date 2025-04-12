@@ -1,5 +1,4 @@
 import { Visitor } from "../visitor"
-import { $pop } from "../../handlers/mutations"
 
 export class PopVisitor extends Visitor {
   accepts({ prop }) {
@@ -8,8 +7,17 @@ export class PopVisitor extends Visitor {
 
   visit({ target, $node }) {
     return () => {
-      const popped = target.at(-1)
-      this.ost.mutate($node, $pop())
+      let popped: unknown
+
+      this.ost.mutate($node, () => {
+        popped = target.pop()
+
+        return {
+          args: [],
+          operation: "pop",
+        }
+      })
+
       return popped
     }
   }

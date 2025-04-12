@@ -51,12 +51,8 @@ describe("$array", () => {
       return new Promise(resolve => {
         ost.subscribe(event => {
           expect(event.target).toBe(ost.root.todos)
-          expect(event.metadata.props).toEqual([2, 3])
+          expect(event.metadata.args).toEqual([[newTodo1, newTodo2]])
           expect(event.metadata.operation).toEqual("push")
-          expect(event.metadata.oldValue).toEqual([undefined])
-          expect(event.metadata.newValue).toEqual([newTodo1, newTodo2])
-          expect(event.metadata.newValue[0]).toBe(newTodo1)
-          expect(event.metadata.newValue[1]).toBe(newTodo2)
           resolve(true)
         })
 
@@ -119,11 +115,8 @@ describe("$array", () => {
       return new Promise(resolve => {
         ost.subscribe(event => {
           expect(event.target).toBe(ost.root.todos)
-          expect(event.metadata.props).toEqual([1])
+          expect(event.metadata.args).toEqual([])
           expect(event.metadata.operation).toEqual("pop")
-          expect(event.metadata.oldValue).toEqual([todo2])
-          expect(event.metadata.oldValue[0]).toBe(todo2)
-          expect(event.metadata.newValue).toEqual([undefined])
           resolve(true)
         })
 
@@ -183,12 +176,8 @@ describe("$array", () => {
       return new Promise(resolve => {
         ost.subscribe(event => {
           expect(event.target).toBe(ost.root.todos)
-          expect(event.metadata.props).toEqual([0])
+          expect(event.metadata.args).toEqual([])
           expect(event.metadata.operation).toEqual("shift")
-          expect(event.metadata.oldValue).toEqual([todo1])
-          expect(event.metadata.oldValue[0]).toBe(todo1)
-          expect(event.metadata.newValue).toEqual([todo2])
-          expect(event.metadata.newValue[0]).toBe(todo2)
           resolve(true)
         })
 
@@ -258,15 +247,8 @@ describe("$array", () => {
       return new Promise(resolve => {
         ost.subscribe(event => {
           expect(event.target).toBe(ost.root.todos)
-          expect(event.metadata.props).toEqual([0, 1])
+          expect(event.metadata.args).toEqual([[todo3, todo4]])
           expect(event.metadata.operation).toEqual("unshift")
-          expect(event.metadata.oldValue).toEqual([todo1, todo2])
-          expect(event.metadata.oldValue[0]).toBe(todo1)
-          expect(event.metadata.oldValue[1]).toBe(todo2)
-
-          expect(event.metadata.newValue).toEqual([todo3, todo4])
-          expect(event.metadata.newValue[0]).toBe(todo3)
-          expect(event.metadata.newValue[1]).toBe(todo4)
           resolve(true)
         })
 
@@ -323,15 +305,8 @@ describe("$array", () => {
       return new Promise(resolve => {
         ost.subscribe(event => {
           expect(event.target).toBe(ost.root.todos)
-          expect(event.metadata.props).toEqual([])
           expect(event.metadata.operation).toEqual("reverse")
-          expect(event.metadata.oldValue).toEqual(state.todos)
-          expect(event.metadata.oldValue[0]).toBe(todo2)
-          expect(event.metadata.oldValue[1]).toBe(todo1)
-
-          expect(event.metadata.newValue).toEqual(state.todos)
-          expect(event.metadata.newValue[0]).toEqual(todo2)
-          expect(event.metadata.newValue[1]).toEqual(todo1)
+          expect(event.metadata.args).toEqual([])
           resolve(true)
         })
 

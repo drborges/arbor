@@ -365,10 +365,8 @@ describe("$object", () => {
       return new Promise((resolve) => {
         ost.root.$subscriptions.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos[0])
+          expect(event.metadata.args).toEqual(["done", true])
           expect(event.metadata.operation).toEqual("set")
-          expect(event.metadata.oldValue).toEqual([false])
-          expect(event.metadata.newValue).toEqual([true])
-          expect(event.metadata.props).toEqual(["done"])
           resolve(true)
         })
 
@@ -445,10 +443,8 @@ describe("$object", () => {
       return new Promise((resolve) => {
         ost.root.$subscriptions.subscribe((event) => {
           expect(event.target).toBe(ost.root[0])
+          expect(event.metadata.args).toEqual(["authorName"])
           expect(event.metadata.operation).toEqual("delete")
-          expect(event.metadata.oldValue).toEqual(["Alice"])
-          expect(event.metadata.newValue).toEqual([undefined])
-          expect(event.metadata.props).toEqual(["authorName"])
           resolve(true)
         })
 

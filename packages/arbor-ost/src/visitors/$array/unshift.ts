@@ -1,4 +1,3 @@
-import { $unshift } from "../../handlers/mutations"
 import { Visitor } from "../visitor"
 
 export class UnshiftVisitor extends Visitor {
@@ -6,10 +5,20 @@ export class UnshiftVisitor extends Visitor {
     return prop === "unshift"
   }
 
-  visit({ $node }) {
+  visit({ target, $node }) {
     return (...args: unknown[]) => {
-      const arr = this.ost.mutate($node, $unshift(...args))
-      return arr.length
+      let unshifted: unknown[]
+
+      this.ost.mutate($node, () => {
+        unshifted = target.unshift(...args)
+
+        return {
+          args: [args],
+          operation: "unshift",
+        }
+      })
+
+      return unshifted
     }
   }
 }

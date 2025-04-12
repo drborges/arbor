@@ -1,4 +1,3 @@
-import { $shift } from "../../handlers/mutations"
 import { Visitor } from "../visitor"
 
 export class ShiftVisitor extends Visitor {
@@ -8,8 +7,17 @@ export class ShiftVisitor extends Visitor {
 
   visit({ target, $node }) {
     return () => {
-      const removed = target[0]
-      this.ost.mutate($node, $shift())
+      let removed: unknown
+
+      this.ost.mutate($node, () => {
+        removed = target.shift()
+
+        return {
+          args: [],
+          operation: "shift",
+        }
+      })
+
       return removed
     }
   }

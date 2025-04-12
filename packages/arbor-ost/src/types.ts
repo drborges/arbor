@@ -38,12 +38,10 @@ export type Node<V extends Value = Value> = V & {
 
 export type MutationMetadata = {
   readonly operation: string
-  readonly newValue: unknown[]
-  readonly oldValue: unknown[]
-  readonly props: (string | number | Symbol)[]
+  readonly args: unknown[]
 }
 
-export type Mutation<T extends Value> = (target: T, node?: Node<T>) => () => MutationMetadata
+export type Mutation<T extends Value> = (node?: Node<T>) => MutationMetadata
 
 export type MutationEvent<V extends Value> = {
   target: Node<V>
