@@ -125,7 +125,7 @@ describe("$array", () => {
     })
   })
 
-  describe("shift", () => {
+  describe("#shift", () => {
     it("mutates the underlying value", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
@@ -186,7 +186,7 @@ describe("$array", () => {
     })
   })
 
-  describe("unshift", () => {
+  describe("#unshift", () => {
     it("mutates the underlying value", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
@@ -257,7 +257,7 @@ describe("$array", () => {
     })
   })
 
-  describe("reverse", () => {
+  describe("#reverse", () => {
     it("mutates the underlying value", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
@@ -311,6 +311,92 @@ describe("$array", () => {
         })
 
         ost.root.todos.reverse()
+      })
+    })
+  })
+
+  describe("#filter", () => {
+    it("selects nodes based on a predicate", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const ost = new OST({
+        todos: [
+          todo1,
+          todo2,
+          todo3,
+        ],
+      })
+
+      const selected = ost.root.todos.filter(t => t.content.includes("Arbor"))
+
+      expect(selected.length).toEqual(2)
+      expect(selected[0]).toBe(ost.root.todos[0])
+      expect(selected[1]).toBe(ost.root.todos[2])
+    })
+  })
+
+  describe("#copyWithin", () => {
+    it("selects nodes based on a predicate", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const ost = new OST({
+        todos: [
+          todo1,
+          todo2,
+          todo3,
+        ],
+      })
+
+      const copied = ost.root.todos.copyWithin(1, 1, 2)
+
+      expect(copied.length).toEqual(3)
+      expect(copied).toBe(ost.root.todos)
+    })
+
+    it("notifies subscribers of a new item in the array", () => {
+      const subscriber = vi.fn()
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const ost = new OST({
+        todos: [
+          todo1,
+          todo2,
+          todo3,
+        ],
+      })
+
+      ost.subscribe(subscriber)
+
+      ost.root.todos.copyWithin(1, 1, 2)
+
+      expect(subscriber).toHaveBeenCalledOnce()
+    })
+
+    it("exposes mutation event metadata to subscribers", async () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const ost = new OST({
+        todos: [
+          todo1,
+          todo2,
+          todo3,
+        ],
+      })
+
+
+      return new Promise(resolve => {
+        ost.subscribe(event => {
+          expect(event.target).toBe(ost.root.todos)
+          expect(event.metadata.operation).toEqual("copyWithin")
+          expect(event.metadata.args).toEqual([1, 1, 2])
+          resolve(true)
+        })
+
+        ost.root.todos.copyWithin(1, 1, 2)
       })
     })
   })
