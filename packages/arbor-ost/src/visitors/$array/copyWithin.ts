@@ -5,9 +5,9 @@ export class CopyWithinVisitor extends Visitor {
     return prop === "copyWithin"
   }
 
-  visit({ target, $node }) {
+  visit({ ost, target, $node }) {
     return (...args: unknown[]) => {
-      return this.ost.mutate($node, () => {
+      return ost.mutate($node, () => {
         target.copyWithin(...args)
 
         return {

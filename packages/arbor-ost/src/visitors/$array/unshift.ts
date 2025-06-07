@@ -5,11 +5,11 @@ export class UnshiftVisitor extends Visitor {
     return prop === "unshift"
   }
 
-  visit({ target, $node }) {
+  visit({ ost, target, $node }) {
     return (...args: unknown[]) => {
       let unshifted: unknown[]
 
-      this.ost.mutate($node, () => {
+      ost.mutate($node, () => {
         unshifted = target.unshift(...args)
 
         return {

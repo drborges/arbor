@@ -1,45 +1,17 @@
 import { OST } from "../ost"
+import { Node, Prop, Value } from "../types"
 import { Visitors } from "../visitors"
 import { $delete, $set } from "./mutations"
-import { Node, Prop, Value } from "../types"
 
-import { Visitor } from "../visitors/visitor"
-import { SeedVisitor } from "../visitors/$object/$seed"
-import { PathVisitor } from "../visitors/$object/$path"
-import { ValueVisitor } from "../visitors/$object/$value"
-import { GetterVisitor } from "../visitors/$object/getter"
-import { ParentVisitor } from "../visitors/$object/$parent"
-import { ChildrenVisitor } from "../visitors/$object/$children"
-import { ProxiableVisitor } from "../visitors/$object/$proxiable"
-import { ToStringTagVisitor } from "../visitors/$object/toStringTag"
-import { CreateChildVisitor } from "../visitors/$object/$createChild"
-import { SubscriptionsVisitor } from "../visitors/$object/$subscriptions"
-import { DetachedVisitor, isDetachedProperty } from "../visitors/$object/detached"
+import { isDetachedProperty } from "../visitors/$object/detached"
 
-function createDefaultVisitors(ost: OST, extra: Visitor[]) {
-  return new Visitors(
-    new SeedVisitor(ost),
-    new PathVisitor(ost),
-    new CreateChildVisitor(ost),
-    new SubscriptionsVisitor(ost),
-    new ValueVisitor(ost),
-    new ChildrenVisitor(ost),
-    new ParentVisitor(ost),
-    new DetachedVisitor(ost),
-    new GetterVisitor(ost),
-    new ProxiableVisitor(ost),
-    ...extra,
-    // Any visitor below this point can be overriden by subclasses via the extra visitors provided
-    new ToStringTagVisitor(ost),
-    new Visitor(ost),
-  )
-}
+const objectVisitors = new Visitors()
 
 export class $object<V extends Value = Value> implements ProxyHandler<V> {
   #visitors: Visitors
 
-  constructor(readonly $ost: OST, visitors: Visitor[] = []) {
-    this.#visitors = createDefaultVisitors($ost, visitors)
+  constructor(readonly $ost: OST, visitors = objectVisitors) {
+    this.#visitors = visitors
   }
 
   static accepts(_value: unknown) {
@@ -48,7 +20,13 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
 
   get(target: V, prop: Prop, $node: Node<V>) {
     const childValue = Reflect.get(target, prop, $node)
-    return this.#visitors.visit({ target, prop, $node, childValue })
+    return this.#visitors.visit({
+      ost: this.$ost,
+      target,
+      prop,
+      $node,
+      childValue,
+    })
   }
 
   set(target: V, prop: Prop, newValue: unknown, $node: Node<V>): boolean {

@@ -48,18 +48,15 @@ describe("$array", () => {
       const newTodo1 = { id: 3, content: "Learn LLM" }
       const newTodo2 = { id: 4, content: "Implement dev tools" }
 
-      return new Promise(resolve => {
-        ost.subscribe(event => {
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos)
           expect(event.metadata.args).toEqual([[newTodo1, newTodo2]])
           expect(event.metadata.operation).toEqual("push")
           resolve(true)
         })
 
-        ost.root.todos.push(
-          newTodo1,
-          newTodo2,
-        )
+        ost.root.todos.push(newTodo1, newTodo2)
       })
     })
   })
@@ -69,10 +66,7 @@ describe("$array", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
@@ -104,16 +98,13 @@ describe("$array", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
 
-      return new Promise(resolve => {
-        ost.subscribe(event => {
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos)
           expect(event.metadata.args).toEqual([])
           expect(event.metadata.operation).toEqual("pop")
@@ -130,10 +121,7 @@ describe("$array", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
@@ -165,16 +153,13 @@ describe("$array", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
 
-      return new Promise(resolve => {
-        ost.subscribe(event => {
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos)
           expect(event.metadata.args).toEqual([])
           expect(event.metadata.operation).toEqual("shift")
@@ -193,10 +178,7 @@ describe("$array", () => {
       const todo3 = { id: 3, content: "Write tests" }
       const todo4 = { id: 4, content: "Refactor code" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
@@ -236,16 +218,13 @@ describe("$array", () => {
       const todo3 = { id: 3, content: "Write tests" }
       const todo4 = { id: 4, content: "Refactor code" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
 
-      return new Promise(resolve => {
-        ost.subscribe(event => {
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos)
           expect(event.metadata.args).toEqual([[todo3, todo4]])
           expect(event.metadata.operation).toEqual("unshift")
@@ -262,10 +241,7 @@ describe("$array", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
@@ -294,16 +270,13 @@ describe("$array", () => {
       const todo1 = { id: 1, content: "Learn Arbor" }
       const todo2 = { id: 2, content: "Implement OST" }
       const state = {
-        todos: [
-          todo1,
-          todo2,
-        ],
+        todos: [todo1, todo2],
       }
 
       const ost = new OST(state)
 
-      return new Promise(resolve => {
-        ost.subscribe(event => {
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos)
           expect(event.metadata.operation).toEqual("reverse")
           expect(event.metadata.args).toEqual([])
@@ -321,14 +294,10 @@ describe("$array", () => {
       const todo2 = { content: "Do the dishes" }
       const todo3 = { content: "Implement Arbor OST" }
       const ost = new OST({
-        todos: [
-          todo1,
-          todo2,
-          todo3,
-        ],
+        todos: [todo1, todo2, todo3],
       })
 
-      const selected = ost.root.todos.filter(t => t.content.includes("Arbor"))
+      const selected = ost.root.todos.filter((t) => t.content.includes("Arbor"))
 
       expect(selected.length).toEqual(2)
       expect(selected[0]).toBe(ost.root.todos[0])
@@ -342,11 +311,7 @@ describe("$array", () => {
       const todo2 = { content: "Do the dishes" }
       const todo3 = { content: "Implement Arbor OST" }
       const ost = new OST({
-        todos: [
-          todo1,
-          todo2,
-          todo3,
-        ],
+        todos: [todo1, todo2, todo3],
       })
 
       const copied = ost.root.todos.copyWithin(1, 1, 2)
@@ -361,11 +326,7 @@ describe("$array", () => {
       const todo2 = { content: "Do the dishes" }
       const todo3 = { content: "Implement Arbor OST" }
       const ost = new OST({
-        todos: [
-          todo1,
-          todo2,
-          todo3,
-        ],
+        todos: [todo1, todo2, todo3],
       })
 
       ost.subscribe(subscriber)
@@ -380,16 +341,11 @@ describe("$array", () => {
       const todo2 = { content: "Do the dishes" }
       const todo3 = { content: "Implement Arbor OST" }
       const ost = new OST({
-        todos: [
-          todo1,
-          todo2,
-          todo3,
-        ],
+        todos: [todo1, todo2, todo3],
       })
 
-
-      return new Promise(resolve => {
-        ost.subscribe(event => {
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
           expect(event.target).toBe(ost.root.todos)
           expect(event.metadata.operation).toEqual("copyWithin")
           expect(event.metadata.args).toEqual([1, 1, 2])

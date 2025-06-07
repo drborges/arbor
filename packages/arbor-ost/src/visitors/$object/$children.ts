@@ -5,12 +5,12 @@ export class ChildrenVisitor extends Visitor {
     return prop === "$children"
   }
 
-  visit({ target }) {
+  visit({ ost, target }) {
     return function* () {
       for (const value of Object.values(target)) {
-        const childNode = this.ost.nodeOf(value)
+        const childNode = ost.nodeOf(value)
         if (childNode) yield childNode
       }
-    }.bind(this)
+    }
   }
 }

@@ -5,11 +5,11 @@ export class PopVisitor extends Visitor {
     return prop === "pop"
   }
 
-  visit({ target, $node }) {
+  visit({ ost, target, $node }) {
     return () => {
       let popped: unknown
 
-      this.ost.mutate($node, () => {
+      ost.mutate($node, () => {
         popped = target.pop()
 
         return {

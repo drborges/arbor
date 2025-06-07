@@ -5,11 +5,11 @@ export class SpliceVisitor extends Visitor {
     return prop === "splice"
   }
 
-  visit({ target, $node }) {
+  visit({ ost, target, $node }) {
     return (start: number, deleteCount: number, ...items: unknown[]): unknown[] => {
       let deleted: unknown[]
 
-      this.ost.mutate($node, () => {
+      ost.mutate($node, () => {
         deleted = target.splice(start, deleteCount, ...items)
 
         return {

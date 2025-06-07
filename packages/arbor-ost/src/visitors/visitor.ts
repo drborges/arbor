@@ -2,15 +2,14 @@ import { OST } from "../ost"
 import { Node, Prop, Value } from "../types"
 
 export type VisitParams = {
+  ost: OST
+  $node: Node
   target: Value
   prop: Prop
-  $node: Node
   childValue: unknown
 }
 
 export class Visitor {
-  constructor(readonly ost: OST) { }
-
   accepts(_: VisitParams) {
     return true
   }

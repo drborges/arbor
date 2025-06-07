@@ -5,7 +5,7 @@ export class SeedVisitor extends Visitor {
     return prop === "$seed"
   }
 
-  visit({ target }) {
-    return this.ost.seedOf(target)
+  visit({ ost, target }) {
+    return ost.seedOf(target)
   }
 }

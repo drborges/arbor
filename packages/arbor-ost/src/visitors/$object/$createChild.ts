@@ -6,9 +6,9 @@ export class CreateChildVisitor extends Visitor {
     return prop === "$createChild"
   }
 
-  visit({ $node }) {
+  visit({ ost, $node }) {
     return (value: Value) => {
-      return this.ost.createNode(value, $node.$path.child())
+      return ost.createNode(value, $node.$path.child())
     }
   }
 }

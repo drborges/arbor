@@ -5,9 +5,9 @@ export class ReverseVisitor extends Visitor {
     return prop === "reverse"
   }
 
-  visit({ target, $node }) {
+  visit({ ost, target, $node }) {
     return () => {
-      return this.ost.mutate($node, () => {
+      return ost.mutate($node, () => {
         target.reverse()
 
         return {

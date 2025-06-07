@@ -5,7 +5,7 @@ export class ParentVisitor extends Visitor {
     return prop === "$parent"
   }
 
-  visit({ target }) {
-    return this.ost.parentOf(target)
+  visit({ ost, target }) {
+    return ost.parentOf(target)
   }
 }

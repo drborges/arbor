@@ -5,11 +5,11 @@ export class ShiftVisitor extends Visitor {
     return prop === "shift"
   }
 
-  visit({ target, $node }) {
+  visit({ ost, target, $node }) {
     return () => {
       let removed: unknown
 
-      this.ost.mutate($node, () => {
+      ost.mutate($node, () => {
         removed = target.shift()
 
         return {

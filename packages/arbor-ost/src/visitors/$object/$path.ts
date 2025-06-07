@@ -5,7 +5,7 @@ export class PathVisitor extends Visitor {
     return prop === "$path"
   }
 
-  visit({ target }) {
-    return this.ost.pathOf(target)
+  visit({ ost, target }) {
+    return ost.pathOf(target)
   }
 }

@@ -6,11 +6,11 @@ export class PushVisitor extends Visitor {
     return prop === "push"
   }
 
-  visit({ target, $node }) {
+  visit({ ost, target, $node }) {
     return (...items: Value[]) => {
       let length: number
 
-      this.ost.mutate($node, () => {
+      ost.mutate($node, () => {
         length = target.push(...items)
 
         return {

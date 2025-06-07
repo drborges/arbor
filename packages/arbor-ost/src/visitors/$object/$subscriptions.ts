@@ -5,7 +5,7 @@ export class SubscriptionsVisitor extends Visitor {
     return prop === "$subscriptions"
   }
 
-  visit({ target }) {
-    return this.ost.subscriptionsOf(target)
+  visit({ ost, target }) {
+    return ost.subscriptionsOf(target)
   }
 }

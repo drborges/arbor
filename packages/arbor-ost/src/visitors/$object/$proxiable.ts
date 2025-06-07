@@ -16,7 +16,7 @@ export class ProxiableVisitor extends Visitor {
     return isProxiable(childValue)
   }
 
-  visit({ childValue, $node }) {
-    return this.ost.nodeOf(childValue) || $node.$createChild(childValue)
+  visit({ ost, childValue, $node }) {
+    return ost.nodeOf(childValue) || $node.$createChild(childValue)
   }
 }
