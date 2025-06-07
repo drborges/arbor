@@ -306,7 +306,7 @@ describe("$array", () => {
   })
 
   describe("#copyWithin", () => {
-    it("selects nodes based on a predicate", () => {
+    it("mutates the underlying value", () => {
       const todo1 = { content: "Learn Arbor" }
       const todo2 = { content: "Do the dishes" }
       const todo3 = { content: "Implement Arbor OST" }
@@ -353,6 +353,65 @@ describe("$array", () => {
         })
 
         ost.root.todos.copyWithin(1, 1, 2)
+      })
+    })
+  })
+
+  describe("splice", () => {
+    it("mutates the underlying value", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const todo4 = { content: "New todo 1" }
+      const todo5 = { content: "New todo 2" }
+
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      const spliced = ost.root.todos.splice(1, 1, todo4, todo5)
+
+      expect(spliced).toEqual([{ content: "Do the dishes" }])
+      expect(ost.root.todos.$value).toEqual([todo1, todo4, todo5, todo3])
+    })
+
+    it("notifies subscribers of a new item in the array", () => {
+      const subscriber = vi.fn()
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const todo4 = { content: "New todo 1" }
+      const todo5 = { content: "New todo 2" }
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      ost.subscribe(subscriber)
+
+      ost.root.todos.splice(1, 1, todo4, todo5)
+
+      expect(subscriber).toHaveBeenCalledOnce()
+    })
+
+    it("exposes mutation event metadata to subscribers", async () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const todo4 = { content: "New todo 1" }
+      const todo5 = { content: "New todo 2" }
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
+          expect(event.target).toBe(ost.root.todos)
+          expect(event.metadata.operation).toEqual("splice")
+          expect(event.metadata.args).toEqual([1, 1, [todo4, todo5]])
+          resolve(true)
+        })
+
+        ost.root.todos.splice(1, 1, todo4, todo5)
       })
     })
   })
