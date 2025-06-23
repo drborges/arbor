@@ -357,7 +357,7 @@ describe("$array", () => {
     })
   })
 
-  describe("splice", () => {
+  describe("#splice", () => {
     it("mutates the underlying value", () => {
       const todo1 = { content: "Learn Arbor" }
       const todo2 = { content: "Do the dishes" }
@@ -412,6 +412,65 @@ describe("$array", () => {
         })
 
         ost.root.todos.splice(1, 1, todo4, todo5)
+      })
+    })
+  })
+
+  describe("#fill", () => {
+    it("mutates the underlying value", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const todo4 = { content: "New todo 1" }
+
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      const filled = ost.root.todos.fill(todo4, 1, 3)
+
+      expect(filled).toBe(ost.root.todos)
+      expect(ost).toHaveNodeValuePair([ost.root.todos[0], todo1])
+      expect(ost).toHaveNodeValuePair([ost.root.todos[1], todo4])
+      expect(ost).toHaveNodeValuePair([ost.root.todos[2], todo4])
+      expect(ost.root.todos[3]).toBeUndefined()
+    })
+
+    it("notifies subscribers of a new item in the array", () => {
+      const subscriber = vi.fn()
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const todo4 = { content: "New todo 1" }
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      ost.subscribe(subscriber)
+
+      ost.root.todos.fill(todo4, 1, 3)
+
+      expect(subscriber).toHaveBeenCalledOnce()
+    })
+
+    it("exposes mutation event metadata to subscribers", async () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const todo4 = { content: "New todo 1" }
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      return new Promise((resolve) => {
+        ost.subscribe((event) => {
+          expect(event.target).toBe(ost.root.todos)
+          expect(event.metadata.operation).toEqual("fill")
+          expect(event.metadata.args).toEqual([todo4, 1, 3])
+          resolve(true)
+        })
+
+        ost.root.todos.fill(todo4, 1, 3)
       })
     })
   })
