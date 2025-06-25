@@ -217,7 +217,7 @@ describe("$object", () => {
       @node
       class Todos extends Array<Todo> {
         get incomplete() {
-          return this.filter(t => !t.done)
+          return this.filter((t) => !t.done)
         }
       }
 
@@ -487,31 +487,50 @@ describe("$object", () => {
   })
 
   describe("#$children", () => {
-    it("creates children nodes when iterating over them", () => {
-      const ost = new OST({
+    it("does not create nodes for state values that have not been accessed yet", () => {
+      const state = {
         todos: [
           { id: 1, content: "Learn Arbor" },
           { id: 2, content: "Implement OST" },
         ],
-      })
-
-      for (const child of ost.root.todos.$children()) {
-        expect(child).toBe(ost.nodeOf(child.$value))
       }
+
+      const ost = new OST(state)
+
+      const children1 = Array.from(ost.root.todos.$children())
+      expect(children1.length).toBe(0)
+
+      ost.root.todos[0] // force node creation for todo #1
+
+      const children2 = Array.from(ost.root.todos.$children())
+      expect(children2.length).toBe(1)
+      expect(children2[0].$value).toBe(state.todos[0])
+      expect(children2[0]).toBe(ost.nodeOf(state.todos[0]))
+
+      ost.root.todos[1] // force node creation for todo #2
+
+      const children3 = Array.from(ost.root.todos.$children())
+      expect(children3.length).toBe(2)
+      expect(children3[0].$value).toBe(state.todos[0])
+      expect(children3[0]).toBe(ost.nodeOf(state.todos[0]))
+      expect(children3[1].$value).toBe(state.todos[1])
+      expect(children3[1]).toBe(ost.nodeOf(state.todos[1]))
     })
   })
 
   describe("Symbol.toStringTag", () => {
     it("returns the string representation of the object node", () => {
-      const ost = new OST([
-        { content: "Learn Arbor", authorName: "Alice" },
-      ])
+      const ost = new OST([{ content: "Learn Arbor", authorName: "Alice" }])
 
       const $node1 = ost.root
       const $node2 = ost.root[0]
 
-      expect($node1[Symbol.toStringTag]).toBe(`ArborNode<Array(${$node1.$seed.value})>`)
-      expect($node2[Symbol.toStringTag]).toBe(`ArborNode<Object(${$node2.$seed.value})>`)
+      expect($node1[Symbol.toStringTag]).toBe(
+        `ArborNode<Array(${$node1.$seed.value})>`
+      )
+      expect($node2[Symbol.toStringTag]).toBe(
+        `ArborNode<Object(${$node2.$seed.value})>`
+      )
     })
 
     it("handle custom types", () => {
@@ -528,8 +547,12 @@ describe("$object", () => {
       const $node1 = ost.root
       const $node2 = ost.root[0]
 
-      expect($node1[Symbol.toStringTag]).toBe(`ArborNode<Todos(${$node1.$seed.value})>`)
-      expect($node2[Symbol.toStringTag]).toBe(`ArborNode<Todo(${$node2.$seed.value})>`)
+      expect($node1[Symbol.toStringTag]).toBe(
+        `ArborNode<Todos(${$node1.$seed.value})>`
+      )
+      expect($node2[Symbol.toStringTag]).toBe(
+        `ArborNode<Todo(${$node2.$seed.value})>`
+      )
     })
   })
 })
