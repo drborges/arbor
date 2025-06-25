@@ -262,7 +262,6 @@ export class Arbor<T extends object = object> {
     link: Link,
     childValue: V
   ): Node<V> | undefined {
-    console.log(">>>>>>>> parent", parent)
     if (!this.getNodeFor(childValue)) {
       const seed = this.plantSeedFor(childValue)
       const childPath = pathFor(parent).child(seed)
