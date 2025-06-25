@@ -9,8 +9,8 @@ declare module "vitest" {
     toBeScopedNode: () => T
     toBeScoping: <D extends object>(node: ArborNode<D>, prop: keyof D) => T
     toBeProxiedExactlyOnce: () => T
-    toBeNodeOf: (expected: unknown) => T
-    toHaveNodeFor: (expected: unknown) => T
+    toBeNodeOf: (expected: object) => T
+    toHaveNodeFor: (expected: object) => T
     toHaveLinkFor: (expected: unknown) => T
     toHaveLink: (link?: Link) => T
   }

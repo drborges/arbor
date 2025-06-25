@@ -1,7 +1,7 @@
 import { MutationEvent, Subscriber, Unsubscribe, Value } from "./types"
 
 export class Subscriptions<V extends Value = Value> {
-  constructor(private subscriptions: Set<Subscriber<V>> = new Set()) {}
+  constructor(private subscriptions = new Set<Subscriber<V>>()) {}
 
   subscribe(subscriber: Subscriber<V>): Unsubscribe {
     this.subscriptions.add(subscriber)
@@ -12,13 +12,13 @@ export class Subscriptions<V extends Value = Value> {
   }
 
   notify(event: MutationEvent<V>) {
-    this.subscriptions.forEach((subscriber) => {
+    for (const subscriber of this.subscriptions) {
       subscriber(event)
-    })
+    }
   }
 
   reset() {
-    this.subscriptions = new Set<Subscriber<V>>()
+    this.subscriptions.clear()
   }
 
   get size() {

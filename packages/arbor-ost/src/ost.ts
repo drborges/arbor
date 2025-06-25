@@ -42,7 +42,7 @@ export class OST<V extends Value = Value> {
    *
    * They are responsible for providing the behavior of the Node, e.g. behaves like a regular object vs array vs map vs set, etc...
    */
-  #nodeHandlers: ProxyHandlerConstructor[] = [
+  #handlers: ProxyHandlerConstructor[] = [
     $array,
     // $set,
     // $map,
@@ -61,7 +61,7 @@ export class OST<V extends Value = Value> {
     subscriptions = new Subscriptions()
   ): $<V> {
     const seed = path.target
-    const handler = this.#nodeHandlers.find((h) => h.accepts(value))
+    const handler = this.#handlers.find((h) => h.accepts(value))
     const $node = new Proxy(value, new handler(this)) as $<V>
 
     if (path.isRoot()) {
