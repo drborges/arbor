@@ -25,8 +25,6 @@ describe("isDetached", () => {
 
     expect(isDetached(node)).toBe(true)
   })
-<<<<<<< Updated upstream
-=======
 
   it("returns true if the node belongs to a detached path", () => {
     const store = new Arbor({
@@ -57,5 +55,4 @@ describe("isDetached", () => {
     expect(isDetached(todo1)).toBe(true)
     expect(isDetached(todo2)).toBe(false)
   })
->>>>>>> Stashed changes
 })
