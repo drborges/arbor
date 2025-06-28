@@ -474,4 +474,34 @@ describe("$array", () => {
       })
     })
   })
+
+  describe("#at", () => {
+    it("returns the node item at the given position", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      const node = ost.root.todos.at(1)
+
+      expect(node).toBe(ost.root.todos[1])
+    })
+  })
+
+  describe("#find", () => {
+    it("finds the node item by the given predicate", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const todo3 = { content: "Implement Arbor OST" }
+      const ost = new OST({
+        todos: [todo1, todo2, todo3],
+      })
+
+      const node = ost.root.todos.find((t) => t.content.startsWith("Do "))
+
+      expect(node).toBe(ost.root.todos[1])
+    })
+  })
 })
