@@ -6,7 +6,6 @@ export type VisitParams = {
   $node: Node
   target: Value
   prop: Prop
-  childValue: unknown
 }
 
 export class Visitor {
@@ -14,7 +13,7 @@ export class Visitor {
     return true
   }
 
-  visit({ childValue }: VisitParams) {
-    return childValue
+  visit({ target, prop, $node }: VisitParams) {
+    return Reflect.get(target, prop, $node)
   }
 }

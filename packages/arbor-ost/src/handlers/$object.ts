@@ -19,13 +19,21 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
   }
 
   get(target: V, prop: Prop, $node: Node<V>) {
-    const childValue = Reflect.get(target, prop, $node)
+    // TODO: consider moving back to resolving childValue at this point and passing that down to
+    // visitors, this would save some compute cycles since currently each visitor will try to
+    // resolve the value of the property potentially on their #accepts and #visit methods.
+    //
+    // The reason this was changed is because for Maps, accessing some of its properties results
+    // in a proxy error where the property is accessed on an invalid receiver, e.g.
+    // Reflect.get(target, prop, receiver) where receiver is the actual Proxy node. We could look
+    // into using a try catch where upon that error, we fallback to using target as the receiver,
+    // this is the scenario where the handler ($map, $set, etc...) is responsible for wrapping the
+    // API methods of the underlaying object accordingly.
     return this.#visitors.visit({
       ost: this.$ost,
       target,
       prop,
       $node,
-      childValue,
     })
   }
 

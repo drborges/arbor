@@ -20,7 +20,7 @@ export class GetterVisitor extends Visitor {
     return isGetter(target, prop)
   }
 
-  visit({ childValue }) {
-    return childValue
+  visit({ target, prop, $node }) {
+    return Reflect.get(target, prop, $node)
   }
 }

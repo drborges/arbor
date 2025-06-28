@@ -1,5 +1,6 @@
 import { Path } from "./path"
 import { Seed } from "./seed"
+import { $map } from "./handlers/$map"
 import { $array } from "./handlers/$array"
 import { $object } from "./handlers/$object"
 import { DetachedPathError } from "./errors"
@@ -45,7 +46,7 @@ export class OST<V extends Value = Value> {
   #handlers: ProxyHandlerConstructor[] = [
     $array,
     // $set,
-    // $map,
+    $map,
     $object,
   ]
 

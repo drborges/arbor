@@ -1,22 +1,14 @@
 import { Visitor } from "../visitor"
-import { ArborProxiable } from "../../decorators/node"
-
-function isProxiable(value: unknown): value is object {
-  if (value == null) return false
-
-  return (
-    value.constructor === Object ||
-    value.constructor === Array ||
-    value[ArborProxiable]
-  )
-}
+import { isProxiable } from "../../visitors"
 
 export class ProxiableVisitor extends Visitor {
-  accepts({ childValue }) {
+  accepts({ target, prop, $node }) {
+    const childValue = Reflect.get(target, prop, $node)
     return isProxiable(childValue)
   }
 
-  visit({ ost, childValue, $node }) {
+  visit({ ost, target, prop, $node }) {
+    const childValue = Reflect.get(target, prop, $node)
     return ost.nodeOf(childValue) || $node.$createChild(childValue)
   }
 }

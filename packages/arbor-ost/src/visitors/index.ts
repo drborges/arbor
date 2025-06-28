@@ -1,3 +1,4 @@
+import { ArborProxiable } from "../decorators/node"
 import { ChildrenVisitor } from "./$object/$children"
 import { CreateChildVisitor } from "./$object/$createChild"
 import { ParentVisitor } from "./$object/$parent"
@@ -26,9 +27,20 @@ const defaultVisitors = [
   new ToStringTagVisitor(),
 ]
 
+export function isProxiable(value: unknown): value is object {
+  if (value == null) return false
+
+  return (
+    value.constructor === Object ||
+    value.constructor === Array ||
+    value.constructor === Map ||
+    value[ArborProxiable]
+  )
+}
+
 export class Visitors extends Array<Visitor> {
   constructor(...visitors: Visitor[]) {
-    super(...defaultVisitors, ...visitors, defaultVisitor)
+    super(...visitors, ...defaultVisitors, defaultVisitor)
   }
 
   visit(params: VisitParams) {
