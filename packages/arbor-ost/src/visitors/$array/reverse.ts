@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class ReverseVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "reverse"
-  }
+  prop = "reverse"
 
   visit({ ost, target, $node }) {
     return () => {

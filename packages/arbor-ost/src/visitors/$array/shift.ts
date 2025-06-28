@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class ShiftVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "shift"
-  }
+  prop = "shift"
 
   visit({ ost, target, $node }) {
     return () => {

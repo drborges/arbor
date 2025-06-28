@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class PopVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "pop"
-  }
+  prop = "pop"
 
   visit({ ost, target, $node }) {
     return () => {

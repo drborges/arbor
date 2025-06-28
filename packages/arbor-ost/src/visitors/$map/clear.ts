@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class ClearVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "clear"
-  }
+  prop = "clear"
 
   visit({ ost, target, $node }) {
     return () => {

@@ -2,9 +2,7 @@ import { Visitor } from "../visitor"
 import { isProxiable } from "../../visitors"
 
 export class GetVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "get"
-  }
+  prop = "get"
 
   visit({ target, ost, $node }) {
     return (key: unknown) => {

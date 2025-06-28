@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class ForEachVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "forEach"
-  }
+  prop = "forEach"
 
   visit({ target, $node }) {
     return function (

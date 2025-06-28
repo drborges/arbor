@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class IteratorVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === Symbol.iterator
-  }
+  prop = Symbol.iterator
 
   visit({ target, $node }) {
     return function* () {

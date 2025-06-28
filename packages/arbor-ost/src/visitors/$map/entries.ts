@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class EntriesVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "entries"
-  }
+  prop = "entries"
 
   visit({ target, $node }) {
     return function* () {

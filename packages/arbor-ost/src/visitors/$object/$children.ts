@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class ChildrenVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "$children"
-  }
+  prop = "$children"
 
   visit({ ost, target }) {
     return function* () {

@@ -2,9 +2,7 @@ import { Visitor } from "../visitor"
 import { Value } from "../../types"
 
 export class PushVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "push"
-  }
+  prop = "push"
 
   visit({ ost, target, $node }) {
     return (...items: Value[]) => {

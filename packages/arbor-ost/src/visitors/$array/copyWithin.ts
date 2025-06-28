@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class CopyWithinVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "copyWithin"
-  }
+  prop = "copyWithin"
 
   visit({ ost, target, $node }) {
     return (...args: unknown[]) => {

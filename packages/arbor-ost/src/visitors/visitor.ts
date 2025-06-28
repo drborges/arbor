@@ -9,6 +9,8 @@ export type VisitParams = {
 }
 
 export class Visitor {
+  prop?: Prop
+
   accepts(_: VisitParams) {
     return true
   }

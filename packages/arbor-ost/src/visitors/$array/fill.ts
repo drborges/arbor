@@ -1,9 +1,7 @@
 import { Visitor } from "../visitor"
 
 export class FillVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "fill"
-  }
+  prop = "fill"
 
   visit({ ost, target, $node }) {
     return (...args: unknown[]) => {

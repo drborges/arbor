@@ -1,3 +1,4 @@
+import { Prop } from "types"
 import { ArborProxiable } from "../decorators/node"
 import { ChildrenVisitor } from "./$object/$children"
 import { CreateChildVisitor } from "./$object/$createChild"
@@ -12,7 +13,6 @@ import { GetterVisitor } from "./$object/getter"
 import { ToStringTagVisitor } from "./$object/toStringTag"
 import { VisitParams, Visitor } from "./visitor"
 
-const defaultVisitor = new Visitor()
 const defaultVisitors = [
   new SeedVisitor(),
   new PathVisitor(),
@@ -25,6 +25,7 @@ const defaultVisitors = [
   new GetterVisitor(),
   new ProxiableVisitor(),
   new ToStringTagVisitor(),
+  new Visitor(),
 ]
 
 export function isProxiable(value: unknown): value is object {
@@ -38,12 +39,31 @@ export function isProxiable(value: unknown): value is object {
   )
 }
 
-export class Visitors extends Array<Visitor> {
+export class Visitors {
+  propVisitors = new Map<Prop, Visitor>()
+  predicateVisitors: Visitor[] = []
+
   constructor(...visitors: Visitor[]) {
-    super(...visitors, ...defaultVisitors, defaultVisitor)
+    visitors.concat(defaultVisitors).forEach((v) => {
+      if (v.prop != null) {
+        this.propVisitors.set(v.prop, v)
+      } else {
+        this.predicateVisitors.push(v)
+      }
+    })
   }
 
   visit(params: VisitParams) {
-    return this.find((v) => v.accepts(params))?.visit(params)
+    const propVisitor = this.propVisitors.get(params.prop)
+
+    if (propVisitor) {
+      return propVisitor.visit(params)
+    }
+
+    const predicateVisitor = this.predicateVisitors.find((v) =>
+      v.accepts(params)
+    )
+
+    return predicateVisitor?.visit(params)
   }
 }

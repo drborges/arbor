@@ -2,9 +2,7 @@ import { Visitor } from "../visitor"
 import { Value } from "../../types"
 
 export class CreateChildVisitor extends Visitor {
-  accepts({ prop }) {
-    return prop === "$createChild"
-  }
+  prop = "$createChild"
 
   visit({ ost, $node }) {
     return (value: Value) => {
