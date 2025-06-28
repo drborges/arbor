@@ -2,13 +2,11 @@ import { Visitor } from "../visitor"
 import { isProxiable } from "../../visitors"
 
 export class ProxiableVisitor extends Visitor {
-  accepts({ target, prop, $node }) {
-    const childValue = Reflect.get(target, prop, $node)
+  accepts({ childValue }) {
     return isProxiable(childValue)
   }
 
-  visit({ ost, target, prop, $node }) {
-    const childValue = Reflect.get(target, prop, $node)
+  visit({ ost, $node, childValue }) {
     return ost.nodeOf(childValue) || $node.$createChild(childValue)
   }
 }

@@ -11,7 +11,7 @@ export class DetachedVisitor extends Visitor {
     return isDetachedProperty(target, prop)
   }
 
-  visit({ target, prop }) {
-    return Reflect.get(target, prop)
+  visit({ childValue }) {
+    return childValue
   }
 }
