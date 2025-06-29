@@ -1,10 +1,9 @@
-import { Prop } from "types"
-import { ArborProxiable } from "../decorators/node"
+import { Prop } from "../types"
 import { ChildrenVisitor } from "./$object/$children"
 import { CreateChildVisitor } from "./$object/$createChild"
 import { ParentVisitor } from "./$object/$parent"
 import { PathVisitor } from "./$object/$path"
-import { ProxiableVisitor } from "./$object/$proxiable"
+import { ProxiableVisitor } from "./$object/proxiable"
 import { SeedVisitor } from "./$object/$seed"
 import { SubscriptionsVisitor } from "./$object/$subscriptions"
 import { ValueVisitor } from "./$object/$value"
@@ -27,17 +26,6 @@ const defaultVisitors = [
   new ToStringTagVisitor(),
   new Visitor(),
 ]
-
-export function isProxiable(value: unknown): value is object {
-  if (value == null) return false
-
-  return (
-    value.constructor === Object ||
-    value.constructor === Array ||
-    value.constructor === Map ||
-    value[ArborProxiable]
-  )
-}
 
 export class Visitors {
   propVisitors = new Map<Prop, Visitor>()

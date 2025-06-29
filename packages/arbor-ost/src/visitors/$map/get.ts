@@ -1,5 +1,5 @@
 import { Visitor } from "../visitor"
-import { isProxiable } from "../../visitors"
+import { isProxiable } from "../../visitors/$object/proxiable"
 
 export class GetVisitor extends Visitor {
   prop = "get"
