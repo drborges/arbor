@@ -9,6 +9,6 @@ declare module "vitest" {
     toBeRootNode: () => T
     toHaveNodeFor: (value: Value) => T
     toHaveParentNode: (parent?: Node) => T
-    toHaveNodeValuePair: (pair: [Node, Value]) => T
+    toHaveNodeValuePair: (pair: [unknown, unknown]) => T
   }
 }

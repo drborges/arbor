@@ -1,10 +1,12 @@
 import { Visitor } from "../visitor"
-import { isProxiable } from "../../visitors/$object/proxiable"
+import { isProxiable } from "../$object/proxiable"
+import "../../types"
 
 export class UnionVisitor extends Visitor {
   prop = "union"
 
   visit({ target, ost, $node }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (other: any) => {
       // Extract underlying Set if other is a proxy
       const otherSet = other?.$value || other

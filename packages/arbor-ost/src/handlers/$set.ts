@@ -18,6 +18,7 @@ import { SymmetricDifferenceVisitor } from "../visitors/$set/symmetricDifference
 import { IsDisjointFromVisitor } from "../visitors/$set/isDisjointFrom"
 import { IsSubsetOfVisitor } from "../visitors/$set/isSubsetOf"
 import { IsSupersetOfVisitor } from "../visitors/$set/isSupersetOf"
+import "../types"
 
 const visitors = new Visitors(
   new AddVisitor(),

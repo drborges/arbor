@@ -565,8 +565,8 @@ describe("$set", () => {
         expect(result.size).toBe(2)
 
         const resultArray = [...result]
-        expect(resultArray[0].$value).toBe(obj1)
-        expect(resultArray[1].$value).toBe(obj3)
+        expect(ost).toHaveNodeValuePair([resultArray[0], obj1])
+        expect(ost).toHaveNodeValuePair([resultArray[1], obj3])
       })
     })
 
@@ -598,7 +598,7 @@ describe("$set", () => {
         expect(result.size).toBe(1)
 
         const resultArray = [...result]
-        expect(resultArray[0].$value).toBe(obj2)
+        expect(ost).toHaveNodeValuePair([resultArray[0], obj2])
       })
     })
 
@@ -630,9 +630,9 @@ describe("$set", () => {
         expect(result.size).toBe(3)
 
         const resultArray = [...result]
-        expect(resultArray.some((item) => item.$value === obj1)).toBe(true)
-        expect(resultArray.some((item) => item.$value === obj2)).toBe(true)
-        expect(resultArray.some((item) => item.$value === obj3)).toBe(true)
+        expect(ost).toHaveNodeValuePair([resultArray[0], obj1])
+        expect(ost).toHaveNodeValuePair([resultArray[1], obj2])
+        expect(ost).toHaveNodeValuePair([resultArray[2], obj3])
       })
     })
 
@@ -664,8 +664,8 @@ describe("$set", () => {
         expect(result.size).toBe(2)
 
         const resultArray = [...result]
-        expect(resultArray.some((item) => item.$value === obj1)).toBe(true)
-        expect(resultArray.some((item) => item.$value === obj3)).toBe(true)
+        expect(ost).toHaveNodeValuePair([resultArray[0], obj1])
+        expect(ost).toHaveNodeValuePair([resultArray[1], obj3])
       })
     })
 
@@ -803,10 +803,11 @@ describe("$set", () => {
       expect(union.size).toBe(5)
 
       const difference = ost.root.setA.difference(ost.root.setB)
-      expect(difference.size).toBe(2)
       const diffArray = [...difference]
-      expect(diffArray.some((item) => item.$value === obj1)).toBe(true)
-      expect(diffArray.some((item) => item === 42)).toBe(true)
+
+      expect(difference.size).toBe(2)
+      expect(ost).toHaveNodeValuePair([diffArray[0], obj1])
+      expect(diffArray[1]).toEqual(42)
     })
 
     it("should handle Set methods chaining", () => {
