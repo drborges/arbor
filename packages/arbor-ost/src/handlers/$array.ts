@@ -10,7 +10,7 @@ import { CopyWithinVisitor } from "../visitors/$array/copyWithin"
 import { FillVisitor } from "../visitors/$array/fill"
 import { Visitors } from "../visitors"
 
-const arrayVisitors = new Visitors(
+const visitors = new Visitors(
   new PushVisitor(),
   new PopVisitor(),
   new ShiftVisitor(),
@@ -21,9 +21,9 @@ const arrayVisitors = new Visitors(
   new FillVisitor()
 )
 
-export class $array<V> extends $object<V[]> {
+export class $array extends $object {
   constructor(ost: OST) {
-    super(ost, arrayVisitors)
+    super(ost, visitors)
   }
 
   static accepts(value: unknown): boolean {

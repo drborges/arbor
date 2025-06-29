@@ -13,7 +13,7 @@ import { KeysVisitor } from "../visitors/$map/keys"
 import { ValuesVisitor } from "../visitors/$map/values"
 import { IteratorVisitor } from "../visitors/$map/iterator"
 
-const mapVisitors = new Visitors(
+const visitors = new Visitors(
   new GetVisitor(),
   new SetVisitor(),
   new SizeVisitor(),
@@ -27,9 +27,9 @@ const mapVisitors = new Visitors(
   new IteratorVisitor()
 )
 
-export class $map<V> extends $object<V[]> {
+export class $map extends $object {
   constructor(ost: OST) {
-    super(ost, mapVisitors)
+    super(ost, visitors)
   }
 
   static accepts(value: unknown): boolean {

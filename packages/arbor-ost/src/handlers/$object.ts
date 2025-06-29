@@ -5,12 +5,12 @@ import { $delete, $set } from "./mutations"
 
 import { isDetachedProperty } from "../visitors/$object/detached"
 
-const objectVisitors = new Visitors()
+const defaultVisitors = new Visitors()
 
 export class $object<V extends Value = Value> implements ProxyHandler<V> {
   #visitors: Visitors
 
-  constructor(readonly $ost: OST, visitors = objectVisitors) {
+  constructor(readonly $ost: OST, visitors = defaultVisitors) {
     this.#visitors = visitors
   }
 

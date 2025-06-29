@@ -8,6 +8,7 @@ export function isProxiable(value: unknown): value is object {
     value.constructor === Object ||
     value.constructor === Array ||
     value.constructor === Map ||
+    value.constructor === Set ||
     value[ArborProxiable]
   )
 }
