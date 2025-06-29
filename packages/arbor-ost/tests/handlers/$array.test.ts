@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, vi } from "vitest"
 
 import { OST } from "../../src/ost"
@@ -502,6 +503,211 @@ describe("$array", () => {
       const node = ost.root.todos.find((t) => t.content.startsWith("Do "))
 
       expect(node).toBe(ost.root.todos[1])
+    })
+
+    it("returns OST node wrapper instead of raw value", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const found = ost.root.todos.find((t) => t.content.startsWith("Do "))
+
+      expect(found).not.toBe(todo2) // Should not be the raw value
+      expect(ost).toHaveNodeValuePair([found, todo2]) // Should be OST node wrapping the value
+      expect(found).toBe(ost.root.todos[1]) // Should be the same OST node
+    })
+
+    it("predicate receives OST node wrappers as arguments", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const predicateArgs: any[] = []
+      ost.root.todos.find((item, index, array) => {
+        predicateArgs.push({ item, index, array })
+        return false
+      })
+
+      expect(predicateArgs).toHaveLength(2)
+      expect(predicateArgs[0].item).toBe(ost.root.todos[0]) // OST node
+      expect(predicateArgs[0].item.$value).toBe(todo1) // Raw value
+      expect(predicateArgs[0].index).toBe(0)
+      expect(predicateArgs[0].array).toBe(ost.root.todos)
+      expect(predicateArgs[1].item).toBe(ost.root.todos[1]) // OST node
+      expect(predicateArgs[1].item.$value).toBe(todo2) // Raw value
+      expect(predicateArgs[1].index).toBe(1)
+      expect(predicateArgs[1].array).toBe(ost.root.todos)
+    })
+  })
+
+  describe("#forEach", () => {
+    it("iterates over OST node wrappers instead of raw values", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const iteratedItems: any[] = []
+      ost.root.todos.forEach((item, index, array) => {
+        iteratedItems.push({ item, index, array })
+      })
+
+      expect(iteratedItems).toHaveLength(2)
+      expect(iteratedItems[0].item).toBe(ost.root.todos[0]) // OST node
+      expect(iteratedItems[0].item.$value).toBe(todo1) // Raw value
+      expect(iteratedItems[0].index).toBe(0)
+      expect(iteratedItems[0].array).toBe(ost.root.todos)
+      expect(iteratedItems[1].item).toBe(ost.root.todos[1]) // OST node
+      expect(iteratedItems[1].item.$value).toBe(todo2) // Raw value
+      expect(iteratedItems[1].index).toBe(1)
+      expect(iteratedItems[1].array).toBe(ost.root.todos)
+    })
+  })
+
+  describe("#map", () => {
+    it("provides OST node wrappers to mapper function", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const mappedItems: any[] = []
+      const result = ost.root.todos.map((item, index, array) => {
+        mappedItems.push({ item, index, array })
+        return item.content.toUpperCase()
+      })
+
+      expect(mappedItems).toHaveLength(2)
+      expect(mappedItems[0].item).toBe(ost.root.todos[0]) // OST node
+      expect(mappedItems[0].item.$value).toBe(todo1) // Raw value
+      expect(mappedItems[1].item).toBe(ost.root.todos[1]) // OST node
+      expect(mappedItems[1].item.$value).toBe(todo2) // Raw value
+      expect(result).toEqual(["LEARN ARBOR", "DO THE DISHES"])
+    })
+  })
+
+  describe("#some", () => {
+    it("provides OST node wrappers to predicate function", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const predicateArgs: any[] = []
+      const result = ost.root.todos.some((item, index, array) => {
+        predicateArgs.push({ item, index, array })
+        return item.content.includes("dishes")
+      })
+
+      expect(result).toBe(true)
+      expect(predicateArgs).toHaveLength(2)
+      expect(predicateArgs[0].item).toBe(ost.root.todos[0]) // OST node
+      expect(predicateArgs[1].item).toBe(ost.root.todos[1]) // OST node
+    })
+  })
+
+  describe("#every", () => {
+    it("provides OST node wrappers to predicate function", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const predicateArgs: any[] = []
+      const result = ost.root.todos.every((item, index, array) => {
+        predicateArgs.push({ item, index, array })
+        return typeof item.content === "string"
+      })
+
+      expect(result).toBe(true)
+      expect(predicateArgs).toHaveLength(2)
+      expect(predicateArgs[0].item).toBe(ost.root.todos[0]) // OST node
+      expect(predicateArgs[1].item).toBe(ost.root.todos[1]) // OST node
+    })
+  })
+
+  describe("#findIndex", () => {
+    it("provides OST node wrappers to predicate function", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const predicateArgs: any[] = []
+      const result = ost.root.todos.findIndex((item, index, array) => {
+        predicateArgs.push({ item, index, array })
+        return item.content.includes("dishes")
+      })
+
+      expect(result).toBe(1)
+      expect(predicateArgs).toHaveLength(2)
+      expect(predicateArgs[0].item).toBe(ost.root.todos[0]) // OST node
+      expect(predicateArgs[1].item).toBe(ost.root.todos[1]) // OST node
+    })
+  })
+
+  describe("#reduce", () => {
+    it("provides OST node wrappers to reducer function", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const reducerArgs: any[] = []
+      const result = ost.root.todos.reduce((acc, item, index, array) => {
+        reducerArgs.push({ acc, item, index, array })
+        return acc + item.content.length
+      }, 0)
+
+      expect(result).toBe(todo1.content.length + todo2.content.length)
+      expect(reducerArgs).toHaveLength(2)
+      expect(reducerArgs[0].item).toBe(ost.root.todos[0]) // OST node
+      expect(reducerArgs[1].item).toBe(ost.root.todos[1]) // OST node
+    })
+  })
+
+  describe("#Symbol.iterator", () => {
+    it("yields OST node wrappers instead of raw values", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const items = [...ost.root.todos]
+
+      expect(items).toHaveLength(2)
+      expect(items[0]).toBe(ost.root.todos[0]) // OST node
+      expect(items[0].$value).toBe(todo1) // Raw value
+      expect(items[1]).toBe(ost.root.todos[1]) // OST node
+      expect(items[1].$value).toBe(todo2) // Raw value
+    })
+
+    it("works with for...of loops", () => {
+      const todo1 = { content: "Learn Arbor" }
+      const todo2 = { content: "Do the dishes" }
+      const ost = new OST({
+        todos: [todo1, todo2],
+      })
+
+      const items: any[] = []
+      for (const item of ost.root.todos) {
+        items.push(item)
+      }
+
+      expect(items).toHaveLength(2)
+      expect(items[0]).toBe(ost.root.todos[0]) // OST node
+      expect(items[1]).toBe(ost.root.todos[1]) // OST node
     })
   })
 })
