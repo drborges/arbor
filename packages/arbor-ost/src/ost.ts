@@ -4,6 +4,8 @@ import { $map } from "./handlers/$map"
 import { $set } from "./handlers/$set"
 import { $array } from "./handlers/$array"
 import { $object } from "./handlers/$object"
+import { $weakMap } from "./handlers/$weakMap"
+import { $weakSet } from "./handlers/$weakSet"
 import { DetachedPathError } from "./errors"
 import { Subscriptions } from "./subscriptions"
 import {
@@ -44,7 +46,14 @@ export class OST<V extends Value = Value> {
    *
    * They are responsible for providing the behavior of the Node, e.g. behaves like a regular object vs array vs map vs set, etc...
    */
-  #handlers: ProxyHandlerConstructor[] = [$array, $set, $map, $object]
+  #handlers: ProxyHandlerConstructor[] = [
+    $array,
+    $set,
+    $map,
+    $weakSet,
+    $weakMap,
+    $object,
+  ]
 
   constructor(root?: V) {
     if (root) {
@@ -58,7 +67,9 @@ export class OST<V extends Value = Value> {
     subscriptions = new Subscriptions()
   ): $<V> {
     const seed = path.target
+
     const handler = this.#handlers.find((h) => h.accepts(value))
+
     const $node = new Proxy(value, new handler(this)) as $<V>
 
     if (path.isRoot()) {
