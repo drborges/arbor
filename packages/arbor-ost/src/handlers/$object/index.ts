@@ -1,7 +1,6 @@
 import { OST } from "../../ost"
 import { Node, Prop, Value } from "../../types"
 import { Visitors } from "../visitors"
-import { $delete, $set } from "../mutations"
 
 import { isDetachedProperty } from "./visitors/detached"
 
@@ -35,7 +34,14 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
       return Reflect.set(target, prop, newValue, $node)
     }
 
-    this.$ost.mutate($node, $set(prop as keyof V, newValue))
+    this.$ost.mutate($node, () => {
+      Reflect.set(target, prop, newValue, $node)
+
+      return {
+        args: [prop, newValue],
+        operation: "set",
+      }
+    })
 
     return true
   }
@@ -46,7 +52,15 @@ export class $object<V extends Value = Value> implements ProxyHandler<V> {
     }
 
     const $node = this.$ost.nodeOf(target)
-    this.$ost.mutate($node, $delete(prop as keyof V))
+
+    this.$ost.mutate($node, () => {
+      Reflect.deleteProperty(target, prop)
+
+      return {
+        args: [prop],
+        operation: "delete",
+      }
+    })
 
     return true
   }

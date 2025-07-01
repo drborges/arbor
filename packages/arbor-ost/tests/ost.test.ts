@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { OST } from "../src/ost"
-import { $set } from "../src/handlers/mutations"
 
 describe("OST", () => {
   describe("#createNode", () => {
@@ -151,7 +150,14 @@ describe("OST", () => {
       const $todo1AuthorNode = $todo1Node.$createChild(state.todos[0].author)
       const $todo2AuthorNode = $todo2Node.$createChild(state.todos[1].author)
 
-      ost.mutate($todo1Node, $set("content", "Learn Arbor OST"))
+      ost.mutate($todo1Node, () => {
+        Reflect.set($todo1Node.$value, "content", "Learn Arbor OST", $todo1Node)
+
+        return {
+          args: ["content", "Learn Arbor OST"],
+          operation: "set",
+        }
+      })
 
       expect(state.todos[0].content).toEqual("Learn Arbor OST")
       expect($todo1Node.$value.content).toEqual("Learn Arbor OST")
@@ -185,7 +191,14 @@ describe("OST", () => {
       const ost = new OST(state)
       const nodeToMutate = ost.root.todos[0].author
 
-      const mutatedNode = ost.mutate(nodeToMutate, $set("name", "Alice Doe"))
+      const mutatedNode = ost.mutate(nodeToMutate, () => {
+        Reflect.set(nodeToMutate.$value, "name", "Alice Doe", nodeToMutate)
+
+        return {
+          args: ["name", "Alice Doe"],
+          operation: "set",
+        }
+      })
 
       expect(mutatedNode).not.toBe(nodeToMutate)
       expect(mutatedNode.$seed).toBe(nodeToMutate.$seed)
@@ -223,7 +236,14 @@ describe("OST", () => {
       ost.subscribeTo($todo2Node, todo2NodeSubscriber)
       ost.subscribeTo($todo2AuthorNode, todo2AuthorNodeSubscriber)
 
-      ost.mutate($todo1Node, $set("content", "Learn Arbor OST"))
+      ost.mutate($todo1Node, () => {
+        Reflect.set($todo1Node.$value, "content", "Learn Arbor OST", $todo1Node)
+
+        return {
+          args: ["content", "Learn Arbor OST"],
+          operation: "set",
+        }
+      })
 
       expect(subscriberOfAllMutations).toHaveBeenCalledTimes(1)
       expect(rootNodeSubscriber).toHaveBeenCalledTimes(1)
