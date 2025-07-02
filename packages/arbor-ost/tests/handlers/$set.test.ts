@@ -435,10 +435,8 @@ describe("$set", () => {
       }
 
       expect(entries.length).toBe(2)
-      expect(entries[0][0]).toBe(entries[0][1]) // Set iterator has same value for key and value
-      expect(entries[1][0]).toBe(entries[1][1])
-      expect(entries[0][0].$value).toBe(todo1)
-      expect(entries[1][0].$value).toBe(todo2)
+      expect(entries[0].$value).toBe(todo1)
+      expect(entries[1].$value).toBe(todo2)
     })
 
     it("lazily creates nodes for entries accessed", () => {

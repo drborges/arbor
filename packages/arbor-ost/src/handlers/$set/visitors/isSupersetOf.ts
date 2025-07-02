@@ -1,5 +1,4 @@
 import { Visitor } from "../../visitor"
-import "../../../types"
 
 export class IsSupersetOfVisitor extends Visitor {
   prop = "isSupersetOf"

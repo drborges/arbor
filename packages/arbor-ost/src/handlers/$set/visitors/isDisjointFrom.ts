@@ -1,5 +1,4 @@
 import { Visitor } from "../../visitor"
-import "../../../types"
 
 export class IsDisjointFromVisitor extends Visitor {
   prop = "isDisjointFrom"

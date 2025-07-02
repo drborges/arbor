@@ -1,6 +1,5 @@
 import { Visitor } from "../../visitor"
 import { isProxiable } from "../../$object/visitors/proxiable"
-import "../../../types"
 
 export class DifferenceVisitor extends Visitor {
   prop = "difference"

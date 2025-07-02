@@ -10,7 +10,7 @@ export class IteratorVisitor extends Visitor {
         const nodeValue = isProxiable(value)
           ? ost.nodeOf(value) || $node.$createChild(value)
           : value
-        yield [nodeValue, nodeValue]
+        yield nodeValue
       }
     }
   }

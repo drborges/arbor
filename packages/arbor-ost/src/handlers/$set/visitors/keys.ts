@@ -1,18 +1,7 @@
-import { Visitor } from "../../visitor"
-import { isProxiable } from "../../$object/visitors/proxiable"
+import { ValuesVisitor } from "./values"
 
-export class KeysVisitor extends Visitor {
+// As per MDN's docs, Set#keys is simply an alias for Set#values.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/keys
+export class KeysVisitor extends ValuesVisitor {
   prop = "keys"
-
-  visit({ target, ost, $node }) {
-    return function* () {
-      for (const value of target.values()) {
-        if (isProxiable(value)) {
-          yield ost.nodeOf(value) || $node.$createChild(value)
-        } else {
-          yield value
-        }
-      }
-    }
-  }
 }
