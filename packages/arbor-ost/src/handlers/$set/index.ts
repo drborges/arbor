@@ -18,8 +18,10 @@ import { SymmetricDifferenceVisitor } from "./visitors/symmetricDifference"
 import { IsDisjointFromVisitor } from "./visitors/isDisjointFrom"
 import { IsSubsetOfVisitor } from "./visitors/isSubsetOf"
 import { IsSupersetOfVisitor } from "./visitors/isSupersetOf"
+import { ChildrenVisitor } from "./visitors/$children"
 
 const visitors = new Visitors(
+  new ChildrenVisitor(),
   new AddVisitor(),
   new HasVisitor(),
   new SizeVisitor(),

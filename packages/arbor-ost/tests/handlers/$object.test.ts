@@ -555,4 +555,15 @@ describe("$object", () => {
       )
     })
   })
+
+  describe("Object.values", () => {
+    it("exposes OST nodes rather than underlying values", () => {
+      const ost = new OST({ a: { c: 1 }, b: { c: 2 } })
+
+      const values = Object.values(ost.root)
+
+      expect(values[0]).toBe(ost.root.a)
+      expect(values[1]).toBe(ost.root.b)
+    })
+  })
 })

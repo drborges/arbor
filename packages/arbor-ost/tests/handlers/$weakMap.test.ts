@@ -339,7 +339,8 @@ describe("$weakMap", () => {
   describe("custom @node weakmaps", () => {
     @node
     class MyWeakMap extends WeakMap {
-      setIfNotExists(key: object, value: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      setIfNotExists(key: object, value: any) {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!this.has(key)) {
           this.set(key, value)
           return true
@@ -347,7 +348,8 @@ describe("$weakMap", () => {
         return false
       }
 
-      getWithDefault(key: object, defaultValue: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      getWithDefault(key: object, defaultValue: any) {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         return this.has(key) ? this.get(key) : defaultValue
       }
     }

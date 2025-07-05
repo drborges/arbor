@@ -67,9 +67,7 @@ export class OST<V extends Value = Value> {
     subscriptions = new Subscriptions()
   ): $<V> {
     const seed = path.target
-
     const handler = this.#handlers.find((h) => h.accepts(value))
-
     const $node = new Proxy(value, new handler(this)) as $<V>
 
     if (path.isRoot()) {

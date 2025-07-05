@@ -853,4 +853,23 @@ describe("$set", () => {
       expect(differenceArray[0]).toBe(ost.nodeOf(obj1))
     })
   })
+
+  it("handles mutations to items within the map", () => {
+    const ost = new OST(
+      new Set([
+        { a: 1, b: 2 },
+        { a: 2, b: 3 },
+      ])
+    )
+
+    const subscriber = vi.fn()
+    ost.subscribe(subscriber)
+
+    const iterator = ost.root.values()
+    const item = iterator.next().value
+    item.a = 3
+    item.b = 4
+
+    expect(subscriber).toHaveBeenCalledTimes(2)
+  })
 })

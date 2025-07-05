@@ -12,8 +12,10 @@ import { HasVisitor } from "./visitors/has"
 import { KeysVisitor } from "./visitors/keys"
 import { ValuesVisitor } from "./visitors/values"
 import { IteratorVisitor } from "./visitors/iterator"
+import { ChildrenVisitor } from "./visitors/$children"
 
 const visitors = new Visitors(
+  new ChildrenVisitor(),
   new GetVisitor(),
   new SetVisitor(),
   new SizeVisitor(),

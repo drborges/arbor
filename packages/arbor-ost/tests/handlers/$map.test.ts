@@ -484,4 +484,21 @@ describe("$map", () => {
       expect(ost.root.todos.last).toBe(ost.root.todos.get(1))
     })
   })
+
+  it("handles mutations to items within the map", () => {
+    const ost = new OST(
+      new Map([
+        [0, { a: 1, b: 2 }],
+        [1, { a: 2, b: 3 }],
+      ])
+    )
+
+    const subscriber = vi.fn()
+    ost.subscribe(subscriber)
+
+    ost.root.get(0).a = 2
+    ost.root.get(0).a = 1
+
+    expect(subscriber).toHaveBeenCalledTimes(2)
+  })
 })

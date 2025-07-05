@@ -32,7 +32,7 @@ export class Visitors {
   predicateVisitors: Visitor[] = []
 
   constructor(...visitors: Visitor[]) {
-    visitors.concat(defaultVisitors).forEach((v) => {
+    defaultVisitors.concat(visitors).forEach((v) => {
       if (v.prop != null) {
         this.propVisitors.set(v.prop, v)
       } else {
