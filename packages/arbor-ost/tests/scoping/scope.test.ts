@@ -98,11 +98,26 @@ describe("Scope", () => {
         expect(node2).toBe(scope.root[1])
       })
     })
+
+    describe("scope mutations", () => {
+      it("can trigger mutations from the scope itself", () => {
+        const ost = new OST([{ a: 1 }, { a: 2 }])
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root.values()
+
+        void iterator.next().value.a++
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
   })
 
   describe("$map", () => {
     describe("#get", () => {
-      it.skip("tracks property access of items", () => {
+      it("tracks property access of items", () => {
         const ost = new OST(
           new Map([
             [0, { a: 1, b: 2 }],
@@ -122,6 +137,265 @@ describe("Scope", () => {
         ost.root.get(1).b = 2
 
         expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("scope mutations", () => {
+      it("can trigger mutations from the scope itself", () => {
+        const ost = new OST(
+          new Map([
+            [0, { a: 1, b: 2 }],
+            [1, { a: 2, b: 3 }],
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root.values()
+
+        void iterator.next().value.a++
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("#values", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Map([
+            [0, { a: 1, b: 2 }],
+            [1, { a: 2, b: 3 }],
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root.values()
+
+        void iterator.next().value.a
+
+        ost.root.get(0).a = 2
+        ost.root.get(0).b = 3
+        ost.root.get(1).a = 3
+        ost.root.get(1).b = 4
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("#entries", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Map([
+            [0, { a: 1, b: 2 }],
+            [1, { a: 2, b: 3 }],
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root.entries()
+
+        void iterator.next().value[1].a
+
+        ost.root.get(0).a = 2
+        ost.root.get(0).b = 3
+        ost.root.get(1).a = 3
+        ost.root.get(1).b = 4
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("#forEach", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Map([
+            [0, { a: 1, b: 2 }],
+            [1, { a: 2, b: 3 }],
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        scope.root.forEach((value, key) => {
+          if (key === 0) {
+            void value.a // scope only tracking property "a" of item where key == 0
+          }
+        })
+
+        ost.root.get(0).a = 2
+        ost.root.get(0).b = 3
+        ost.root.get(1).a = 3
+        ost.root.get(1).b = 4
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("Symbol.iterator", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Map([
+            [0, { a: 1, b: 2 }],
+            [1, { a: 2, b: 3 }],
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root[Symbol.iterator]()
+
+        void iterator.next().value.a
+
+        ost.root.get(0).a = 2
+        ost.root.get(0).b = 3
+        ost.root.get(1).a = 3
+        ost.root.get(1).b = 4
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+  })
+
+  describe("$set", () => {
+    describe("scope mutations", () => {
+      it("can trigger mutations from the scope itself", () => {
+        const ost = new OST(
+          new Set([
+            { a: 1, b: 2 },
+            { a: 2, b: 3 },
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root.values()
+
+        iterator.next().value.a++
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("#values", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Set([
+            { a: 1, b: 2 },
+            { a: 2, b: 3 },
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root.values()
+
+        void iterator.next().value.a
+
+        for (const node of ost.root.values()) {
+          node.a = 4
+          node.b = 5
+        }
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("#entries", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Set([
+            { a: 1, b: 2 },
+            { a: 2, b: 3 },
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root.entries()
+
+        void iterator.next().value[1].a
+
+        for (const node of ost.root.values()) {
+          node.a = 4
+          node.b = 5
+        }
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("#forEach", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Set([
+            { a: 1, b: 2 },
+            { a: 2, b: 3 },
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        scope.root.forEach((value) => {
+          void value.a
+        })
+
+        const iterator = ost.root.values()
+
+        const first = iterator.next().value
+        const second = iterator.next().value
+
+        first.a = 2
+        first.b = 3
+        second.a = 3
+        second.b = 4
+
+        expect(subscriber).toHaveBeenCalledTimes(2)
+      })
+    })
+
+    describe("Symbol.iterator", () => {
+      it("tracks property access of items", () => {
+        const ost = new OST(
+          new Set([
+            { a: 1, b: 2 },
+            { a: 2, b: 3 },
+          ])
+        )
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const iterator = scope.root[Symbol.iterator]()
+
+        void iterator.next().value.a
+
+        for (const node of ost.root.values()) {
+          node.a = 4
+          node.b = 5
+        }
+
+        expect(subscriber).toHaveBeenCalledOnce()
       })
     })
   })

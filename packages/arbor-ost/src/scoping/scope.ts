@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { OST } from "../ost"
 import { $, Node, Subscriber, Unsubscribe, Value } from "../types"
-import { isProxiable } from "../handlers/$object/visitors/proxiable"
+import { $default } from "./handlers/$default"
+import { $map } from "./handlers/$map"
+import { $set } from "./handlers/$set"
 
 export class Scope<V extends Value> {
+  #handlers = [$map, $set, $default]
+
   constructor(
     readonly ost: OST<V>,
-    protected readonly proxies = new WeakMap<Value, Node>(),
-    protected readonly tracked = new WeakMap<Value, Set<unknown>>()
+    readonly proxies = new WeakMap<Value, Node>(),
+    readonly tracked = new WeakMap<Value, Set<unknown>>()
   ) {}
 
   get root(): $<V> {
@@ -28,7 +32,7 @@ export class Scope<V extends Value> {
     })
   }
 
-  private createProxy($node: Node) {
+  createProxy($node: Node) {
     const seed = $node.$seed
 
     if (this.proxies.has(seed)) {
@@ -39,20 +43,8 @@ export class Scope<V extends Value> {
       this.tracked.set(seed, new Set())
     }
 
-    const tracked = this.tracked
-    const createProxy = this.createProxy.bind(this)
-    const proxy = new Proxy($node, {
-      get($node, prop, receiver) {
-        if (prop != null) {
-          tracked.get(seed).add(prop)
-        }
-
-        // TODO: Implement visitors for different types of nodes so we can proxy children accordingly
-        const child = Reflect.get($node, prop, receiver)
-
-        return isProxiable(child) ? createProxy(child) : child
-      },
-    })
+    const handler = this.#handlers.find(h => h.accepts($node))
+    const proxy = new Proxy($node, new handler(this))
 
     this.proxies.set(seed, proxy)
 

@@ -123,7 +123,7 @@ export class OST<V extends Value = Value> {
   }
 
   pathOf(value: Value): Path {
-    // Cannot call node.path here since that would create a circular dependency
+    // Cannot call node.$path here since that would create a circular dependency
     return this.#paths.get(this.#seeds.get(value))
   }
 
