@@ -1,31 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Node, Prop } from "../../types"
-import { Scope } from "../scope"
-import { isNode } from "./$default"
+import { $object } from "./$object"
+import { isNode } from "../../"
 
-export class $set {
-  constructor(readonly scope: Scope<Node>) {}
-
+export class $set extends $object {
   static accepts(value: unknown) {
     return value instanceof Set
   }
 
   get($node: Node<Set<unknown>>, prop: Prop, receiver: unknown) {
-    const seed = $node.$seed
     const scope = this.scope
 
-    if (prop != null) {
-      this.scope.tracked.get(seed).add(prop)
-    }
-
-    if (prop === "has") {
-      return (value: any) => {
-        return $node.has(value) || $node.has(value?.$value)
-      }
-    }
-
     if (prop === Symbol.iterator) {
-      return function*() {
+      return function* () {
         for (const child of $node.values()) {
           yield isNode(child) ? scope.createProxy(child) : child
         }
@@ -33,7 +20,10 @@ export class $set {
     }
 
     if (prop === "forEach") {
-      return function(cb: (value: unknown, value2: unknown, set: Set<unknown>) => void, thisArg?: any) {
+      return function (
+        cb: (value: unknown, value2: unknown, set: Set<unknown>) => void,
+        thisArg?: any
+      ) {
         $node.forEach((child) => {
           const childNode = isNode(child) ? scope.createProxy(child) : child
           cb(childNode, childNode, $node)
@@ -41,8 +31,42 @@ export class $set {
       }
     }
 
-    const child = Reflect.get($node, prop, receiver)
+    if (prop === "difference") {
+      return (set: Set<unknown>) => {
+        const diff = new Set()
 
-    return isNode(child) ? scope.createProxy(child) : child
+        for (const $child of $node) {
+          const child = isNode($child) ? $child?.$value : $child
+          if (!set.has(child)) {
+            const childNode = isNode($child)
+              ? scope.createProxy($child)
+              : $child
+            diff.add(childNode)
+          }
+        }
+
+        return diff
+      }
+    }
+
+    if (prop === "intersection") {
+      return (set: Set<unknown>) => {
+        const diff = new Set()
+
+        for (const $child of $node) {
+          const child = isNode($child) ? $child?.$value : $child
+          if (set.has(child)) {
+            const childNode = isNode($child)
+              ? scope.createProxy($child)
+              : $child
+            diff.add(childNode)
+          }
+        }
+
+        return diff
+      }
+    }
+
+    return super.get($node, prop, receiver)
   }
 }

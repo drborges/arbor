@@ -20,9 +20,6 @@ export type $<T extends object = object> = Node<T> & {
     : T[K]
 }
 
-/**
- * Represents an observable object within the state that can be proxied and tracked by the OST
- */
 export type Value = object
 
 export type Node<V extends Value = Value> = V & {

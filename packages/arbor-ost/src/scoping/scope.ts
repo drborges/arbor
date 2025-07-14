@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { OST } from "../ost"
 import { $, Node, Subscriber, Unsubscribe, Value } from "../types"
-import { $default } from "./handlers/$default"
+import { $object } from "./handlers/$object"
 import { $map } from "./handlers/$map"
 import { $set } from "./handlers/$set"
 
 export class Scope<V extends Value> {
-  #handlers = [$map, $set, $default]
+  #handlers = [$map, $set, $object]
 
   constructor(
     readonly ost: OST<V>,

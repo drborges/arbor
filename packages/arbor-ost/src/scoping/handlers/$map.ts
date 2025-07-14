@@ -1,20 +1,22 @@
 import { Node, Prop } from "../../types"
-import { Scope } from "../scope"
-import { isNode } from "./$default"
+import { $object } from "./$object"
+import { isNode } from "../../"
 
-export class $map {
-  constructor(readonly scope: Scope<Node>) {}
-
+export class $map extends $object {
   static accepts(value: unknown) {
     return value instanceof Map
   }
 
   get($node: Node<Map<unknown, unknown>>, prop: Prop, receiver: unknown) {
-    const seed = $node.$seed
     const scope = this.scope
 
-    if (prop != null) {
-      this.scope.tracked.get(seed).add(prop)
+    if (prop === Symbol.iterator) {
+      return function* () {
+        for (const [key, child] of $node.entries()) {
+          const value = isNode(child) ? scope.createProxy(child) : child
+          yield [key, value]
+        }
+      }
     }
 
     if (prop === "get") {
@@ -24,16 +26,6 @@ export class $map {
       }
     }
 
-    if (prop === Symbol.iterator) {
-      return function*() {
-        for (const child of $node.values()) {
-          yield isNode(child) ? scope.createProxy(child) : child
-        }
-      }
-    }
-
-    const child = Reflect.get($node, prop, receiver)
-
-    return isNode(child) ? scope.createProxy(child) : child
+    return super.get($node, prop, receiver)
   }
 }

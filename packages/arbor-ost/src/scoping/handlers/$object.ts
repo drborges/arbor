@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Scope } from "../scope"
-import { Seed } from "../../seed"
 import { Node, Prop } from "../../types"
+import { isNode } from "../../"
 
-export function isNode(value: any): value is Node {
-  return value?.$seed instanceof Seed
-}
-
-export class $default {
+export class $object {
   constructor(readonly scope: Scope<Node>) {}
 
   static accepts(_value: unknown) {
@@ -15,10 +11,8 @@ export class $default {
   }
 
   get($node: Node, prop: Prop, receiver: unknown) {
-    const seed = $node.$seed
-
     if (prop != null) {
-      this.scope.tracked.get(seed).add(prop)
+      this.scope.tracked.get($node.$seed).add(prop)
     }
 
     const child = Reflect.get($node, prop, receiver)

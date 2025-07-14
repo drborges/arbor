@@ -256,7 +256,7 @@ describe("Scope", () => {
 
         const iterator = scope.root[Symbol.iterator]()
 
-        void iterator.next().value.a
+        void iterator.next().value[1].a
 
         ost.root.get(0).a = 2
         ost.root.get(0).b = 3
@@ -396,6 +396,94 @@ describe("Scope", () => {
         }
 
         expect(subscriber).toHaveBeenCalledOnce()
+      })
+    })
+
+    describe("#has", () => {
+      it("understands raw/unproxied values as arguments", () => {
+        const item1 = { a: 1, b: 2 }
+        const item2 = { a: 2, b: 3 }
+
+        const ost = new OST(new Set([item1, item2]))
+
+        const scope = new Scope(ost)
+        const ostValues = ost.root.values()
+        const scopeValues = scope.root.values()
+
+        const node1 = ostValues.next().value
+        const node2 = ostValues.next().value
+
+        const scoped1 = scopeValues.next().value
+        const scoped2 = scopeValues.next().value
+
+        expect(scope.root.has(item1)).toBe(true)
+        expect(scope.root.has(item2)).toBe(true)
+
+        expect(scope.root.has(node1)).toBe(true)
+        expect(scope.root.has(node2)).toBe(true)
+
+        expect(scope.root.has(scoped1)).toBe(true)
+        expect(scope.root.has(scoped2)).toBe(true)
+      })
+    })
+
+    describe("#difference", () => {
+      it("can path track items in the result diff", () => {
+        const item1 = { a: 1, b: 2 }
+        const item2 = { a: 2, b: 3 }
+        const item3 = { a: 4, b: 5 }
+        const setA = new Set([item1, item2, item3])
+
+        const setB = new Set([item3])
+
+        const ost = new OST(setA)
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const scoped = scope.root.difference(setB)
+
+        const iterator = scoped.values()
+
+        void iterator.next().value.a
+
+        for (const node of ost.root.values()) {
+          node.a = 4
+          node.b = 5
+        }
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    describe("#intersection", () => {
+      it("can path track items in the result diff", () => {
+        const item1 = { a: 1, b: 2 }
+        const item2 = { a: 2, b: 3 }
+        const item3 = { a: 4, b: 5 }
+        const setA = new Set([item1, item2, item3])
+
+        const setB = new Set([item2, item3])
+
+        const ost = new OST(setA)
+
+        const subscriber = vi.fn()
+        const scope = new Scope(ost)
+        scope.subscribe(subscriber)
+
+        const scoped = scope.root.intersection(setB)
+
+        const iterator = scoped.values()
+
+        void iterator.next().value.a
+
+        for (const node of ost.root.values()) {
+          node.a = 4
+          node.b = 5
+        }
+
+        expect(subscriber).toHaveBeenCalledTimes(1)
       })
     })
   })
