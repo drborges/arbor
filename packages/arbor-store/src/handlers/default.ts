@@ -1,7 +1,6 @@
 import { Arbor } from "../arbor"
 import { isDetachedProperty } from "../decorators"
 import { isNode, isProxiable } from "../guards"
-import { Seed } from "../path"
 import { Subscriptions } from "../subscriptions"
 import type { Link, Node } from "../types"
 import { isGetter, pathFor, recursivelyUnwrap } from "../utilities"
@@ -113,6 +112,13 @@ export class DefaultHandler<T extends object = object>
       return true
     }
 
+    // This is problematic because it will move nodes around the OST, making the behavior
+    // unepected from a developer standpoint.
+    //
+    // Ideally Arbor would hold state as an Observable State Graph with a root node instead of a Tree.
+    // This would allow nodes to have multiple paths in the graph from the root node, which
+    // could enable for application state to hold multiple references to the same node on different
+    // parts of the state.
     if (isNode(newValue)) {
       // Detaches the previous node from the state tree since it's being overwritten by a new one
       if (target[prop]) {
@@ -121,7 +127,7 @@ export class DefaultHandler<T extends object = object>
 
       // In case the new value happens to be an existing node, we preemptively add it back to the
       // state tree so that stale references to this node can continue to trigger mutations.
-      const path = pathFor(this).child(Seed.plant(value))
+      const path = pathFor(this).child(this.$tree.plantSeedFor(value))
       this.$tree.createNode(path, value, prop)
     }
 

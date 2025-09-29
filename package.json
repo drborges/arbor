@@ -23,6 +23,6 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "turbo": "^1.9.4",
-    "typescript": "^5.0.4"
+    "typescript": "^5.5.0"
   }
 }

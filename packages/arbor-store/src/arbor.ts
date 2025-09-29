@@ -139,6 +139,8 @@ export class Arbor<T extends object = object> {
    */
   #paths = new SeedMap<Path>()
 
+  #seeds = new WeakMap<object, Seed>()
+
   /**
    * Create a new Arbor instance.
    *
@@ -150,15 +152,32 @@ export class Arbor<T extends object = object> {
   }
 
   getLinkFor(value: object): Link | undefined {
-    return this.#links.getFor(value)
+    return this.#links.getFor(this.getSeedFor(value))
   }
 
   getNodeFor<V extends object>(value: V | Seed): Node<V> | undefined {
-    return this.#nodes.getFor(value) as Node<V>
+    return this.#nodes.getFor(this.getSeedFor(value)) as Node<V>
   }
 
   getPathFor(value: object): Path | undefined {
-    return this.#paths.getFor(value)
+    return this.#paths.getFor(this.getSeedFor(value))
+  }
+
+  getSeedFor(value: object): Seed | undefined {
+    if (value instanceof Seed) {
+      return value
+    }
+
+    return this.#seeds.get(value)
+  }
+
+  plantSeedFor(value: object): Seed {
+    const seed = this.#seeds.get(value)
+    if (!seed) {
+      this.#seeds.set(value, new Seed())
+    }
+
+    return this.#seeds.get(value)
   }
 
   getNodeAt<V extends object>(path: Path): Node<V> | undefined {
@@ -173,7 +192,8 @@ export class Arbor<T extends object = object> {
     const node = this.getNodeFor(value)
 
     if (node) {
-      const seed = Seed.from(node)
+      // const seed = Seed.from(node)
+      const seed = this.getSeedFor(node.$value)
 
       node.$subscriptions.reset()
       this.#nodes.delete(seed)
@@ -183,7 +203,8 @@ export class Arbor<T extends object = object> {
   }
 
   attachNode(node: Node, link?: Link, path?: Path) {
-    const seed = Seed.from(node)
+    // const seed = Seed.from(node)
+    const seed = this.getSeedFor(node.$value)
 
     if (seed) {
       this.#nodes.set(seed, node)
@@ -242,7 +263,8 @@ export class Arbor<T extends object = object> {
     childValue: V
   ): Node<V> | undefined {
     if (!this.getNodeFor(childValue)) {
-      const childPath = pathFor(parent).child(Seed.plant(childValue))
+      const seed = this.plantSeedFor(childValue)
+      const childPath = pathFor(parent).child(seed)
       this.createNode(childPath, childValue, link)
     }
 
@@ -299,7 +321,7 @@ export class Arbor<T extends object = object> {
    * @returns the root node.
    */
   setState(value: T): ArborNode<T> {
-    const seed = Seed.plant(value)
+    const seed = this.plantSeedFor(value)
     const path = Path.root(seed)
 
     this.#root = this.createNode(

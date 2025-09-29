@@ -6,8 +6,8 @@ declare module "vitest" {
     toBeArborNode: () => T
     toBeScopedNode: () => T
     toBeProxiedExactlyOnce: () => T
-    toBeNodeOf: (expected: unknown) => T
-    toHaveNodeFor: (expected: unknown) => T
+    toBeNodeOf: (expected: object) => T
+    toHaveNodeFor: (expected: object) => T
     toHaveLinkFor: (expected: unknown) => T
   }
 }

@@ -4,6 +4,14 @@
   "plugins": ["@typescript-eslint"],
   "ignorePatterns": ["dist"],
   "extends": ["prettier", "plugin:@typescript-eslint/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2023,
+    "sourceType": "module"
+  },
+  "env": {
+    "es2022": true,
+    "node": true
+  },
   "rules": {
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/no-unsafe-member-access": "off",
